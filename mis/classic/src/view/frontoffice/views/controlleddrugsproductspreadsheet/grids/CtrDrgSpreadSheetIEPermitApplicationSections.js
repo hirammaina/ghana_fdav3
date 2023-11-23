@@ -1,0 +1,26 @@
+Ext.define('Admin.view.frontoffice.controlleddrugsproductspreadsheet.grids.CtrDrgSpreadSheetIEPermitApplicationSections', {
+    extend: 'Ext.grid.Panel',  
+    scroll: true,
+    titleCollapse: true,
+   width: '100%',
+    xtype: 'ctrdrgspreadsheetiepermitapplicationsections',
+    layout: 'fit',
+    store: 'spreadsheetregulatedprodtypesstr',
+    
+    title: 'Select Application Section',
+    columns: [{
+        xtype: 'gridcolumn',
+        dataIndex: 'regulated_producttype_id',
+        name: 'id',
+        hidden: true
+    },
+    {
+        xtype: 'gridcolumn',
+        dataIndex: 'name',
+        name: 'name',
+        flex:1
+    }],
+     listeners:{
+        select: 'loadApplicationColumns'
+     }
+});

@@ -1,0 +1,16 @@
+{
+    "name": "ControlDocumentsMng",
+    "alias": "controldocumentsmng",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "App\\Modules\\ControlDocumentsMng\\Providers\\ControlDocumentsMngServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}

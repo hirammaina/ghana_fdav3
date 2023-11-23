@@ -1,0 +1,25 @@
+{
+    "name": "nwidart/sampleinventory",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "App\\Modules\\SampleInventory\\Providers\\SampleInventoryServiceProvider"
+            ],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\Modules\\SampleInventory\\": ""
+        }
+    }
+}

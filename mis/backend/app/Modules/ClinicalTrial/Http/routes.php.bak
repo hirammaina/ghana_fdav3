@@ -1,0 +1,109 @@
+<?php
+
+Route::group(['middleware' => 'web', 'prefix' => 'clinicaltrial', 'namespace' => 'App\\Modules\ClinicalTrial\Http\Controllers'], function () {
+    Route::get('/', 'ClinicalTrialController@index');
+    Route::get('printApplicationMeetingDetails', 'ClinicalTrialController@printApplicationMeetingDetails');
+});
+
+Route::group(['middleware' => 'auth:api', 'prefix' => 'clinicaltrial', 'namespace' => 'App\\Modules\ClinicalTrial\Http\Controllers'], function () {
+    Route::get('getClinicalTrialApplications', 'ClinicalTrialController@getClinicalTrialApplications');
+    Route::post('saveClinicalTrialCommonData', 'ClinicalTrialController@saveClinicalTrialCommonData');
+    Route::get('getClinicalTrialParamFromModel', 'ClinicalTrialController@getClinicalTrialParamFromModel');
+    Route::post('deleteClinicalTrialRecord', 'ClinicalTrialController@deleteClinicalTrialRecord');
+    Route::post('softDeleteClinicalTrialRecord', 'ClinicalTrialController@softDeleteClinicalTrialRecord');
+    Route::get('getStudySitesList', 'ClinicalTrialController@getStudySitesList');
+    Route::post('saveNewReceivingBaseDetails', 'ClinicalTrialController@saveNewReceivingBaseDetails');
+    Route::post('saveProgressReportingBaseDetails', 'ClinicalTrialController@saveProgressReportingBaseDetails');
+
+    
+    Route::post('saveNewApplicationClinicalTrialDetails', 'ClinicalTrialController@saveNewApplicationClinicalTrialDetails');
+    Route::post('saveNewApplicationClinicalTrialOtherDetails', 'ClinicalTrialController@saveNewApplicationClinicalTrialOtherDetails');
+    Route::get('prepareNewClinicalTrialReceivingStage', 'ClinicalTrialController@prepareNewClinicalTrialReceivingStage');
+    Route::get('prepareNewClinicalTrialInvoicingStage', 'ClinicalTrialController@prepareNewClinicalTrialInvoicingStage');
+    Route::get('prepareNewClinicalTrialPaymentStage', 'ClinicalTrialController@prepareNewClinicalTrialPaymentStage');
+    Route::get('prepareNewClinicalTrialAssessmentStage', 'ClinicalTrialController@prepareNewClinicalTrialAssessmentStage');
+    Route::get('prepareCtrProgressReportAssessment', 'ClinicalTrialController@prepareCtrProgressReportAssessment');
+
+    
+    Route::get('prepareNewClinicalTrialManagerMeetingStage', 'ClinicalTrialController@prepareNewClinicalTrialManagerMeetingStage');
+    Route::post('addClinicalStudySite', 'ClinicalTrialController@addClinicalStudySite');
+    Route::get('getClinicalStudySites', 'ClinicalTrialController@getClinicalStudySites');
+    Route::get('getClinicalTrialPersonnelList', 'ClinicalTrialController@getClinicalTrialPersonnelList');
+    Route::post('addApplicationOtherInvestigators', 'ClinicalTrialController@addApplicationOtherInvestigators');
+    Route::get('getClinicalTrialOtherInvestigators', 'ClinicalTrialController@getClinicalTrialOtherInvestigators');
+    Route::get('getClinicalTrialMonitors', 'ClinicalTrialController@getClinicalTrialMonitors');
+
+    
+    Route::get('getImpProducts', 'ClinicalTrialController@getImpProducts');
+    Route::get('getImpProductIngredients', 'ClinicalTrialController@getImpProductIngredients');
+    Route::get('getClinicalTrialManagerApplicationsGeneric', 'ClinicalTrialController@getClinicalTrialManagerApplicationsGeneric');
+    Route::get('getstrProgressReportingManagerApplicationsGeneric', 'ClinicalTrialController@getstrProgressReportingManagerApplicationsGeneric');
+   
+    
+    Route::get('getClinicalTrialManagerMeetingApplications', 'ClinicalTrialController@getClinicalTrialManagerMeetingApplications');
+    Route::get('getClinicalTrialRecommReviewApplications', 'ClinicalTrialController@getClinicalTrialRecommReviewApplications');
+    Route::get('getClinicalTrialApplicationsAtApproval', 'ClinicalTrialController@getClinicalTrialApplicationsAtApproval');
+    Route::post('saveTCMeetingDetails', 'ClinicalTrialController@saveTCMeetingDetails');
+    Route::post('syncTcMeetingParticipants', 'ClinicalTrialController@syncTcMeetingParticipants');
+    Route::get('getTcMeetingParticipants', 'ClinicalTrialController@getTcMeetingParticipants');
+    Route::get('getTcMeetingAgendas', 'ClinicalTrialController@getTcMeetingAgendas');
+    
+    Route::get('getExternalAssessorDetails', 'ClinicalTrialController@getExternalAssessorDetails');
+    Route::get('getTcMeetingDetails', 'ClinicalTrialController@getTcMeetingDetails');
+    Route::get('getClinicalTrialApplicationMoreDetails', 'ClinicalTrialController@getClinicalTrialApplicationMoreDetails');
+    Route::get('getClinicalTrialsList', 'ClinicalTrialController@getClinicalTrialsList');
+    Route::post('saveAmendmentReceivingBaseDetails', 'ClinicalTrialController@saveAmendmentReceivingBaseDetails');
+    Route::get('getOnlineApplications', 'ClinicalTrialController@getOnlineApplications');
+    Route::get('prepareOnlineClinicalTrialPreview', 'ClinicalTrialController@prepareOnlineClinicalTrialPreview');
+    Route::get('prepareOnlineClinicalTrialRegistryPreview', 'ClinicalTrialController@prepareOnlineClinicalTrialRegistryPreview');
+    Route::get('getCtrRegistryInterventions', 'ClinicalTrialController@getCtrRegistryInterventions');
+    Route::get('getClinicalOutcomesDetails', 'ClinicalTrialController@getClinicalOutcomesDetails');
+    Route::get('getClinicalRecruiptmentDetails', 'ClinicalTrialController@getClinicalRecruiptmentDetails');
+    Route::get('getClinicalEthicsApprovalDetails', 'ClinicalTrialController@getClinicalEthicsApprovalDetails');
+    Route::get('getClinicaltrailSponsorsData', 'ClinicalTrialController@getClinicaltrailSponsorsData');
+    Route::get('getClinicalContactPersonsDetails', 'ClinicalTrialController@getClinicalContactPersonsDetails');
+    
+    
+    Route::get('getOnlineClinicalStudySites', 'ClinicalTrialController@getOnlineClinicalStudySites');
+    Route::get('getOnlineClinicalTrialOtherInvestigators', 'ClinicalTrialController@getOnlineClinicalTrialOtherInvestigators');
+    Route::get('getOnlineImpProducts', 'ClinicalTrialController@getOnlineImpProducts');
+    Route::get('getOnlineImpProductIngredients', 'ClinicalTrialController@getOnlineImpProductIngredients');
+    Route::get('getClinicalTrialCompareDetails', 'ClinicalTrialController@getClinicalTrialCompareDetails');
+    Route::get('getDismissedClinicalTrialApplications', 'ClinicalTrialController@getDismissedClinicalTrialApplications');
+
+    Route::get('getOnlineClinicalTrialMonitors', 'ClinicalTrialController@getOnlineClinicalTrialMonitors');
+    Route::get('prepareOnlineClinicalTrialProgressRptPreview', 'ClinicalTrialController@prepareOnlineClinicalTrialProgressRptPreview');
+
+    Route::get('getClinicalTrialCtrgcpInspectionscheduleDetails', 'ClinicalTrialController@getClinicalTrialCtrgcpInspectionscheduleDetails');
+
+    Route::post('saveGcpScheduleInspectionDetails', 'ClinicalTrialController@saveGcpScheduleInspectionDetails');
+
+    Route::get('prepareClinicalTrialGCPInspectionStage', 'ClinicalTrialController@prepareClinicalTrialGCPInspectionStage');
+    Route::post('saveGcpClinicalApplicationdetails', 'ClinicalTrialController@saveGcpClinicalApplicationdetails');
+    Route::get('getClinicalTrialCtrgcpInspectionDetails', 'ClinicalTrialController@getClinicalTrialCtrgcpInspectionDetails');
+    Route::get('getGCPInspectionRecommendationDetails', 'ClinicalTrialController@getGCPInspectionRecommendationDetails');
+
+    Route::post('saveGcpInspectionRecommendation', 'ClinicalTrialController@saveGcpInspectionRecommendation');
+    Route::post('saveGcpInspectionApproval', 'ClinicalTrialController@saveGcpInspectionApproval');
+    Route::get('getAllClinicalTrialApplications', 'ClinicalTrialController@getAllClinicalTrialApplications');
+    Route::get('getApprovedClinicalTrialApplications', 'ClinicalTrialController@getApprovedClinicalTrialApplications');
+
+    Route::post('saveEditAppBaseDetails', 'ClinicalTrialController@saveEditAppBaseDetails');
+ 
+    Route::post('save_clinicalregdetails', 'ClinicalTrialController@save_clinicalregdetails');
+    Route::post('save_clinicalseconaryids', 'ClinicalTrialController@save_clinicalseconaryids');
+    Route::post('save_clinicalstudyDesign', 'ClinicalTrialController@save_clinicalstudyDesign');
+    Route::post('save_clinicaleligibilitycriteria', 'ClinicalTrialController@save_clinicaleligibilitycriteria');
+    Route::post('save_clinicalfundingsource', 'ClinicalTrialController@save_clinicalfundingsource');
+    Route::post('save_clinicalcollaborators', 'ClinicalTrialController@save_clinicalcollaborators');
+ 
+    Route::post('onSaveInterventionDetails', 'ClinicalTrialController@onSaveInterventionDetails');
+    Route::post('onSaveOutcomesDetails', 'ClinicalTrialController@onSaveOutcomesDetails');
+    Route::post('onSaverecruitmentCenter', 'ClinicalTrialController@onSaverecruitmentCenter');
+    Route::post('onsaveclinicaltSponsorDetails', 'ClinicalTrialController@onsaveclinicaltSponsorDetails');
+    Route::post('onSaveContactPersonDetails', 'ClinicalTrialController@onSaveContactPersonDetails');
+    Route::post('onSaveethicsApproval', 'ClinicalTrialController@onSaveethicsApproval');
+    Route::get('getPharmacoVigilanceApps', 'ClinicalTrialController@getPharmacoVigilanceApps');
+ 
+    
+});

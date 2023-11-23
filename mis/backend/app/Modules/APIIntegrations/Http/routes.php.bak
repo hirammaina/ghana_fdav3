@@ -1,0 +1,95 @@
+<?php
+
+ Route::group(['middleware' => 'auth:integration', 'prefix' => 'api/v2/eacintegrations', 'namespace' => 'App\\Modules\APIIntegrations\Http\Controllers'], function()
+{
+    Route::get('/', 'APIIntegrationsController@index');
+
+	Route::get('getLtrsDetails', 'EACHarmonizationController@getLTRTradersWithLimit');
+	Route::get('getLtrDetails/{id}', 'EACHarmonizationController@showLTR');
+	//post 
+	Route::post('postDrugApplicationDetailsSrv', 'EACHarmonizationController@postDrugApplicationDetailsSrv');
+
+	Route::post('createInvoiceService', 'EACHarmonizationController@funcCreateInvoiceService');
+
+	Route::get('getInvoiceService', 'EACHarmonizationController@funcGetInvoiceService');
+	Route::get('getPaymentService', 'EACHarmonizationController@funcGetPaymentService');
+	//Sample Submission Service
+	Route::post('postSampleSubmissionService', 'EACHarmonizationController@postSampleSubmissionService');
+	
+	Route::post('postAssessmentSchedulesNotification', 'EACHarmonizationController@postAssessmentSchedulesNotification');
+	Route::post('postAssessmentSchedulesNotification', 'EACHarmonizationController@postAssessmentSchedulesNotification');
+	//Evaluation Report Pull Service
+	Route::get('evaluation', 'EACHarmonizationController@getFirstAssessmentReportPullService');
+//	Route::get('getSecondAssessmentReportPullService', 'EACHarmonizationController@getSecondAssessmentReportPullService');
+	//Plenary Report Service
+	Route::post('getPlenaryReportService', 'EACHarmonizationController@getPlenaryReportService');
+	//approval notificaiton 
+	
+	Route::get('getMarketAuthorisationService', 'EACHarmonizationController@getMarketAuthorisationService');
+	Route::get('getStatusChangeNotificationService', 'EACHarmonizationController@getStatusChangeNotificationService');
+
+});
+Route::group([ 'prefix' => 'api/info/eacintegrations', 'namespace' => 'App\\Modules\APIIntegrations\Http\Controllers'], function()
+{
+			Route::get('getMalRecallInformationSharingSrv', 'EACHarmonizationController@getMalRecallInformationSharingSrv');
+			Route::get('getMalInformationSharingSrv', 'EACHarmonizationController@getMalInformationSharingSrv');
+			Route::get('getPremisesInformationSharingSrv', 'EACHarmonizationController@getPremisesInformationSharingSrv');
+			Route::get('getGmpInformationSharingSrv', 'EACHarmonizationController@getGmpInformationSharingSrv');
+
+});
+
+ Route::group(['prefix' => 'api/v2', 'namespace' => 'App\\Modules\APIIntegrations\Http\Controllers'], function()
+{
+	Route::post('auth','AuthenticationController@authenticateAPIUser');
+	Route::get('logout','AuthenticationController@logoutAPIUser');
+	
+});
+Route::group(['middleware' => 'auth:integration', 'prefix' => 'api/eacintegrations', 'namespace' => 'App\\Modules\APIIntegrations\Http\Controllers'], function()
+{
+
+	Route::get('getEACJointAssessmentMedicinesSubmissions', 'EACHarmonizationController@getEACJointAssessmentMedicinesSubmissions');
+	Route::get('getEACJointAssessmentMedicinesSubmissions', 'EACHarmonizationController@getEACJointAssessmentMedicinesSubmissions');
+
+});
+Route::group(['prefix' => 'api', 'namespace' => 'App\\Modules\APIIntegrations\Http\Controllers'], function()
+{
+//function based authentication 
+	Route::get('gepgBillSubReq', 'PaymentsIntegrationController@postBillSubmissionRequest');
+	
+	Route::get('gepgBillCanclReq', 'PaymentsIntegrationController@gepgBillCanclReq');
+
+	Route::post('gepgBillSubResp', 'PaymentsIntegrationController@gepgBillSubResp');
+	Route::post('gepgPmtSpInfo', 'PaymentsIntegrationController@gepgPmtSpInfo');
+	
+	Route::get('gepgReconcReq', 'PaymentsIntegrationController@gepgReconcReq');
+
+	Route::post('gepgReconcResp', 'PaymentsIntegrationController@gepgReconcResp');
+
+});
+
+
+ Route::group(['prefix' => 'api/tesws', 'namespace' => 'App\\Modules\APIIntegrations\Http\Controllers'], function()
+{
+		Route::get('permitApprovalNotification ', 'TeswsIntegrationController@permitApprovalNotification');
+		Route::get('processDeclaredImportExportapps ', 'TeswsIntegrationController@processDeclaredImportExportapps');
+	
+});
+
+ Route::group(['prefix' => 'api/rragateway', 'namespace' => 'App\\Modules\APIIntegrations\Http\Controllers'], function()
+{
+		Route::get('rraPaymentGatewayAuth', 'RRAPaymentsIntController@rraPaymentGatewayAuth');
+		Route::get('rraPaymentGatewayGetDocumentNo', 'RRAPaymentsIntController@rraPaymentGatewayGetDocumentNo');
+		Route::get('rraPaymentGatewayGetPayments', 'RRAPaymentsIntController@rraPaymentGatewayGetPayments');
+	
+});
+
+ Route::group(['prefix' => 'api/iremeboypay', 'namespace' => 'App\\Modules\APIIntegrations\Http\Controllers'], function()
+{
+		Route::get('iremboPaymentGatewayAuth', 'IremboPaymentsIntController@iremboPaymentGatewayAuth');
+		Route::get('iremboFuncInvoiceSubmission', 'IremboPaymentsIntController@iremboFuncInvoiceSubmission');
+		Route::get('iremboFuncGetInvoiceSubmission', 'IremboPaymentsIntController@iremboFuncGetInvoiceSubmission');
+
+		Route::post('iremboFuncPaymentNotifications', 'IremboPaymentsIntController@iremboFuncPaymentNotifications');
+		
+	
+});

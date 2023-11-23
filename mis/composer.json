@@ -1,0 +1,5 @@
+{
+    "require": {
+        "pion/laravel-chunk-upload": "^1.2"
+    }
+}

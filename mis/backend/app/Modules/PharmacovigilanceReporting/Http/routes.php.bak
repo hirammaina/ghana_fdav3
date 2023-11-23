@@ -1,0 +1,19 @@
+<?php
+
+Route::group(['middleware' => 'auth:api', 'prefix' => 'pharmacovigilancereporting', 'namespace' => 'App\\Modules\PharmacovigilanceReporting\Http\Controllers'], function()
+{
+    Route::get('/', 'PharmacovigilanceReportingController@index');
+
+    Route::post('saveReceivingSafetyAlertReportsDetails', 'PharmacovigilanceReportingController@saveReceivingSafetyAlertReportsDetails');
+    Route::get('getPharmacoVigilanceApps', 'PharmacovigilanceReportingController@getPharmacoVigilanceApps');
+    Route::get('prepareReceivingSafetyAlertReportsStage', 'PharmacovigilanceReportingController@prepareReceivingSafetyAlertReportsStage');
+    Route::get('getPharmacoVigilancerRptManagerApplicationsGeneric', 'PharmacovigilanceReportingController@getPharmacoVigilancerRptManagerApplicationsGeneric');
+
+    Route::get('getSafetyAlertApplicationMoreDetails', 'PharmacovigilanceReportingController@getSafetyAlertApplicationMoreDetails');
+    Route::get('prepareSafetyalertreportsassessment', 'PharmacovigilanceReportingController@prepareSafetyalertreportsassessment');
+    Route::get('getSafetyalertreportsobservationsDetails', 'PharmacovigilanceReportingController@getSafetyalertreportsobservationsDetails');
+    
+
+    
+});
+

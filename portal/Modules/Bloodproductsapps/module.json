@@ -1,0 +1,16 @@
+{
+    "name": "Bloodproductsapps",
+    "alias": "bloodproductsapps",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "Modules\\Bloodproductsapps\\Providers\\BloodproductsappsServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}

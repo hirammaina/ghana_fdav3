@@ -1,0 +1,25 @@
+{
+    "name": "nwidart/managementdashboard",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "App\\Modules\\ManagementDashboard\\Providers\\ManagementDashboardServiceProvider"
+            ],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\Modules\\ManagementDashboard\\": ""
+        }
+    }
+}

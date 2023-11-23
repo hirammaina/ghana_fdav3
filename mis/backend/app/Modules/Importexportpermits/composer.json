@@ -1,0 +1,25 @@
+{
+    "name": "nwidart/importexportpermits",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "App\\Modules\\Importexportpermits\\Providers\\ImportexportpermitsServiceProvider"
+            ],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\Modules\\Importexportpermits\\": ""
+        }
+    }
+}

@@ -1,0 +1,18 @@
+/**
+ * Created by Kip on 9/27/2018.
+ */
+Ext.define('Admin.view.variation_configurations.views.panels.VariationSubDescriptionDetails', {
+    extend: 'Ext.panel.Panel',
+    xtype: 'variationsubdescriptiondetails',
+    title: 'Variations Descriptions',
+    userCls: 'big-100 small-100',
+    height: Ext.Element.getViewportHeight() - 118,
+    layout:{
+        type: 'fit'
+    },
+    items: [
+        {
+            xtype: 'variationsubdescriptiondetailsgrid'
+        }
+    ]
+});

@@ -1,0 +1,286 @@
+
+<form role="form" enctype="multipart/form-data"  role="form" [formGroup]="poorqualityprodrptform">
+  <div class="row  wizard-content wizard-contentfieldset">
+      <fieldset class="col-lg-12 row">
+          <legend  class="contentfieldset">PRODUCT DETAILS</legend>
+          <div class="col-lg-4" >
+              <label>Product Type</label>
+              <dx-select-box  [dataSource]="sectionsData" valueExpr="id" displayExpr="name" (onSelectionChanged)="onProductTypesCboSelect($event)" [readOnly]="is_readonly"  placeholder="Select Product Type" [searchEnabled]="true" formControlName="section_id">
+              </dx-select-box>
+          </div>
+
+          <div class="col-lg-4" >
+            <label>Product Category</label>
+            <dx-select-box [dataSource]="productCategoryData" valueExpr="id" displayExpr="name"  [readOnly]="is_readonly" 
+            placeholder=" Product Category"
+            formControlName="product_category_id">
+          </dx-select-box>
+        </div>
+          <div class="col-lg-8" >
+            <label>Other Product Category</label>
+      
+            <dx-text-box  placeholder="Other Product Category"  [readOnly]="is_readonly"  formControlName="other_product_category">
+            </dx-text-box>
+        </div>
+        <div class="col-lg-4" >
+            <label>Brand Name</label>
+      
+            <dx-text-box  placeholder="Brand Name" [readOnly]="is_readonly"   formControlName="brand_name">
+            </dx-text-box>
+        </div>
+        <div class="col-lg-4" >
+          <label>Generic Name</label>
+    
+          <dx-text-box  placeholder="Generic Name" [readOnly]="is_readonly"  
+           formControlName="generic_name">
+          </dx-text-box>
+        </div>
+        <div class="col-lg-4" >
+          <label>Batch No(#)</label>
+    
+          <dx-text-box  placeholder="Batch No(#)" [readOnly]="is_readonly"  
+          formControlName="batch_no">
+          </dx-text-box>
+        </div>
+        <div class="col-lg-4" >
+          <label>Manufacturing Date</label>
+    
+          <dx-date-box dateSerializationFormat = "yyyy-MM-dd"   [readOnly]="is_readonly" formControlName="manufacturing_date" placeholder="Manufacturing Date" [showClearButton]="true">
+          </dx-date-box>
+        </div>
+        <div class="col-lg-4" >
+          <label>Expiry Date</label>
+          <dx-date-box dateSerializationFormat = "yyyy-MM-dd"  [readOnly]="is_readonly" formControlName="expiry_date" placeholder="Expiry Date" [showClearButton]="true">
+          </dx-date-box>
+        </div>
+        <div class="col-lg-4" >
+          <label>Date of Receipt/Purchase</label>
+          <dx-date-box dateSerializationFormat = "yyyy-MM-dd"  [readOnly]="is_readonly" formControlName="date_of_receipt" placeholder="Date of Receipt/Purchase" [showClearButton]="true">
+          </dx-date-box>
+        </div>
+
+        <div class="col-lg-4" >
+          <label>Name of Manufacturer</label>
+          <dx-text-box  placeholder="Name of Manufacturer" [readOnly]="is_readonly" formControlName="name_of_manufacturer">
+          </dx-text-box>
+        </div>
+        <div class="col-lg-12" >
+          <label>Physical Address of manufacturer</label>
+    
+          <dx-text-area  placeholder="Physical Address of manufacturer" [readOnly]="is_readonly"   
+           formControlName="manufacturerphysical_address">
+          </dx-text-area>
+        </div>
+        <div class="col-lg-4" >
+          <label>Country of Origin</label>
+    
+          <dx-select-box  [dataSource]="countries" [readOnly]="is_readonly"  valueExpr="id" displayExpr="name" placeholder="Select Country of Origin"  [searchEnabled]="true" formControlName="country_of_origin">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-4" >
+          <label>Name of Distributor/Supplier</label>
+    
+          <dx-text-box  placeholder="Name of Distributor/Supplier" [readOnly]="is_readonly"  
+          formControlName="name_of_distributor">
+          </dx-text-box>
+        </div>
+        <div class="col-lg-12" >
+          <label>Distributor/ Supplier’s Address</label>
+    
+          <dx-text-area  placeholder="Distributor/ Supplier’s Address" [readOnly]="is_readonly"  
+           formControlName="distributor_physical_address">
+          </dx-text-area>
+        </div>
+        <div class="col-lg-4" >
+          <label>Distributor's Country</label>
+    
+          <dx-select-box  [dataSource]="localcountry" [readOnly]="is_readonly"  (onSelectionChanged)="onlocalcountryCboSelect($event)"  valueExpr="id" displayExpr="name" placeholder="Select Country" [searchEnabled]="true" formControlName="distributor_country_id">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-4" >
+          <label>Distributor's Province/City</label>
+          <dx-select-box  [dataSource]="regionsData"  [readOnly]="is_readonly"  valueExpr="id" displayExpr="name" placeholder="Select Province/City" [searchEnabled]="true" formControlName="distributor_region_id">
+          </dx-select-box>
+        </div>
+
+      </fieldset>  
+      <fieldset class="col-lg-12 row">
+        <legend  class="contentfieldset">RODUCT FORMULATION & ESCRIPTION OF PRODUCT COMPLAINT</legend>
+        <div class="col-lg-4" >
+          <label>Product Formulation</label>
+          <dx-select-box  [dataSource]="dosageFormData" [readOnly]="is_readonly"  valueExpr="id" displayExpr="name" placeholder="Select Product Formulation" [searchEnabled]="true" formControlName="dosage_form_id">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-4" >
+          <label>Other Product Formulation</label>
+    
+          <dx-text-box  placeholder="Other Product Category" [readOnly]="is_readonly"   
+          formControlName="other_product_formulation">
+          </dx-text-box>
+      </div>
+      <div class="col-lg-12" >
+            <label>DESCRIPTION OF PRODUCT COMPLAINT</label>
+            <dx-tag-box
+              [items]="productdescComplaintsData"
+              formControlName="productdesc_complaints_id"
+              valueExpr="id" [readOnly]="is_readonly" [readOnly]="is_readonly" 
+              [showSelectionControls]="true"
+              applyValueMode="useButtons"
+              displayExpr="name">
+          </dx-tag-box>
+      </div>
+      <div class="col-lg-12" >
+          <label>Describe the Complaint in details:</label>
+    
+          <dx-text-area  placeholder="Describe the Complaint in details" 
+           formControlName="complaint_description">
+          </dx-text-area>
+      </div>
+       </fieldset>  
+       <fieldset class="col-lg-12 row">
+        <legend  class="contentfieldset">PRODUCT STORAGE CONDITIONS</legend>
+        <div class="col-lg-4" >
+          <label class="control-label">Does product require refrigeration? </label>
+          <dx-select-box [dataSource]="confirmDataParamAll" [readOnly]="is_readonly" 
+           valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+            placeholder="product require refrigeration" formControlName="needs_refrigeration">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-4" >
+          <label class="control-label">Does product require protection from light? </label>
+          <dx-select-box [dataSource]="confirmDataParamAll" [readOnly]="is_readonly" 
+           valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+            placeholder="require protection from light" formControlName="needs_protectionfromlight">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-4" >
+          <label class="control-label">Does product require protection from Moisture?</label>
+          <dx-select-box [dataSource]="confirmDataParamAll" [readOnly]="is_readonly" 
+           valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+            placeholder="require protection from Moisture" formControlName="needs_protectionfrommoisture">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-4" >
+          <label class="control-label">Was it stored following manufacturer/Rwanda FDA guidelines?</label>
+          <dx-select-box [dataSource]="confirmDataParamAll" [readOnly]="is_readonly" 
+           valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+            placeholder="stored following manufacturer/Rwanda FDA guidelines" formControlName="conforms_tostorage_guidelines">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-12" >
+          <label>Other Storage details (if necessary):</label>
+    
+          <dx-text-area  placeholder="Other Storage details" [readOnly]="is_readonly"   
+           formControlName="other_storage_details">
+          </dx-text-area>
+      </div>
+       </fieldset>  
+       <fieldset class="col-lg-12 row">
+        <legend  class="contentfieldset">CIRCUMSTANCE AND TIME OF THE POOR-QUALITY DETECTION & ACTION TAKEN</legend>
+        <div class="col-lg-12" >
+          <label>When did you notice the poor-quality problem?</label>
+          <dx-select-box [dataSource]="detectionOfpoorqualityData" [readOnly]="is_readonly" 
+          valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+           formControlName="detection_ofpoorquality_id">
+         </dx-select-box>
+    </div>
+    <div class="col-lg-4" >
+      <label class="control-label">Action Taken</label>
+      <dx-select-box [dataSource]="actionTakenData"
+       valueExpr="id" displayExpr="name" [searchEnabled]="true"  [readOnly]="is_readonly" 
+        placeholder="Action Taken" formControlName="detections_actionstaken_id">
+      </dx-select-box>
+    </div>
+    <div class="col-lg-12" >
+        <label>Other Actions (if necessary):</label>
+
+        <dx-text-area  placeholder="Other Actions (if necessary)"  [readOnly]="is_readonly"  
+         formControlName="otherdetections_actionstakens">
+        </dx-text-area>
+    </div>
+    <div class="col-lg-4" >
+      <label class="control-label">Have you experienced any adverse event after taking this medicine? (if YES, please complete the ADR/AEFI Reporting Form as the submission)</label>
+      <dx-select-box [dataSource]="confirmDataParamAll" [readOnly]="is_readonly" 
+       valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+        formControlName="has_experiencedadverse_event">
+      </dx-select-box>
+    </div>
+       </fieldset>
+       <fieldset class="col-lg-12 row">
+        <legend  class="contentfieldset">REPORTER INFORMATION</legend>
+        <div class="col-lg-4" >
+          <label class="control-label">Reporter Category</label>
+          <dx-select-box [dataSource]="reporterCategoryData" [readOnly]="is_readonly" 
+           valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+         formControlName="reporter_category_id">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-4" >
+                <label>Name of reporter: </label>
+                <dx-text-box  placeholder="Name of reporter:"  [readOnly]="is_readonly"  
+                 formControlName="name_of_reporter">
+                </dx-text-box>
+            </div>
+            <div class="col-lg-4" >
+              <label>Qualification</label>
+        
+              <dx-text-box  placeholder="Qualification" [readOnly]="is_readonly"  
+              formControlName="reporter_qualification">
+              </dx-text-box>
+          </div>
+          <div class="col-lg-4" >
+              <label>Phone number: </label>
+              <dx-text-box  placeholder="Phone number:" [readOnly]="is_readonly"   formControlName="reporter_telephone_no">
+              </dx-text-box>
+          </div>
+          <div class="col-lg-4" >
+            <label>E-mail Address: </label>
+            <dx-text-box  placeholder="E-mail Address:" [readOnly]="is_readonly"   formControlName="reporter_email_address">
+            </dx-text-box>
+        </div>
+       </fieldset>
+       <fieldset class="col-lg-12 row">
+        <legend  class="contentfieldset">HEALTH FACILITY(Optional)</legend>
+        <div class="col-lg-4" >
+          <label class="control-label">Name of Health Facility</label>
+          <dx-text-box  placeholder="Name of Health Facility" [readOnly]="is_readonly"   formControlName="health_facility">
+          </dx-text-box>
+        </div>
+        <div class="col-lg-4" >
+          <label class="control-label">Country</label>
+          <dx-select-box [dataSource]="localcountry" (onSelectionChanged)="onlocalcountryCboSelect($event)" 
+           valueExpr="id" displayExpr="name" [searchEnabled]="true" [readOnly]="is_readonly" 
+            placeholder="Facility Country" formControlName="facility_country_id">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-4" >
+          <label class="control-label">Province</label>
+          <dx-select-box [dataSource]="regionsData" (onSelectionChanged)="onregionsCboSelect($event)" 
+           valueExpr="id" displayExpr="name" [searchEnabled]="true" [readOnly]="is_readonly" 
+            placeholder="Province" formControlName="facility_region_id">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-4" >
+          <label class="control-label">District</label>
+          <dx-select-box [dataSource]="districtData"
+           valueExpr="id" displayExpr="name" [searchEnabled]="true" [readOnly]="is_readonly" 
+            placeholder="District" formControlName="facility_region_id">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-4" >
+          <label class="control-label">Facility Contact Person</label>
+          <dx-text-box  placeholder="Facility Contact Person" [readOnly]="is_readonly"  formControlName="facility_contact_person">
+          </dx-text-box>
+        </div>
+        <div class="col-lg-4" >
+          <label class="control-label">Facility Contact Details</label>
+          <dx-text-box  placeholder=""  [readOnly]="is_readonly" formControlName="facility_contactpersons_details">
+          </dx-text-box>
+        </div>
+       </fieldset>
+
+       <input type="hidden"   value={{sub_module_id}} name="sub_module_id"  formControlName="sub_module_id" />
+       <input type="hidden"  value={{module_id}} name="module_id"  formControlName="module_id" />
+
+  </div>
+</form>

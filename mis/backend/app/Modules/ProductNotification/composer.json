@@ -1,0 +1,25 @@
+{
+    "name": "nwidart/productnotification",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "App\\Modules\\ProductNotification\\Providers\\ProductNotificationServiceProvider"
+            ],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\Modules\\ProductNotification\\": ""
+        }
+    }
+}

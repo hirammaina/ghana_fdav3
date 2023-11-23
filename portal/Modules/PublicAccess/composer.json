@@ -1,0 +1,25 @@
+{
+    "name": "nwidart/publicaccess",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\PublicAccess\\Providers\\PublicAccessServiceProvider"
+            ],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\PublicAccess\\": ""
+        }
+    }
+}

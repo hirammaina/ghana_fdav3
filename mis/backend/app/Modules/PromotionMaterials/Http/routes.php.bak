@@ -1,0 +1,43 @@
+<?php
+
+Route::group(['middleware' => 'web', 'prefix' => 'promotionmaterials', 'namespace' => 'App\\Modules\PromotionMaterials\Http\Controllers'], function()
+{
+    Route::get('/', 'PromotionMaterialsController@index');
+	
+	Route::post('/saveApplicantDetails','PromotionMaterialsController@saveApplicantDetails');
+	Route::get('/getPromotionMaterialsApplications','PromotionMaterialsController@getPromotionMaterialsApplications');
+	Route::get('/getPromotionMaterialsProductParticular','PromotionMaterialsController@getPromotionMaterialsProductParticular');
+	
+	Route::get('/getOnlinePromotionMaterialsProductParticular','PromotionMaterialsController@getOnlinePromotionMaterialsProductParticular');
+	Route::get('/getOnlinePromotionMaterialsDetails','PromotionMaterialsController@getOnlinePromotionMaterialsDetails');
+	Route::get('/prepareOnlinePromotionalAppReceiving','PromotionMaterialsController@prepareOnlinePromotionalAppReceiving');
+	Route::get('/preparePromotionalAppDetailsReceiving','PromotionMaterialsController@preparePromotionalAppDetailsReceiving');
+
+
+	Route::post('/insertUpdateProductParticulars','PromotionMaterialsController@insertUpdateProductParticulars');
+	Route::post('/genericDeleteRecord','PromotionMaterialsController@genericDeleteRecord');//
+	//Route::post('/insertUpdateProductIngredStren','PromotionMaterialsController@insertUpdateProductIngredinetsStrength');//
+	
+	
+	
+	Route::get('/getPromotionMaterialsDetails','PromotionMaterialsController@getPromotionMaterialsDetails');
+	
+	Route::get('/preparePromotionAndAdvertPaymentStage','PromotionMaterialsController@preparePromotionAndAdvertPaymentStage');
+	Route::get('/getManagerApplicationsGeneric','PromotionMaterialsController@getManagerApplicationsGeneric');
+	Route::get('/prepareForPromotionAndAdvertsEvaluation','PromotionMaterialsController@prepareForPromotionAndAdvertsEvaluation');
+	
+	Route::get('/getPromotionAndAdvertsApplicationsAtApproval','PromotionMaterialsController@getPromotionAndAdvertsApplicationsAtApproval');
+	Route::post('/insertUpdatePromoAdvertComments','PromotionMaterialsController@insertUpdatePromoAdvertComments');//
+	Route::get('/getSponsorsList','PromotionMaterialsController@getSponsorsList');
+	
+	Route::post('/insertUpdateSponsorDetails','PromotionMaterialsController@insertUpdateSponsorDetails');
+	Route::get('/getProductIngredientStrengthDetails','PromotionMaterialsController@getProductIngredientStrengthDetails');
+	Route::post('/insertUpdateProductIngredinetsStrength','PromotionMaterialsController@insertUpdateProductIngredinetsStrength');
+	
+	
+	//online
+	
+   Route::get('/getPromoAdvertsOnlineApplications','PromotionMaterialsController@getPromoAdvertsOnlineApplications');
+   Route::get('/preparePromotionAdvertInvoicingStage','PromotionMaterialsController@preparePromotionAdvertInvoicingStage');
+   
+});

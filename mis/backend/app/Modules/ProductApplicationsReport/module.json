@@ -1,0 +1,16 @@
+{
+    "name": "ProductApplicationsReport",
+    "alias": "productapplicationsreport",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "App\\Modules\\ProductApplicationsReport\\Providers\\ProductApplicationsReportServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}

@@ -1,0 +1,25 @@
+{
+    "name": "nwidart/promotionmaterials",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "App\\Modules\\PromotionMaterials\\Providers\\PromotionMaterialsServiceProvider"
+            ],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\Modules\\PromotionMaterials\\": ""
+        }
+    }
+}

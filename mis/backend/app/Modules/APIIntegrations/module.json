@@ -1,0 +1,16 @@
+{
+    "name": "APIIntegrations",
+    "alias": "apiintegrations",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "App\\Modules\\APIIntegrations\\Providers\\APIIntegrationsServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}

@@ -1,0 +1,16 @@
+{
+    "name": "Promotionadverts",
+    "alias": "promotionadverts",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "Modules\\Promotionadverts\\Providers\\PromotionadvertsServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}

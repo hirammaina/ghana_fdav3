@@ -1,0 +1,16 @@
+{
+    "name": "SummaryReport",
+    "alias": "summaryreport",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "App\\Modules\\SummaryReport\\Providers\\SummaryReportServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}

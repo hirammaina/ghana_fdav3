@@ -1,0 +1,63 @@
+<div style="background: #fff; font-weight: bold;padding:5px;margin-bottom: 5px !important; height: 55px !important;">
+  <div class="row">
+    <div class="col-lg-6">
+      <h1 class="main-title float-left">Process: {{process_title}}</h1>
+    </div>
+      <div class="col-lg-4">
+          <label style="font-weight: bold;margin: 5px; font-style:italics;font-size: 15px;font-style: italics; color: green;">   Report Reference No: <i> {{tracking_no}}</i>   </label>
+      </div>
+  </div>
+</div>
+<wizard  navBarLayout ="large-filled-symbols" [navigationMode]='strict' style="background: #fff !important; height: 100% !important;">
+  <wizard-step navigationSymbol="Step 1" stepTitle=" POOR QUALITYPRODUCT REPORTING FORM" class="wizardStep-height">
+
+        <div class="col-lg-12 wizard-content">
+          <app-poorqualityprod-rptdataentry  [is_readonly]="is_readonly" [poorqualityprodrptform]="poorqualityprodrptform">
+          </app-poorqualityprod-rptdataentry>
+        </div>
+        <div style="border-top: 1px solid #ccc; min-height: 100px !important;">
+          <dx-button
+            text="Save product Application && Next Step"
+            type="default"
+            icon="fa fa-save"
+            [elementAttr]="{ id: 'elementId', class: 'pull-right' }"
+            (onClick)="onSavePoorQualityReportDetails()">
+        </dx-button>
+        </div>
+  </wizard-step>
+  
+  <wizard-step navigationSymbol="Submission" stepTitle="Submission">
+    <form role="form" enctype="multipart/form-data"  role="form" [formGroup]="onApplicationSubmissionFrm">
+    <fieldset class="col-lg-12 row">
+      <legend  class="contentfieldset">DECLARATION AND CONFIDENTIALITY STATEMENT</legend>
+     <p> All information is held in strict confidentiality and will not disclose reporter’s identity in response to any public request. Information supplied will
+      contribute to the improvement of safety and vigilance of Medical Products in Rwanda.
+      </p>
+      <div class="col-lg-12">
+        <b> <h4>Submission Comments(Optional)</h4></b>
+         <dx-text-area placeholder="Enter Comments(optional)" [readOnly]="is_readonly" ></dx-text-area>
+     </div>
+     <div class="col-lg-12">
+       <dx-check-box text="Agree to the Declaration" [value]="undefined" formControlName="submission_comments"   (onValueChanged)="newProductTermscheckbox($event)">
+       </dx-check-box>
+     </div>
+     <div class="wizard-divbottom">
+    </div>
+     <div class="wizard-divbottom">
+       <button class="btn btn-primary" type="button" [disabled]="!checkProductsSubmission" (click)="onProductApplicationSubmit()">Submit Reporting Form</button>
+     </div>
+    </fieldset>
+  </form>
+  </wizard-step>
+</wizard>
+<dx-popup class="popup"  [width]="funcpopWidth(80)" [height]="700" [showTitle]="true" title="{{printReportTitle}}"
+  [dragEnabled]="false" [closeOnOutsideClick]="true" [(visible)]="isPrintReportVisible">
+  <div *dxTemplate="let data of 'content'">
+      <div class="col-lg-12 row" [innerHTML]="printiframeUrl | safe: 'html'"></div>
+  </div>
+</dx-popup> 
+
+
+
+
+

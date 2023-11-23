@@ -1,0 +1,16 @@
+{
+    "name": "ClinicalTrials",
+    "alias": "clinicaltrials",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "Modules\\ClinicalTrials\\Providers\\ClinicalTrialsServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}

@@ -1,0 +1,16 @@
+{
+    "name": "Systemadminprocess",
+    "alias": "systemadminprocess",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "App\\Modules\\Systemadminprocess\\Providers\\SystemadminprocessServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}

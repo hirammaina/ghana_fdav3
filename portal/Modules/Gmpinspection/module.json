@@ -1,0 +1,16 @@
+{
+    "name": "Gmpinspection",
+    "alias": "gmpinspection",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "Modules\\Gmpinspection\\Providers\\GmpinspectionServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}

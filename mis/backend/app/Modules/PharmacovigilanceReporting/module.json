@@ -1,0 +1,16 @@
+{
+    "name": "PharmacovigilanceReporting",
+    "alias": "pharmacovigilancereporting",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "App\\Modules\\PharmacovigilanceReporting\\Providers\\PharmacovigilanceReportingServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}
