@@ -44,6 +44,7 @@ use Illuminate\Support\Facades\Route;
             Route::get('getParameterGridConfig','getParameterGridConfig');
         });
        
+        
     // Route::get('/', 'AdministrationController@index');
     // Route::get('getSystemNavigationMenuItems', 'AdministrationController@getSystemNavigationMenuItems');
     // Route::get('getSystemMenus', 'AdministrationController@getSystemMenus');

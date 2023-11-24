@@ -8,6 +8,7 @@ Route::middleware(['auth:api'])->group( function () {
         Route::controller(ImportexportpermitsController::class)->group(function () {
             Route::get('/', 'index');
     Route::get('getonlineimportexportappdetails', 'getonlineimportexportappdetails');
+    Route::get('getInspectedPermitsProducts','getInspectedPermitsProducts');
     Route::get('prepareOnlineImportExporPermitReceivingStage', 'prepareOnlineImportExporPermitReceivingStage');
     Route::get('prepareImportExporPermitReceivingStage', 'prepareImportExporPermitReceivingStage');
      
