@@ -1,0 +1,375 @@
+<?php
+namespace Modules\ClinicalTrials\Traits\;
+
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
+use Illuminate\Http\Request;
+
+trait ClinicalTrialAppTraits
+{
+	public function funcClinicalTriaApplicationSubmission($application_code,$sub_module_id,$module_id,$req,$view_id,$next_stage)
+    {
+       
+            $app_exists = recordExists('tra_clinical_trial_applications', array('application_code' => $application_code), 'mis_db');
+            if ($app_exists) {//update
+             
+                 $res = $this->updateClinicalTrialOnlineApplicationDetailsOnMIS($application_code,$sub_module_id,$module_id,$req,$view_id,$next_stage);
+                   
+            } else {//insertion
+              
+                $res = $this->saveInitialClinicalTrialOnlineApplicationDetails($application_code,$sub_module_id,$module_id,$req,$view_id,$next_stage);
+            }
+    
+			return $res;
+       
+    }		
+	public function updateClinicalTrialOnlineApplicationDetailsOnMIS($application_code,$sub_module_id,$module_id,$req,$view_id,$next_stage)
+    {
+		$app_status_id =3;
+        $user_id = 0;
+        try {
+            $qry = DB::table('wb_clinical_trial_applications as t1')
+                ->where('application_code', $application_code);
+            $results = $qry->first();
+            if (is_null($results)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
+                );
+                return $res;
+            }
+			$sub_module_id = $results->sub_module_id;
+            $portal_application_id = $results->id;
+            $application_code = $results->application_code;
+            //MIS results
+            $mis_results = DB::table('tra_clinical_trial_applications')
+                ->where('application_code', $application_code)
+                ->first();
+            if (is_null($mis_results)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting MIS application details, consult System Admin!!'
+                );
+                return $res;
+            }
+            $mis_application_id = $mis_results->id;
+            $view_id = $mis_results->view_id;
+            $ref_no = $mis_results->reference_no;
+            //process/workflow details
+            $where = array(
+                'module_id' => $results->module_id,
+                'sub_module_id' => $results->sub_module_id,
+                'section_id' => $results->section_id
+            );
+            $process_details = getTableData('wf_tfdaprocesses', $where, 'mis_db');
+            if (is_null($process_details)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting process details, consult System Admin!!'
+                );
+                return $res;
+            }
+				
+            $tracking_no = $results->tracking_no;
+			
+            $applicant_id = $results->trader_id;
+            $application_details = array(
+                'applicant_id' => $applicant_id,
+                'module_id' => $results->module_id,
+                'sub_module_id' => $results->sub_module_id,
+                'zone_id' => $results->zone_id,
+                'section_id' => $results->section_id,
+                'process_id' => $process_details->id,
+                'workflow_stage_id' => $next_stage,
+                'application_status_id' => $app_status_id,
+                'portal_id' => $portal_application_id,
+                'date_received' => Carbon::now(),
+                'sponsor_id' => $results->sponsor_id,
+                'investigator_id' => $results->investigator_id,
+                'study_title' => $results->study_title,
+                'protocol_no' => $results->protocol_no,
+                'version_no' => $results->version_no,
+                'date_of_protocol' => $results->date_of_protocol,
+                'clearance_no' => $results->clearance_no,
+                'study_duration' => $results->study_duration,
+                'duration_desc' => $results->duration_desc,
+                'received_by' => $user_id,
+                'paying_currency_id' => $results->paying_currency_id,
+                'is_fast_track' => $results->is_fast_track
+
+            );
+            DB::connection('mis_db')->table('tra_clinical_trial_applications')
+                ->where('application_code', $application_code)
+                ->update($application_details);
+            //study sites details
+            if($sub_module_id == 23){
+                //insert the clinical trial reporting details 
+                $ctr_reporting_data = DB::table('wb_clinicaltrial_progressreports')
+                ->select(DB::raw("id as portal_id,$mis_application_id as application_id,reporting_start_date,reporting_end_date,clinicalreport_type_id,actualstudy_date,screen_participants,target_sample_size,enrolled_participants,dateof_first_enrollment,number_of_dropouts,number_lost_tofollow_ups,inclusion_criteria,exclusion_criteria,number_of_saes,events_of_medialimportance,protocol_deviations,clinicalstudy_status_id,study_site_id,
+                NOW() as created_on,$user_id as created_by"))
+                ->where('application_id', $results->id)
+                ->get();
+
+                $ctr_reporting_data = convertStdClassObjToArray($ctr_reporting_data);
+
+                DB::connection('mis_db')->table('tra_clinicaltrial_progressreports')
+                    ->where('application_id', $mis_application_id)
+                    ->delete();
+                DB::connection('mis_db')->table('tra_clinicaltrial_progressreports')
+                    ->insert($ctr_reporting_data);
+
+            }
+            else{
+                $site_details = DB::table('wb_clinical_trial_sites')
+                    ->select(DB::raw("id as portal_id,$mis_application_id as application_id,study_site_id,
+                    NOW() as created_on,$user_id as created_by"))
+                    ->where('application_id', $results->id)
+                    ->get();
+                $site_details = convertStdClassObjToArray($site_details);
+                //$site_details = unsetPrimaryIDsInArray($site_details);
+                DB::connection('mis_db')->table('clinical_trial_sites')
+                    ->where('application_id', $mis_application_id)
+                    ->delete();
+                DB::connection('mis_db')->table('clinical_trial_sites')
+                    ->insert($site_details);
+
+            }
+           
+            //investigators
+            $investigator_details = DB::table('wb_clinical_trial_investigators')
+                ->select(DB::raw("id as portal_id,$mis_application_id as application_id,category_id,investigator_id,
+                study_site_id,NOW() as created_on,$user_id as created_by"))
+                ->where('application_id', $results->id)
+                ->get();
+            $investigator_details = convertStdClassObjToArray($investigator_details);
+            //$investigator_details = unsetPrimaryIDsInArray($investigator_details);
+            DB::connection('mis_db')->table('clinical_trial_investigators')
+                ->where('application_id', $mis_application_id)
+                ->delete();
+            DB::connection('mis_db')->table('clinical_trial_investigators')
+                ->insert($investigator_details);
+           
+            $product_details = DB::table('wb_clinical_trial_products')
+                ->select(DB::raw("id as portal_id,$mis_application_id as application_id,product_category_id,brand_name,
+                registration_no,registration_date,identification_mark,product_desc,market_location_id,dosage_form_id,country_id,
+                common_name_id,manufacturer_id,routes_of_admin_id,product_strength,si_unit_id,
+                NOW() as created_on,$user_id as created_by"))
+                ->where('application_id', $results->id)
+                ->get();
+            $product_details = convertStdClassObjToArray($product_details);
+            //$product_details = unsetPrimaryIDsInArray($product_details);
+            DB::connection('mis_db')->table('clinical_trial_products')
+                ->where('application_id', $mis_application_id)
+                ->delete();
+            foreach ($product_details as $product_detail) {
+                $mis_product_id = DB::connection('mis_db')->table('clinical_trial_products')
+                    ->insertGetId($product_detail);
+               
+            }
+           
+            $res = array(
+                'success' => true,
+                'details' => $details,
+                'message' => 'Application submitted successfully!!'
+            );
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            $portal_db->rollBack();
+            $res = array(
+                'success' => false,
+                'message' => $exception->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            DB::rollBack();
+            $portal_db->rollBack();
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return $res;
+    }
+function saveInitialClinicalTrialOnlineApplicationDetails($application_code,$sub_module_id,$module_id,$req,$view_id,$next_stage)
+    {
+       
+        $user_id = 0;
+      
+        try {
+            $qry = DB::table('wb_clinical_trial_applications as t1')
+                ->where('application_code', $application_code);
+            $results = $qry->first();
+            if (is_null($results)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
+                );
+                return $res;
+            }
+            $portal_application_id = $results->id;
+            $sub_module_id = $results->sub_module_id;
+            //process/workflow details
+            $where = array(
+                'module_id' => $results->module_id,
+                'sub_module_id' => $results->sub_module_id,
+                'section_id' => $results->section_id
+            );
+            $process_details = getTableData('wf_tfdaprocesses', $where, 'mis_db');
+            if (is_null($process_details)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting process details, consult System Admin!!'
+                );
+                return $res;
+            }
+            $workflow_details = getTableData('wf_workflow_stages', array('id' => $next_stage),'mis_db');
+            if (is_null($workflow_details)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting workflow details, consult System Admin!!'
+                );
+                return $res;
+            }
+            $tracking_no = $results->tracking_no;
+            $view_id = generateApplicationViewID();
+            $application_code = $results->application_code;
+           
+            $applicant_id = $results->applicant_id;
+            $application_details = array(
+                'view_id' => $view_id,
+                'tracking_no' => $tracking_no,
+                'applicant_id' => $applicant_id,
+	
+                'application_code' => $application_code,
+                'module_id' => $results->module_id,
+                'sub_module_id' => $results->sub_module_id,
+                'zone_id' => $results->zone_id,
+                'section_id' => $results->section_id,
+                'process_id' => $process_details->id,
+                'workflow_stage_id' => $next_stage,
+                'application_status_id' => $app_status_id,
+                'portal_id' => $portal_application_id,
+                'date_received' => Carbon::now(),
+                'sponsor_id' => $results->sponsor_id,
+                'investigator_id' => $results->investigator_id,
+                'study_title' => $results->study_title,
+                'protocol_no' => $results->protocol_no,
+                'version_no' => $results->version_no,
+                'date_of_protocol' => $results->date_of_protocol,
+                'clearance_no' => $results->clearance_no,
+                'study_duration' => $results->study_duration,
+                'duration_desc' => $results->duration_desc,
+                'received_by' => $user_id,
+                'paying_currency_id' => $results->paying_currency_id,
+                'clinical_prodsection_id' => $results->clinical_prodsection_id,
+                'phase_id' => $results->phase_id,
+                'is_fast_track' => $results->is_fast_track
+
+            );
+            $application_insert = insertRecord('tra_clinical_trial_applications', $application_details, $user_id,'mis_db');
+            if ($application_insert['success'] == false) {
+                DB::rollBack();
+                
+                return $application_insert;
+            }
+            $mis_application_id = $application_insert['record_id'];
+            if ($sub_module_id == 10) {
+                $reg_params = array(
+                    'tra_clinical_trial_id' => $mis_application_id,
+                    'registration_status' => 1,
+                    'validity_status' => 1,
+                    'created_by' => $user_id
+                );
+                //should apply only to new applications
+                createInitialRegistrationRecord('registered_clinical_trials', 'tra_clinical_trial_applications', $reg_params, $mis_application_id, 'reg_clinical_trial_id');
+            }
+            //study sites details
+            $site_details = DB::table('wb_clinical_trial_sites')
+                ->select(DB::raw("id as portal_id,$mis_application_id as application_id,study_site_id,approving_instution,responsible_ethics_committee,approval_date,application_reference_no,
+                NOW() as created_on,$user_id as created_by"))
+                ->where('application_id', $results->id)
+                ->get();
+            $site_details = convertStdClassObjToArray($site_details);
+            $site_details = unsetPrimaryIDsInArray($site_details);
+            DB::connection('mis_db')->table('clinical_trial_sites')
+                ->insert($site_details);
+            //investigators
+            $investigator_details = DB::table('wb_clinical_trial_investigators')
+                ->select(DB::raw("id as portal_id,$mis_application_id as application_id,category_id,investigator_id,
+                study_site_id,NOW() as created_on,$user_id as created_by"))
+                ->where('application_id', $results->id)
+                ->get();
+            $investigator_details = convertStdClassObjToArray($investigator_details);
+            $investigator_details = unsetPrimaryIDsInArray($investigator_details);
+            DB::connection('mis_db')->table('clinical_trial_investigators')
+                ->insert($investigator_details);
+            //IMP products section_id
+            //monitors
+            $monitors_details = DB::table('wb_clinical_trial_monitors')
+            ->select(DB::raw("id as portal_id,$mis_application_id as application_id,monitor_id,
+            NOW() as created_on,$user_id as created_by"))
+            ->where('application_id', $results->id)
+            ->get();
+            $monitors_details = convertStdClassObjToArray($monitors_details);
+            $monitors_details = unsetPrimaryIDsInArray($monitors_details);
+            DB::connection('mis_db')->table('tra_clinical_trial_monitors')
+                ->insert($monitors_details);
+            //end monitors
+
+            $product_details = DB::table('wb_clinical_trial_products')
+                ->select(DB::raw("id as portal_id,$mis_application_id as application_id,product_category_id,brand_name
+                registration_no,registration_date,identification_mark,product_desc,market_location_id,dosage_form_id,country_id,
+                common_name_id,manufacturer_id,routes_of_admin_id,product_strength,si_unit_id,classification_id,gmdn_code,gmdn_term,device_type_id,investigationproduct_section_id,gmdn_category,
+                NOW() as created_on,$user_id as created_by"))
+                ->where('application_id', $results->id)
+                ->get();
+            $product_details = convertStdClassObjToArray($product_details);
+            $product_details = unsetPrimaryIDsInArray($product_details);
+            foreach ($product_details as $product_detail) {
+                $mis_product_id = DB::connection('mis_db')->table('clinical_trial_products')
+                    ->insertGetId($product_detail);
+                
+            }
+            
+           if($sub_module_id == 23){
+                //insert the clinical trial reporting details 
+                $ctr_reporting_data = DB::table('wb_clinicaltrial_progressreports')
+                ->select(DB::raw("id as portal_id,$mis_application_id as application_id,reporting_start_date,reporting_end_date,clinicalreport_type_id,actualstudy_date,screen_participants,target_sample_size,enrolled_participants,dateof_first_enrollment,number_of_dropouts,number_lost_tofollow_ups,inclusion_criteria,exclusion_criteria,number_of_saes,events_of_medialimportance,protocol_deviations,clinicalstudy_status_id,study_site_id,
+                NOW() as created_on,$user_id as created_by"))
+                ->where('application_id', $results->id)
+                ->get();
+
+                $ctr_reporting_data = convertStdClassObjToArray($ctr_reporting_data);
+
+                DB::connection('mis_db')->table('tra_clinicaltrial_progressreports')
+                    ->where('application_id', $mis_application_id)
+                    ->delete();
+                DB::connection('mis_db')->table('tra_clinicaltrial_progressreports')
+                    ->insert($ctr_reporting_data);
+
+            }
+            
+            $res = array(
+                'success' => true,
+                'details' => $details,
+                'message' => 'Application saved successfully in the MIS!!'
+            );
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            $portal_db->rollBack();
+            $res = array(
+                'success' => false,
+                'message' => $exception->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            DB::rollBack();
+            $portal_db->rollBack();
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return $res;
+    }
+}
+
+?>

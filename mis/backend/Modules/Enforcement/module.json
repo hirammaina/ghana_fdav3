@@ -1,0 +1,13 @@
+{
+    "name": "Enforcement",
+    "alias": "enforcement",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Enforcement\\Providers\\EnforcementServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

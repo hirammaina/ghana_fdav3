@@ -1,0 +1,13 @@
+{
+    "name": "Psur",
+    "alias": "psur",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Psur\\Providers\\PsurServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

@@ -393,7 +393,7 @@
      *
      */
     "output": {
-        "base": "${workspace.build.dir}/${build.environment}/${app.name}",
+        "base": "../production/${build.environment}/${app.name}",
         "page": "index.html",
         "manifest": "${build.id}.json",
         "js": "${build.id}/app.js",
@@ -405,6 +405,7 @@
             "shared": "resources"
         }
     },
+	
     /**
     * Controls for localStorage caching
     *   "cache": {

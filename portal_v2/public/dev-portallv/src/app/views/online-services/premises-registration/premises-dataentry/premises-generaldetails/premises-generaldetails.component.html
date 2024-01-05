@@ -1,0 +1,247 @@
+
+
+<form role="form" enctype="multipart/form-data"  role="form" [formGroup]="premisesGeneraldetailsfrm">
+  <div class="row  wizard-content wizard-contentfieldset">
+      <fieldset class="col-lg-12 row">
+          <legend  class="contentfieldset">Premises Information</legend>
+          <div class="col-lg-4" >
+            <label>Registration Process/Section</label>
+      
+            <dx-select-box  [dataSource]="sectionsData" valueExpr="id" displayExpr="name" placeholder="Select Registration Section/Process" (onValueChanged)="onSectionsCboSelect($event)" [searchEnabled]="true" formControlName="section_id">
+            </dx-select-box>
+        </div>
+      
+        <div class="col-lg-4">
+          <label class="control-label">Premises Name(Company Name)</label>
+          <dx-text-box formControlName="premises_name"  [readOnly]= "is_readonly" placeholder="Premises Name" [readOnly]="is_readonly"  [showClearButton]="true">
+          </dx-text-box>
+      </div>
+      <div class="col-lg-4">
+        <label>Premises Type</label>
+        <dx-select-box (onValueChanged)="onBusinesTypeCboSelect($event)" [dataSource]="businessTypesData" valueExpr="id" displayExpr="name" placeholder="Select Premises Main Activity" [searchEnabled]="true"  formControlName="business_type_id">
+        </dx-select-box>
+      </div>
+      <div class="col-lg-4">
+          <label class="control-label">Registration No(RDB/RCA No) </label>
+          <dx-text-box formControlName="company_registration_no"  [readOnly]= "is_readonly" placeholder="Registration" [showClearButton]="true">
+          </dx-text-box>
+      </div>
+          <div class="col-lg-8  input-group ">
+            <div class="col-lg-8">
+                <label for="ti" class="control-label">Capital Information</label>
+                <dx-text-box formControlName="investment_capital" placeholder="Investment Capital"  [showClearButton]="true">
+                </dx-text-box>
+            </div>
+
+            <div class="col-lg-4">
+              <label class="control-label">Currency</label>
+              <dx-select-box [readOnly]="is_readonly" [dataSource]="payingCurrencyData" valueExpr="id" displayExpr="name" placeholder="Select Currency" [searchEnabled]="true" formControlName="investment_capital_currency_id">
+              </dx-select-box>
+
+          </div>
+      </div>
+      <div class="col-lg-4">
+          <label for="ti" class="control-label">Offical Email Address</label>
+          <dx-text-box [readOnly]="is_readonly" formControlName="email" placeholder="Email Address" [showClearButton]="true">
+          </dx-text-box>
+      </div>
+      
+      <div class="col-lg-4">
+          <label for="ti" class="control-label">Offical Telephone No</label>
+          <dx-text-box    formControlName="telephone" placeholder="Telephone No" [showClearButton]="true">
+          </dx-text-box>
+      </div>
+    
+      <div class="col-lg-4">
+        <label for="ti" class="control-label">Application Processing Place</label>
+
+        <dx-select-box [dataSource]="zoneData" valueExpr="id" placeholder="Application Processing Place" displayExpr="name" [searchEnabled]="true" formControlName="zone_id">
+        </dx-select-box>
+    </div>
+      </fieldset>  
+      <fieldset class="col-lg-12 row">
+        <legend  class="contentfieldset">Director's Information</legend>
+          <div class="col-lg-4">
+            <label class="control-label">Name of Managing Director</label>
+            <dx-text-box formControlName="managing_director"  [readOnly]= "is_readonly" placeholder="Director Name" [readOnly]="is_readonly"  [showClearButton]="true">
+            </dx-text-box>
+        </div>
+          <div class="col-lg-4">
+            <label class="control-label">Managing Director's Email</label>
+            <dx-text-box formControlName="managing_director_email"  [readOnly]= "is_readonly" placeholder="Director Email" [readOnly]="is_readonly"  [showClearButton]="true">
+            </dx-text-box>
+        </div>
+        <div class="col-lg-4">
+            <label class="control-label">Managing Director's Telephone No.</label>
+            <dx-text-box formControlName="managing_director_telepone"  [readOnly]= "is_readonly" placeholder="Director Telephone No" [readOnly]="is_readonly"  [showClearButton]="true">
+            </dx-text-box>
+        </div>
+        <div class="col-lg-4" >
+          <label class="control-label">Director As Primary Contact Person</label>
+          <dx-select-box (onSelectionChanged)="onTraderasContactpersnChange($event)"  [dataSource]="confirmDataParam" valueExpr="id" displayExpr="name" [searchEnabled]="true"
+           placeholder="Director as Contact Person" formControlName="applicant_contact_person">
+          </dx-select-box>
+        </div>
+        <div class="col-lg-4" *ngIf="!isReadOnlyTraderasContact">
+          <label class="control-label">Contact Person</label>
+          <dx-text-box formControlName="contact_person"  [readOnly]= "is_readonly" placeholder="Contact Person Name" [readOnly]="is_readonly"  [showClearButton]="true">
+          </dx-text-box>
+      </div>
+        <div class="col-lg-4" *ngIf="!isReadOnlyTraderasContact">
+          <label class="control-label">Contact Person's Email</label>
+          <dx-text-box formControlName="contact_person_email"  [readOnly]= "is_readonly" placeholder="Contact Person Email" [readOnly]="is_readonly"  [showClearButton]="true">
+          </dx-text-box>
+      </div>
+      <div class="col-lg-4" *ngIf="!isReadOnlyTraderasContact">
+          <label class="control-label">Contact Person's Telephone No.</label>
+          <dx-text-box formControlName="contact_person_telephone"  [readOnly]= "is_readonly" placeholder="Contact Person Telephone No" [readOnly]="is_readonly"  [showClearButton]="true">
+          </dx-text-box>
+      </div>
+      <div class="col-lg-4" *ngIf="!isReadOnlyTraderasContact">
+        <label class="control-label"> Contact Person Position</label>
+        <dx-text-box formControlName="contact_person_position"  [readOnly]= "is_readonly" placeholder="Contact Person Position" [readOnly]="is_readonly"  [showClearButton]="true">
+        </dx-text-box>
+    </div>
+        
+      </fieldset>    
+      <fieldset class="col-lg-12 row">
+        <legend  class="contentfieldset">Physical Location Information</legend>
+        <div class="col-lg-4">
+          <label class="control-label">Country</label>
+
+          <dx-select-box [readOnly]="is_readonly" [dataSource]="countries" valueExpr="id" displayExpr="name" placeholder="Select Country" (onSelectionChanged)="onCoutryCboSelect($event)" [searchEnabled]="true" formControlName="country_id">
+          </dx-select-box>
+
+      </div>
+      <div class="col-lg-4">
+          <label for="ti" class="control-label">Province</label>
+
+          <dx-select-box [readOnly]="is_readonly" [dataSource]="regions" valueExpr="id" displayExpr="name" (onSelectionChanged)="onRegionsCboSelect($event)" [searchEnabled]="true" formControlName="region_id">
+          </dx-select-box>
+      </div>
+      <div class="col-lg-4">
+          <label for="ti" class="control-label">District</label>
+
+          <dx-select-box [dataSource]="districts" valueExpr="id" placeholder="Select District" displayExpr="name" [searchEnabled]="true" formControlName="district_id" (onSelectionChanged)="oDistrictsCboSelect($event)" >
+          </dx-select-box>
+      </div>
+      <div class="col-lg-4">
+          <label for="ti" class="control-label">Sector</label>
+          <dx-select-box [dataSource]="sectorsData" valueExpr="id" placeholder="Select Sector" displayExpr="name" [searchEnabled]="true" formControlName="sector_id" (onSelectionChanged)="oSectorsCboSelect($event)" >
+          </dx-select-box>
+      </div>
+      <div class="col-lg-4">
+          <label for="ti" class="control-label">Cell</label>
+          <dx-select-box [dataSource]="cellsData" valueExpr="id" placeholder="Select Cell" displayExpr="name" [searchEnabled]="true" formControlName="cell_id">
+          </dx-select-box>
+      </div>
+      <div class="col-lg-4">
+        <label for="ti" class="control-label">Village</label>
+        <dx-text-box  formControlName="village" placeholder="Enter Village" [showClearButton]="true">  </dx-text-box>
+      </div>
+      
+      <div class="col-lg-4">
+          <label class="control-label">Physical Address/Avenue/Postal Address</label>
+
+          <dx-text-box  formControlName="physical_address"  [showClearButton]="true" placeholder="Physical Address/Avenue/Postal Address">
+          </dx-text-box>
+      </div>
+      <div class="col-lg-8 row form-group">
+          <label class="control-label col-lg-12">Geo-Location</label>
+          <div class="col-lg-6">
+              <dx-text-box formControlName="latitude" placeholder="Latitude" [showClearButton]="true">
+              </dx-text-box>
+          </div>
+          <div class="col-lg-6">
+
+              <dx-text-box formControlName="longitude" placeholder="Latitude" [showClearButton]="true">
+              </dx-text-box>
+          </div>
+
+      </div>
+      </fieldset>       
+    
+          <div class="col-lg-12">
+              <input type="hidden" value={{sub_module_id}} formControlName="sub_module_id" />
+              <input type="hidden" value={{module_id}} formControlName="module_id" />
+              <input type="hidden" value={{application_code}} formControlName="application_code" />
+              <input type="hidden" value={{tra_premise_id}} formControlName="tra_premise_id" />
+              <input type="hidden" value={{registered_id}} formControlName="registered_id" />
+          </div>
+   </div>
+</form>
+
+<dx-popup class="popup"  [width]="funcpopWidth(45)" [showTitle]="true" title="Premises Personnel" [dragEnabled]="false" [closeOnOutsideClick]="false"
+[(visible)]="isPersonnelPopupVisible">
+
+<div *dxTemplate="let data of 'content'" class="row">
+  <dx-data-grid [dataSource]="personnel_informationData" height=500 (onToolbarPreparing)="onPremisesPerGridToolbar($event)"
+    [showBorders]="true">
+    <dxi-column dataField="name"></dxi-column>
+
+    <dxi-column dataField="postal_address"></dxi-column>
+    <dxi-column dataField="telephone_no"></dxi-column>
+    <dxi-column dataField="email_address"></dxi-column>
+
+    <dxi-column [width]="60" caption="Action" name="command-editing" [allowFiltering]="false" [allowSorting]="false"
+      cellTemplate="cellTemplate">
+      <div *dxTemplate="let data of 'cellTemplate'">
+        <a style="cursor: pointer;" (click)="funcSelectPremisePersonnel(data)"><i class="fa fa-edit"></i>Select
+          Personnel</a>&nbsp;
+      </div>
+    </dxi-column>
+    <dxo-filter-row [visible]="true"></dxo-filter-row>
+    <dxo-paging [enabled]="true">
+    </dxo-paging>
+    <dxo-pager [showInfo]="true" infoText="Page #{0}. Total: {1} ({2} items)">
+    </dxo-pager>
+    <dxo-export [enabled]="true" fileName="dtpremDocumentsUploadData" [allowExportSelectedData]="true"></dxo-export>
+
+  </dx-data-grid>
+</div>
+</dx-popup>
+
+
+<dx-popup class="popup"  [width]="funcpopWidth(50)" [height]="'auto'" [showTitle]="true" title="Personnel Information"
+[dragEnabled]="false" [closeOnOutsideClick]="false" [(visible)]="isaddNewPremisesPersonnelDetails">
+<div *dxTemplate="let data of 'content'">
+<div class="col-lg-12">
+  <form enctype="multipart/form-data" role="form" [formGroup]="newPremisesPersonnelDetailsFrm"
+    (ngSubmit)="onSaveNewPremisesPersonnelDetails()">
+
+    <div class="row">
+
+      <div class="col-xs-12 col-md-12 col-lg-12 col-xl-12">
+
+        <label class="control-label">Name</label>
+        <dx-text-box formControlName="name">
+        </dx-text-box>
+
+      </div>
+     
+      <div class="col-xs-12 col-md-12 col-lg-12 col-xl-12">
+        <label for="ti" class="control-label">Email Address</label>
+        <dx-text-box formControlName="email_address" placeholder="Email Address">
+        </dx-text-box>
+      </div>
+      <div class="col-xs-12 col-md-12 col-lg-12 col-xl-12">
+        <label for="ti" class="control-label">Postal Address</label>
+        <dx-text-box formControlName="postal_address" placeholder="Postal Address">
+        </dx-text-box>
+      </div>
+      <div class="col-xs-12 col-md-12 col-lg-12 col-xl-12">
+        <label for="ti" class="control-label">Telephone No</label>
+
+        <dx-text-box formControlName="telephone_no" placeholder="Telephone No">
+        </dx-text-box>
+      </div>
+      <div class="col-lg-12 btn-margin-5">
+        <br />
+        <button type="submit" (submit)="onSaveNewPremisesPersonnelDetails()" [disabled]="!newPremisesPersonnelDetailsFrm.valid"
+          class="btn btn-primary"><i class="fa fa-user"></i> Save Personnel Details</button>
+      </div>
+    </div>
+  </form>
+</div>
+</div>
+</dx-popup>

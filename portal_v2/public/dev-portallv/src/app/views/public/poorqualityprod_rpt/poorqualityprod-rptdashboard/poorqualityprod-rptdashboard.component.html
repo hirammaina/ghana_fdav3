@@ -1,0 +1,82 @@
+<div class="row no-padding">
+  <div class="col-lg-12 top-header">
+   Reported Suspected Poor Quality Product
+  </div>
+  <div class="col-lg-12 no-padding" style="min-height: 500px;background: #fff;">
+    <form role="form" enctype="multipart/form-data" role="form" [formGroup]="filterReportingForm" >
+
+    <div class="row">
+        
+      <div class="col-lg-6">
+        <label class="control-label">Report Reference No:</label>
+        <dx-text-box placeholder="Report Reference No:" formControlName="reference_no" [showClearButton]="true">
+        </dx-text-box>
+      </div>
+      <div class="col-lg-6">
+        <label class="control-label">Reporter Email Address</label>
+        <dx-text-box placeholder="Report Reference No:" formControlName="reporter_email_address" [showClearButton]="true">
+        </dx-text-box>
+      </div>
+      <div class="col-lg-12">
+        <button type="button" class="btn btn-danger btn-round pull-right " (click)="onewSuspectedProdReporting()"  ><i class="fa fa-trash">
+        Submit New Report</i></button>
+      
+        <button type="submit" (click)="onSearchSuspectedProdReporting()"  class="btn btn-primary btn-round pull-right "><i class="fa fa-search">
+            Search Products</i></button>
+      </div>
+
+    </div></form>
+    <dx-data-grid class="table row-border hover" [wordWrapEnabled]="true"  [remoteOperations]='true' [wordWrapEnabled]="true"   [showBorders]="true" [allowColumnResizing]="true" [columnHidingEnabled]="false"  [dataSource]="suspectedProdReportingData"  keyExpr="id">
+      <dxo-filter-row [visible]="false"></dxo-filter-row>
+      <dxo-search-panel [visible]="false">
+      </dxo-search-panel>
+      <dxo-paging [enabled]="true">
+      </dxo-paging>
+      <dxo-pager [showInfo]="true" infoText="Page #{0}. Total: {1} ({2} items)">
+      </dxo-pager>
+     
+      <dxo-group-panel [visible]="true"></dxo-group-panel>
+
+      <dxi-column  [width]="180" caption="Action"  [allowFiltering]="false" [allowSorting]="false"
+        cellTemplate="cellTemplate">
+          <div *dxTemplate="let data of 'cellTemplate'">
+              <div class="row">
+                  <dx-button text="View Reporting Details" (onClick)="funViewApplicationDocument(data.data)"
+                      type="success" icon="print">
+                  </dx-button> 
+              </div>
+          </div>
+      </dxi-column>
+      <dxi-column dataField="report_reference_no" caption="Report Reference No:"></dxi-column>
+      <dxi-column dataField="brand_name"></dxi-column>
+      <dxi-column dataField="generic_name"></dxi-column>
+      <dxi-column  dataField="batch_no"></dxi-column>
+      <dxi-column  dataField="manufacturing_date"></dxi-column>
+      <dxi-column  dataField="expiry_date"></dxi-column>
+    
+      <dxi-column dataField="date_of_receipt"></dxi-column>
+      <dxi-column dataField="name_of_manufacturer"></dxi-column>
+      <dxi-column dataField="name_of_distributor" ></dxi-column>
+      <dxi-column dataField="distributor_physical_address" ></dxi-column>
+
+      
+      <dxi-column  dataField="name_of_reporter"></dxi-column>
+      <dxi-column dataField="health_facility"></dxi-column>
+      <dxi-column dataField="complaint_description"></dxi-column>
+      <dxi-column dataField="application_status"></dxi-column>
+      <dxi-column dataField="resolution"></dxi-column>
+      
+    </dx-data-grid>
+  </div>
+</div>
+<dx-popup class="popup"  [width]="funcpopWidth(80)" [height]="700" [showTitle]="true" title="{{printReportTitle}}"
+  [dragEnabled]="false" [closeOnOutsideClick]="true" [(visible)]="isViewApplicationReportingDetils">
+  <div *dxTemplate="let data of 'content'">
+     
+    <dx-scroll-view>
+      <app-poorqualityprod-rptdataentry [poorqualityprodrptform]="poorqualityprodrptform" [is_readonly]="is_readonly">
+      </app-poorqualityprod-rptdataentry>
+    </dx-scroll-view>
+  </div>
+</dx-popup>
+

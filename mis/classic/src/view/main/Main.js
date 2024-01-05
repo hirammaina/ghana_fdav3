@@ -27,10 +27,7 @@ Ext.define("Admin.view.main.Main", {
       xtype: "toolbar",
       cls: "sencha-dash-dash-headerbar",
       height: 64,
-      itemId: "headerBar",
-      style: {
-        backgroundColor: "#32404E", // set the background color using the style config
-      },
+   
       items: [
         {
           xtype: "component",

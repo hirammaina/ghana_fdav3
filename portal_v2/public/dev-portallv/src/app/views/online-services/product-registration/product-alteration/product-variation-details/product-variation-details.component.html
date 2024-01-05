@@ -1,0 +1,459 @@
+
+  <dx-data-grid class="table row-border hover" (onToolbarPreparing)="onApplicationVariationsDetailsToolbar($event)"
+  [dataSource]="applicationVariationRequestsData" keyExpr="id">
+  <dxo-filter-row [visible]="false"></dxo-filter-row>
+  <dxo-paging [enabled]="true">
+  </dxo-paging>
+  <dxo-pager [showInfo]="true" infoText="Page #{0}. Total: {1} ({2} items)">
+  </dxo-pager>
+  <dxo-export [enabled]="true" fileName="Variation details" [allowExportSelectedData]="true">
+  </dxo-export>
+  <dxo-selection mode="multiple"></dxo-selection>
+  <dxo-group-panel [visible]="true"></dxo-group-panel>
+  <dxi-column [width]="170" caption="Action" name="command-editing" [allowFiltering]="false"
+    [allowSorting]="false" cellTemplate="cellTemplate">
+    <div *dxTemplate="let data of 'cellTemplate'">
+        <a (click)="funcEditVariationRequestDetails(data)"><i class="fa fa-edit"></i>Edit/Preview</a>&nbsp;
+      <a  class="action-btn"  (click)="funcDeleteApplicationVariationRequestsDetails(data)"><i class="fa fa-trash"></i>Delete</a>
+    </div>
+  </dxi-column>
+  <dxi-column dataField="type_of_variation" caption="Reporting Category"></dxi-column>
+
+  <dxi-column dataField="variation_description"></dxi-column>
+  <dxi-column dataField="variation_subdescription"></dxi-column>
+  <dxi-column dataField="present_details"></dxi-column>
+  <dxi-column dataField="proposed_variation"></dxi-column>
+  <dxi-column dataField="variation_background_information"></dxi-column>
+
+  </dx-data-grid>
+  <!--
+<dx-popup class="popup" [width]="funcpopWidth(95)" [height]="funcpopheight(85)" [showTitle]="true" title="Application Variation Request"
+[dragEnabled]="false" [closeOnOutsideClick]="false" [(visible)]="isApplicationVariationsDetailsWin">
+    <div *dxTemplate="let data of 'content'">
+        <dx-scroll-view>
+          <div class="col-lg-12" style="background:#fff;">
+            <wizard [navigationMode]='strict' navBarLayout ="large-filled-symbols" style="background: #fff !important; height: 100% !important;">
+              <!--
+              <wizard-step  navigationSymbol="Step 1" stepTitle="Select Summary of Changes" class="wizardStep-height">
+                
+                  <form enctype="multipart/form-data" role="form" [formGroup]="variationsummary_guidelinesconfigfrm">
+                    <div class="col-lg-12 row">
+
+                      <div class="col-lg-6 input-group">
+                        <div class="col-lg-10">
+                          <label for="ti" class="control-label">Variation Category</label>
+                          <dx-text-box formControlName="variation_category" [readOnly]= "true" [showClearButton]="true">
+                          </dx-text-box>
+                        </div>
+              
+                         <div class="col-lg-2">
+                           <dx-button
+                               text="Search/View Summary of Change"
+                               type="success"
+                               icon="fa fa-plus"
+                               [elementAttr]="{  class: 'pull-left' }"
+                               (onClick)="onSearchSummaryofChnages()">
+                           </dx-button>
+                         </div>
+                    </div>
+                    
+                    <div class="col-lg-6 ">
+                      <label for="ti" class="control-label">Variation Sub-Category</label>
+                      <dx-text-box formControlName="variation_subcategory" [readOnly]= "true" [showClearButton]="true">
+                      </dx-text-box>
+                    </div> 
+                    <div class="col-lg-6 ">
+                      <label for="ti" class="control-label">Description of Change</label>
+                      <dx-text-area formControlName="variation_description" [readOnly]= "true">
+                      </dx-text-area>
+                    </div> 
+                    <div class="col-lg-6 ">
+                      <label for="ti" class="control-label">Sub-Description of Change</label>
+                      <dx-text-area formControlName="variation_subdescription" [readOnly]= "true">
+                      </dx-text-area>
+                    </div> 
+                    <div class="col-lg-12">
+                      <label>Variation Condition on the Changes</label>
+                      
+                      <dx-html-editor [height]="200" readOnly ="true"  formControlName="variationconditions_detailsdata"  placeholder="Variation Condition on the Changes">
+                        <dxo-media-resizing
+                            [enabled]=true>
+                        </dxo-media-resizing>
+                    </dx-html-editor>
+                    </div>
+                    <div class="col-lg-12">
+                      <label>Variation Supporting Data and Required Supporting Docs</label>
+                        <dx-html-editor [height]="200" readOnly ="true"  formControlName="variationsupporting_datadocs"  placeholder="Variation Supporting Data and Required Supporting Docs">
+                          <dxo-media-resizing
+                              [enabled]=true>
+                          </dxo-media-resizing>
+                      </dx-html-editor>
+                    </div>
+                    <div class="col-lg-6 ">
+                      <label for="ti" class="control-label">Reporting Category</label>
+                      <dx-text-box formControlName="variation_reportingtype" [readOnly]= "true" [showClearButton]="true">
+                      </dx-text-box>
+                    </div> 
+                  </div>
+                  </form>
+                <div style="border-top: 1px solid #ccc; min-height: 100px !important;">
+                 
+                      <button type="button" class="btn btn-primary" (click)="onCloseAmendmentREquestWin()">Close Variation Request<i class="fa fa-angle-double-right"></i></button>
+                  
+                     <button type="button" class="btn btn-primary" nextStep>Variation Requests Details&nbsp;<i class="fa fa-angle-double-right"></i></button>
+              </div>
+              </wizard-step>
+
+--
+              <wizard-step  navigationSymbol="Step 1" stepTitle=" Variation Requests Details of the Registered Products" class="wizardStep-height">
+            <form enctype="multipart/form-data" role="form" [formGroup]="applicationVariationRequestsFrm"
+                (ngSubmit)="onsaveApplicationVariationRequests()">
+          
+                <div class="row">
+                  <div class=" col-md-12 col-lg-12 col-xl-12"  *ngIf="module_id !=2">
+                    <label class="control-label">Type of Variation/Reporting category</label>
+          
+                    <dx-select-box [dataSource]="typeofVariationData" valueExpr="id" displayExpr="name" 
+                     [searchEnabled]="true" formControlName="variation_type_id">
+                    </dx-select-box>
+          
+                  </div>
+                  <div class="col-md-12 col-lg-12 col-xl-12" >
+                      <label class="control-label">Present Details(Optional)</label>
+                        <dx-text-area [height]="60" formControlName="present_details"  placeholder="Present Details"
+                        >
+                      </dx-text-area>
+                    </div>
+                    
+                      <div class="col-md-12 col-lg-12 col-xl-12">
+                          <label class="control-label">Proposed Variations Details(Mandatory)</label>
+                            <dx-text-area [height]="60" formControlName="proposed_variation"  placeholder="Proposed Variations"
+                           >
+                          </dx-text-area>
+                        </div>
+                        <div class="col-md-12 col-lg-12 col-xl-12">
+                            <label class="control-label">Background for change & Justification for Consequential change(Optional)</label>
+                              <dx-text-area [height]="60" formControlName="variation_background_information"  placeholder="Background Information">
+                            </dx-text-area>
+                          <input type="hidden" formControlName="id" />
+                          <input type="hidden" formControlName="variationsummary_guidelinesconfig_id" />
+          
+                        </div>
+                </div>
+              </form>
+              <div style="border-top: 1px solid #ccc; min-height: 100px !important;">
+                <button type="submit" (click)="onsaveApplicationVariationRequests()"
+                class="btn btn-success pull-right"><i class="fa fa-user"></i> Save Variation & Next Details</button>
+                <button type="button" class="btn btn-danger pull-right" previousStep>Previous Requests Details&nbsp;<i class="fa fa-angle-double-left"></i></button>
+               
+                
+                </div>
+              </wizard-step>
+              <wizard-step  navigationSymbol="Step 3" stepTitle="Supporting Data and Documents" class="wizardStep-height">
+                <div class="col-lg-12">
+                  <dx-data-grid class="table row-border hover"   [paging]="{ enabled: true, pageSize: 1000 }" [showRowLines] = "true"   [dataSource]="appDocumentsUploadData" keyExpr="id" 
+                      (onToolbarPreparing)="onApplicationDocumentToolbar($event)" [wordWrapEnabled] = "true">
+                      <dxo-filter-row [visible]="false"></dxo-filter-row>
+                      <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[1000]" [showNavigationButtons]="true" [showInfo]="true"
+                      infoText="Page #{0}. Total: {1} ({2} items)">
+                    </dxo-pager>
+                      <dxo-export [enabled]="true" fileName="appDocumentsUploadData" [allowExportSelectedData]="true"></dxo-export>
+                      <dxo-selection mode="multiple"></dxo-selection>
+                      <dxo-group-panel [visible]="true"></dxo-group-panel>
+                      <dxi-column [width]="250" caption="Action"  [allowFiltering]="false" [allowSorting]="false"
+                      cellTemplate="cellTemplate">
+                        <div *dxTemplate="let data of 'cellTemplate'">
+                            <div class="row">
+                                <dx-button text="Upload" (onClick)="funAddApplicationUploadDetails(data)"
+                                    type="success" icon="upload">
+                                  </dx-button> 
+                              <dx-menu  type="success"  (onItemClick)="appDocumentsActionColClick($event,data)"  [items]="documentMenuItems"></dx-menu>
+                                
+                            </div>
+                        </div>
+                    </dxi-column>
+                      <dxi-column [groupIndex]="0"   dataField="document_requirement"></dxi-column>
+                      <dxi-column dataField="file_name"></dxi-column>
+                      <dxi-column dataField="initial_file_name"></dxi-column>
+                      <dxi-column width=130 dataField="uploaded_on"></dxi-column>
+                      <dxo-group-panel [visible]="true"></dxo-group-panel>
+                      <dxo-grouping #expand [autoExpandAll]="true"></dxo-grouping>
+                    </dx-data-grid>
+                </div>
+                <div style="border-top: 1px solid #ccc; min-height: 100px !important;">
+                    
+                      <button type="button" class="btn btn-primary" (click)="onCloseAmendmentREquestWin()">Close Variation Request<i class="fa fa-angle-double-right"></i></button>
+                  
+                       <button type="button" class="btn btn-primary" previousStep>Previous Requests Details&nbsp;<i class="fa fa-angle-double-left"></i></button>
+              </div>
+              </wizard-step>
+
+            </wizard>
+
+          </div>
+        </dx-scroll-view>
+    </div>
+</dx-popup>
+
+-->
+
+<dx-popup class="popup" [width]="funcpopWidth(95)" [height]="funcpopheight(85)" [showTitle]="true" title="Application Variation Request"
+[dragEnabled]="false" [closeOnOutsideClick]="false" [(visible)]="isApplicationVariationsDetailsWin">
+    <div *dxTemplate="let data of 'content'">
+        <dx-scroll-view>
+          <div class="col-lg-12" style="background:#fff;">
+            <wizard [navigationMode]='strict' navBarLayout ="large-filled-symbols" style="background: #fff !important; height: 100% !important;">
+              <!--
+              <wizard-step  navigationSymbol="Step 1" stepTitle="Select Summary of Changes" class="wizardStep-height">
+                
+                  <form enctype="multipart/form-data" role="form" [formGroup]="variationsummary_guidelinesconfigfrm">
+                    <div class="col-lg-12 row">
+
+                      <div class="col-lg-6 input-group">
+                        <div class="col-lg-10">
+                          <label for="ti" class="control-label">Variation Category</label>
+                          <dx-text-box formControlName="variation_category" [readOnly]= "true" [showClearButton]="true">
+                          </dx-text-box>
+                        </div>
+              
+                         <div class="col-lg-2">
+                           <dx-button
+                               text="Search/View Summary of Change"
+                               type="success"
+                               icon="fa fa-plus"
+                               [elementAttr]="{  class: 'pull-left' }"
+                               (onClick)="onSearchSummaryofChnages()">
+                           </dx-button>
+                         </div>
+                    </div>
+                    
+                    <div class="col-lg-6 ">
+                      <label for="ti" class="control-label">Variation Sub-Category</label>
+                      <dx-text-box formControlName="variation_subcategory" [readOnly]= "true" [showClearButton]="true">
+                      </dx-text-box>
+                    </div> 
+                    <div class="col-lg-6 ">
+                      <label for="ti" class="control-label">Description of Change</label>
+                      <dx-text-area formControlName="variation_description" [readOnly]= "true">
+                      </dx-text-area>
+                    </div> 
+                    <div class="col-lg-6 ">
+                      <label for="ti" class="control-label">Sub-Description of Change</label>
+                      <dx-text-area formControlName="variation_subdescription" [readOnly]= "true">
+                      </dx-text-area>
+                    </div> 
+                    <div class="col-lg-12">
+                      <label>Variation Condition on the Changes</label>
+                      
+                      <dx-html-editor [height]="200" readOnly ="true"  formControlName="variationconditions_detailsdata"  placeholder="Variation Condition on the Changes">
+                        <dxo-media-resizing
+                            [enabled]=true>
+                        </dxo-media-resizing>
+                    </dx-html-editor>
+                    </div>
+                    <div class="col-lg-12">
+                      <label>Variation Supporting Data and Required Supporting Docs</label>
+                        <dx-html-editor [height]="200" readOnly ="true"  formControlName="variationsupporting_datadocs"  placeholder="Variation Supporting Data and Required Supporting Docs">
+                          <dxo-media-resizing
+                              [enabled]=true>
+                          </dxo-media-resizing>
+                      </dx-html-editor>
+                    </div>
+                    <div class="col-lg-6 ">
+                      <label for="ti" class="control-label">Reporting Category</label>
+                      <dx-text-box formControlName="variation_reportingtype" [readOnly]= "true" [showClearButton]="true">
+                      </dx-text-box>
+                    </div> 
+                  </div>
+                  </form>
+                <div style="border-top: 1px solid #ccc; min-height: 100px !important;">
+                 
+                      <button type="button" class="btn btn-primary" (click)="onCloseAmendmentREquestWin()">Close Variation Request<i class="fa fa-angle-double-right"></i></button>
+                  
+                     <button type="button" class="btn btn-primary" nextStep>Variation Requests Details&nbsp;<i class="fa fa-angle-double-right"></i></button>
+              </div>
+              </wizard-step>
+
+-->
+              <wizard-step  navigationSymbol="Step 1" stepTitle=" Variation Requests Details of the Registered Products" class="wizardStep-height">
+            <form enctype="multipart/form-data" role="form" [formGroup]="applicationVariationRequestsFrm"
+                (ngSubmit)="onsaveApplicationVariationRequests()">
+          
+                <div class="row">
+                  
+                  <div class=" col-md-12 col-lg-12 col-xl-12"  *ngIf="module_id !=2">
+                    <label class="control-label">Type of Variation/Reporting category</label>
+          
+                    <dx-select-box [dataSource]="typeofVariationData" valueExpr="id" displayExpr="name" 
+                     [searchEnabled]="true" formControlName="variation_type_id">
+                    </dx-select-box>
+          
+                  </div>
+                  <div class="col-md-12 col-lg-12 col-xl-12" >
+                      <label class="control-label">Present Details(Optional)</label>
+                        <dx-text-area [height]="60" formControlName="present_details"  placeholder="Present Details"
+                        >
+                      </dx-text-area>
+                    </div>
+                    
+                      <div class="col-md-12 col-lg-12 col-xl-12">
+                          <label class="control-label">Proposed Variations Details(Mandatory)</label>
+                            <dx-text-area [height]="60" formControlName="proposed_variation"  placeholder="Proposed Variations"
+                           >
+                          </dx-text-area>
+                        </div>
+                        <div class="col-md-12 col-lg-12 col-xl-12">
+                            <label class="control-label">Background for change & Justification for Consequential change(Optional)</label>
+                              <dx-text-area [height]="60" formControlName="variation_background_information"  placeholder="Background Information">
+                            </dx-text-area>
+                          <input type="hidden" formControlName="id" />
+                          <input type="hidden" formControlName="variationsummary_guidelinesconfig_id" />
+          
+                        </div>
+                </div>
+              </form>
+              <div style="border-top: 1px solid #ccc; min-height: 100px !important;">
+                <button type="submit" (click)="onsaveApplicationVariationRequests()"
+                class="btn btn-success pull-right"><i class="fa fa-user"></i> Save Variation & Next Details</button>
+                <button type="button" class="btn btn-danger pull-right" previousStep>Previous Requests Details&nbsp;<i class="fa fa-angle-double-left"></i></button>
+               
+                
+                </div>
+              </wizard-step>
+              <wizard-step  navigationSymbol="Step 3" stepTitle="Supporting Data and Documents" class="wizardStep-height">
+                <div class="col-lg-12">
+                  <dx-data-grid class="table row-border hover"   [paging]="{ enabled: true, pageSize: 1000 }" [showRowLines] = "true"   [dataSource]="appDocumentsUploadData" keyExpr="id" 
+                      (onToolbarPreparing)="onApplicationDocumentToolbar($event)" [wordWrapEnabled] = "true">
+                      <dxo-filter-row [visible]="false"></dxo-filter-row>
+                      <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[1000]" [showNavigationButtons]="true" [showInfo]="true"
+                      infoText="Page #{0}. Total: {1} ({2} items)">
+                    </dxo-pager>
+                      <dxo-export [enabled]="true" fileName="appDocumentsUploadData" [allowExportSelectedData]="true"></dxo-export>
+                      <dxo-selection mode="multiple"></dxo-selection>
+                      <dxo-group-panel [visible]="true"></dxo-group-panel>
+                      <dxi-column [width]="250" caption="Action"  [allowFiltering]="false" [allowSorting]="false"
+                      cellTemplate="cellTemplate">
+                        <div *dxTemplate="let data of 'cellTemplate'">
+                            <div class="row">
+                                <dx-button text="Upload" (onClick)="funAddApplicationUploadDetails(data)"
+                                    type="success" icon="upload">
+                                  </dx-button> 
+                              <dx-menu  type="success"  (onItemClick)="appDocumentsActionColClick($event,data)"  [items]="documentMenuItems"></dx-menu>
+                                
+                            </div>
+                        </div>
+                    </dxi-column>
+                      <dxi-column [groupIndex]="0"   dataField="document_requirement"></dxi-column>
+                      <dxi-column dataField="file_name"></dxi-column>
+                      <dxi-column dataField="initial_file_name"></dxi-column>
+                      <dxi-column width=130 dataField="uploaded_on"></dxi-column>
+                      <dxo-group-panel [visible]="true"></dxo-group-panel>
+                      <dxo-grouping #expand [autoExpandAll]="true"></dxo-grouping>
+                    </dx-data-grid>
+                </div>
+                <div style="border-top: 1px solid #ccc; min-height: 100px !important;">
+                    
+                      <button type="button" class="btn btn-primary" (click)="onCloseAmendmentREquestWin()">Close Variation Request<i class="fa fa-angle-double-right"></i></button>
+                  
+                       <button type="button" class="btn btn-primary" previousStep>Previous Requests Details&nbsp;<i class="fa fa-angle-double-left"></i></button>
+              </div>
+              </wizard-step>
+
+            </wizard>
+
+          </div>
+        </dx-scroll-view>
+    </div>
+</dx-popup>
+
+
+<dx-popup class="popup" [width]="funcpopWidth(80)" [height]="funcpopheight(65)" [showTitle]="true" title="Document Preview" [dragEnabled]="false"
+[closeOnOutsideClick]="true" [(visible)]="isvariationsummarycHangesView" >
+<div *dxTemplate="let data of 'content'" class="row">
+      <dx-scroll-view>
+                <dx-data-grid class="table row-border hover" [wordWrapEnabled]="true"
+                [dataSource]="variationsummarycHangesViewData" keyExpr="id">
+                <dxo-filter-row [visible]="false"></dxo-filter-row>
+                <dxo-paging [enabled]="true">
+                </dxo-paging>
+                <dxo-pager [showInfo]="true" infoText="Page #{0}. Total: {1} ({2} items)">
+                </dxo-pager>
+                <dxo-selection mode="single"></dxo-selection>
+                <dxo-group-panel [visible]="true"></dxo-group-panel>
+                <dxi-column [width]="170" caption="Action" name="command-editing" [allowFiltering]="false"
+                  [allowSorting]="false" cellTemplate="cellTemplate">
+                  <div *dxTemplate="let data of 'cellTemplate'">
+                    <dx-button text="Select Summary of Changes" (click)="funcSelectProductVariationSummary(data)" 
+                        type="danger" icon="delete">
+                    </dx-button>
+                  </div>
+                </dxi-column>
+                <dxo-search-panel  [visible]="true" 
+                >
+              </dxo-search-panel>
+                <dxi-column dataField="variation_category" caption="Reporting Category"></dxi-column>
+                <dxi-column dataField="variation_subcategory"></dxi-column>
+                <dxi-column dataField="variation_description"></dxi-column>
+                <dxi-column dataField="variation_subdescription"></dxi-column>
+                <dxi-column  cssClass= 'WrappedColumnClass'  name="command-editing"    [allowFiltering]="false" [allowSorting]="false" cellTemplate="cellTemplateMsgCondition">
+                  <div *dxTemplate="let data of 'cellTemplateMsgCondition'">
+                    <div [innerHTML]="data.data.variationconditions_detailsdata"></div>
+                </div>
+                
+                </dxi-column>
+                <dxi-column cssClass= 'WrappedColumnClass'  name="command-editing"    [allowFiltering]="false" [allowSorting]="false" cellTemplate="cellTemplateMsgData">
+
+                  <div *dxTemplate="let data of 'cellTemplateMsgData'">
+                    <div [innerHTML]="data.data.variationsupporting_datadocs"></div>
+                </div>
+                </dxi-column>
+                <dxi-column caption ="Reporting category/Type" dataField="variation_reportingtype"></dxi-column>
+                </dx-data-grid>
+      </dx-scroll-view>
+</div>
+
+</dx-popup>
+
+<dx-popup class="popup" [width]="800" [height]="650" [showTitle]="true" title="Document Preview" [dragEnabled]="false"
+[closeOnOutsideClick]="true" [(visible)]="isDocumentPreviewDownloadwin">
+<div *dxTemplate="let data of 'content'" class="row">
+  <iframe [src]="document_previewurl" class="col-lg-12" height="650" ></iframe> 
+
+</div>
+
+</dx-popup>
+
+<dx-popup class="popup" [width]="500" [height]="400" [showTitle]="true" title="Registration Documents Upload"
+[dragEnabled]="false" [closeOnOutsideClick]="false" [(visible)]="isDocumentUploadPopupVisible">
+<div *dxTemplate="let data of 'content'">
+<form role="form" class="row" enctype="multipart/form-data" role="form" [formGroup]="appDocumentUploadfrm"
+  (ngSubmit)="onpremisesDocumentUpload()">
+  <div class="col-lg-12">
+    <label>Document Requirement</label>
+    <dx-select-box [readOnly] = true [dataSource]="appDocumentsUploadRequirement" valueExpr="document_requirement_id"  displayExpr="document_requirement"
+      placeholder="Select Document Upload" [searchEnabled]="true" formControlName="document_requirement_id">
+
+    </dx-select-box>
+  </div>
+ 
+  <div class="col-lg-12">
+    <label>File Upload</label>
+    <input type="file" (change)="onFileChange($event)" placeholder="Upload Application Document"/>
+  </div>
+  <div class="col-lg-12">
+    <label>Description</label>
+    <dx-text-area [height]="60" formControlName="description"  placeholder="Description"
+      [(value)]="value">
+    </dx-text-area>
+  </div>
+  <input type="hidden" formControlName="id"/>
+  <input type="hidden" formControlName="node_ref" />
+  <input type="hidden" formControlName="portalapp_variationsdata_id" />
+  <div class="col-lg-12">
+    <dx-button text="Upload Application Document" [disabled]="!appDocumentUploadfrm.valid" (onClick)="onaplicationDocumentUpload()"
+      type="success" icon="save" [elementAttr]="{ class: 'btn btn-primary; pull-right' }">
+    </dx-button>
+  </div>
+</form>
+</div>
+</dx-popup>

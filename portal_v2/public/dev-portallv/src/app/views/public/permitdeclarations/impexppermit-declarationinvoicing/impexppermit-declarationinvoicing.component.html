@@ -1,0 +1,187 @@
+
+
+  <div class="col-xl-12">
+    <div class="breadcrumb-holder">
+      <h1 class="main-title float-left">Process: {{process_title}}</h1>
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+
+<div style="background: #fff; font-weight: bold;margin-bottom: 5px !important; height: 55px !important;">
+    <div class="col-lg-6">
+      <label
+        style="font-weight: bold;font-style:italics;font-size: 15px;font-style: italics; color: green;">
+        Reference No: <i> {{tracking_no}}</i> </label>
+    </div>
+
+</div>
+<div class="col-lg-12">
+  <wizard style="background: #fff !important; height: 100% !important;" navigationMode="strict" navBarLayout ="large-filled-symbols">
+    
+    <wizard-step stepTitle=" Permit Declaration Details"   navigationSymbol="Step 1" class="wizardStep-height">
+          <div class="col-lg-12 wizard-content">
+            <form role="form" enctype="multipart/form-data" role="form" [formGroup]="applicationGeneraldetailsfrm" >
+              <div class="row  wizard-content">
+                <fieldset class="row wizard-contentfieldset col-lg-12">
+                  <legend class="contentfieldset">Applicant Details</legend>
+                  <div class="col-lg-4">
+                    <label>Applicant Name</label>
+                    <dx-text-box formControlName="applicant_name" placeholder="Applicant Name" [showClearButton]="true">
+                    </dx-text-box>
+                  </div>
+                  <div class="col-lg-4">
+                    <label>Applicant Telephone No</label>
+                    <dx-text-box formControlName="applicant_telephone_no" placeholder="Telephone No" [showClearButton]="true">
+                    </dx-text-box>
+                  </div>
+                  <div class="col-lg-4">
+                    <label>Applicant Email Address</label>
+                    <dx-text-box formControlName="applicant_email_address" placeholder="Applicant Email Address" [showClearButton]="true">
+                    </dx-text-box>
+                  </div>
+                </fieldset>
+                <fieldset class="row wizard-contentfieldset col-lg-12">
+                  <legend class="contentfieldset">Permit Declaration Request Details</legend>
+                    <div class="col-lg-4">
+                      <label>Application Type</label>
+                      <dx-select-box  [dataSource]="applicationTypeData" valueExpr="id"
+                        displayExpr="name" placeholder="Select Application Type" [readOnly]="is_readonly"  [searchEnabled]="true"
+                        formControlName="sub_module_id">
+                      </dx-select-box>
+                    </div>
+                    <div class="col-lg-4">
+                      <label>Product Types</label>
+                      <dx-select-box [dataSource]="sectionsData" valueExpr="id" displayExpr="name"
+                        placeholder="Select Product Types"  (onSelectionChanged)="onProductTypesSelection($event)" [readOnly]="is_readonly" [searchEnabled]="true" formControlName="section_id">
+                      </dx-select-box>
+                    </div>
+                    <div class="col-lg-4">
+                      <label>Product Types Defination</label>
+                      <dx-select-box [dataSource]="producttypeDefinationData" valueExpr="id" displayExpr="name" (onSelectionChanged)="onProductTypesDefinationSelection($event)"
+                        placeholder="Select Product Types Defination"  [readOnly]="is_readonly" [searchEnabled]="true" formControlName="producttype_defination_id">
+                      </dx-select-box>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                      <label>Permit Use</label>
+                      <dx-select-box [dataSource]="applicationCategoryData" valueExpr="id" displayExpr="name"
+                        placeholder="Select Application Category"  [readOnly]="is_readonly" (onSelectionChanged)="onApplicationCategorySelection($event)" [searchEnabled]="true" formControlName="permit_category_id">
+                      </dx-select-box>
+                    </div>
+                    <div class="col-lg-4">
+                      <label>Product Categories</label>
+                      <dx-select-box [dataSource]="permitProductsCategoryData" valueExpr="id" displayExpr="name"
+                        placeholder="Select Product Category"   [readOnly]="is_readonly" [searchEnabled]="true" formControlName="permit_productscategory_id">
+                      </dx-select-box>
+                    </div>
+                  </fieldset>
+                  <fieldset class="row wizard-contentfieldset col-lg-12">
+                    <legend class="contentfieldset">Consignment Details</legend>
+
+                    
+                <div class="col-lg-4">
+                  <label>Supplier Name</label>
+                  <dx-text-box formControlName="supplier_name" placeholder="Supplier Name" [showClearButton]="true">
+                  </dx-text-box>
+                </div>
+                <div class="col-lg-4">
+                  <label>Country of Origin</label>
+                  <dx-select-box [dataSource]="CountryData"   valueExpr="id" displayExpr="name"
+                  placeholder="Select Country of Origin" [searchEnabled]="true" formControlName="country_of_origin">
+                </dx-select-box>
+                </div>
+
+                <div class="col-lg-4">
+                  <label>Commercial Invoice No</label>
+                  <dx-text-box formControlName="proforma_invoice_no" placeholder="Invoice No" [showClearButton]="true">
+                  </dx-text-box>
+                </div>
+                <div class="col-lg-4">
+                  <label>Commercial Invoice Date</label>
+                  <dx-date-box dateSerializationFormat = "yyyy-MM-dd" [max]="maxDate" formControlName="proforma_invoice_date" placeholder="Invoice Date" [showClearButton]="true">
+                  </dx-date-box>
+                </div>
+               
+                <div class="col-lg-4 input-group">
+                  <div class="col-lg-6">
+                    <label>Total Consignment Value</label>
+                    <dx-text-box formControlName="consignment_value" placeholder="Total Consignment Value" [showClearButton]="true">
+                    </dx-text-box>
+                  </div>
+                  <div class="col-lg-6">
+                    <label>Consignment Currency</label>
+                    <dx-select-box [dataSource]="currencyData"  [readOnly]="is_readonly" valueExpr="id" displayExpr="name"
+                      placeholder="Select Currency" [searchEnabled]="true" formControlName="proforma_currency_id">
+                    </dx-select-box>
+                  </div>
+        
+                 </div>
+                <div class="col-lg-12">
+                  <input type="hidden" value={{applicant_id}} formControlName="applicant_id" />
+                  <input type="hidden" formControlName="application_code" />
+                </div>
+                  </fieldset>
+              </div>
+
+              <fieldset class="row wizard-contentfieldset col-lg-12">
+                <legend class="contentfieldset">Inspection Details</legend>
+                <div class="col-lg-4">
+                  <label>Port of Entry/Exit</label>
+                  <dx-select-box [dataSource]="portOfEntryExitData" valueExpr="id" displayExpr="name"
+                    placeholder="Select Port" [searchEnabled]="true" formControlName="port_id">
+                  </dx-select-box>
+                </div>
+                <div class="col-lg-4">
+                  <label>Mode of Transport</label>
+                  <dx-select-box [dataSource]="modeOfTransportData"   valueExpr="id" displayExpr="name"
+                    placeholder="Select Mode of Transport" [searchEnabled]="true" formControlName="mode_oftransport_id">
+                  </dx-select-box>
+                </div>
+                <div class="col-lg-4">
+                <label>Custom Clearance/Declaration Number</label>
+                  <dx-text-box formControlName="custom_declaration_no" placeholder="Custom Clearance Number"
+                    [showClearButton]="true">
+                  </dx-text-box>
+              </div>
+              <div class="col-lg-4">
+                <label>Clearing Agent</label>
+                  <dx-text-box formControlName="clearing_agent" placeholder="Clearing Agent"
+                    [showClearButton]="true">
+                  </dx-text-box>
+              </div>
+                <div class="col-lg-4">
+                  <label>Consignment Shipment Date</label>
+                  <dx-date-box dateSerializationFormat = "yyyy-MM-dd"  formControlName="shipment_date" placeholder="Shipment Date" [showClearButton]="true">
+                  </dx-date-box>
+                </div>
+                <div class="col-lg-4">
+                  <label>Proposed/Inspection Date</label>
+                  <dx-date-box dateSerializationFormat = "yyyy-MM-dd" formControlName="proposed_inspection_date" placeholder="Inspection Date" [showClearButton]="true">
+                  </dx-date-box>
+                </div>
+            </fieldset>
+              </form>          
+
+          </div>
+          <div class=" div-footer" style="border-top: 1px solid #ccc; ">
+            
+            <div class="wizard-divbottom">
+              <button (click)="onApplicationDashboard()" class="btn btn-primary pull-left" style="margin:5px;"
+              type="button"><i class="fa fa-dashboard"></i>
+              &nbsp;Declaration & Invoice Dashboard</button>
+              <button type="button" (click)="onSaveImportExportApplication()"
+              class="btn btn-primary  pull-right"
+             style="margin:5px;"><i class="fa fa-save"></i>&nbsp;Save
+             Request to Generate Invoice</button>
+
+             <div *ngIf="application_code >0">
+              <app-publicinvoice-generation [onApplicationSubmissionFrm] ="onApplicationSubmissionFrm" [sub_module_id] ="sub_module_id" [app_routing] ="app_routing"   [module_id] ="module_id" [section_id] ="section_id" [status_id] ="status_id"  [application_code]="application_code" ></app-publicinvoice-generation>
+             </div>
+            </div>
+        </div>
+      
+    </wizard-step>
+   \\
+  </wizard>
+</div>
