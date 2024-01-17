@@ -1,3 +1,9 @@
+/**
+ * @Author: Job.Murumba
+ * @Date:   2024-01-10 10:38:23
+ * @Last Modified by:   Job.Murumba
+ * @Last Modified time: 2024-01-10 14:43:23
+ */
 Ext.define('Admin.view.authentication.Login', {
   extend: 'Admin.view.authentication.LockingWindow',
   xtype: 'login',

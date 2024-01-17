@@ -1,4 +1,10 @@
 /**
+ * @Author: Job.Murumba
+ * @Date:   2024-01-10 10:38:23
+ * @Last Modified by:   Job.Murumba
+ * @Last Modified time: 2024-01-10 14:32:47
+ */
+/**
  * This class provides the modal Ext.Window support for all Authentication forms.
  * It's layout is structured to center any Authentication dialog within it's center,
  * and provides a backGround image during such operations.

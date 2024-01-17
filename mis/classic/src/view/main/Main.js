@@ -1,3 +1,9 @@
+/**
+ * @Author: Job.Murumba
+ * @Date:   2024-01-10 10:38:24
+ * @Last Modified by:   Job.Murumba
+ * @Last Modified time: 2024-01-10 12:37:20
+ */
 Ext.define("Admin.view.main.Main", {
   extend: "Ext.container.Viewport",
   alias: "widget.kgs-main-app",
@@ -323,7 +329,7 @@ Ext.define("Admin.view.main.Main", {
           flex: 1,
           height: Ext.Element.getViewportHeight() - 64,
           reference: "mainCardPanel",
-          cls: "sencha-dash-right-main-container",
+          //cls: "sencha-dash-right-main-container",
           itemId: "contentPanel",
           plugins: [
             {

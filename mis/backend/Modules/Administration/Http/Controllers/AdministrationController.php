@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @Author: HiramMaina
+ * @Create Time: 2024-01-10 10:38:15
+ * @Modified by: JobMurumba
+ * @Modified time: 2024-01-12 16:15:08
+ * @Description:
+ */
+
 namespace Modules\Administration\Http\Controllers;
 
 use Illuminate\Contracts\Support\Renderable;
@@ -36,7 +44,6 @@ class AdministrationController extends Controller
                 }
                 $this->user_id = \Auth::user()->id;
                 return $next($request);
-                
             });
         }
     }
@@ -224,7 +231,8 @@ class AdministrationController extends Controller
     //     $menus .= ']';
     //     echo $menus;
     // }
-    public function masterLoop(Request $req){
+    public function masterLoop(Request $req)
+    {
         $menus = '[';
         $row = $this->getSystemMenuItem(0, 0);
         if (count($row)) {
@@ -235,7 +243,7 @@ class AdministrationController extends Controller
                 $id = $item['id'];
                 $name = $item['name'];
                 $tab_title = $item['tab_title'];
-                $parent_module_name=$tab_title;
+                $parent_module_name = $tab_title;
                 $text = $name;
                 $level = $item['level'];
                 $parent_id = $item['parent_id'];
@@ -270,8 +278,8 @@ class AdministrationController extends Controller
                 //check children
                 $res = $this->getMastersChildren($id);
                 $menus .= $res;
-                if($menu_counter == $menu_count){
-                     $menus .= ']';
+                if ($menu_counter == $menu_count) {
+                    $menus .= ']';
                 }
             }
         }
@@ -280,7 +288,7 @@ class AdministrationController extends Controller
     public function getMastersChildren($id)
     {
         $row = $this->getSystemMenuItem(0, $id);
-        $menus='';
+        $menus = '';
 
         if (count($row)) {
             $menu_count = count($row);
@@ -293,11 +301,11 @@ class AdministrationController extends Controller
                 $child_id = $child['id'];
                 $child_name = $child['name'];
                 $child_title = $child['tab_title'];
-                $module_name= $child_title;
+                $module_name = $child_title;
                 $child_text = $child_name;
                 $child_level = $child['level'];
                 $child_viewType = $child['viewType'];
-                $child_iconCls = 'x-fa fa-angle-double-right';//$child['iconCls'];
+                $child_iconCls = 'x-fa fa-angle-double-right'; //$child['iconCls'];
                 $child_route = $child['routeId'];
                 $child_order_no = $child['order_no'];
                 $child_is_menu = $child['is_menu'];
@@ -307,7 +315,7 @@ class AdministrationController extends Controller
                 $child_parameter_id = $child['parameter_id'];
                 $child_access_level = $this->getMenuAccessLevel($child_id);
 
-                if ($id == 254) {//online applications
+                if ($id == 254) { //online applications
                     //$child_title = $child_name . ' Online Applications-' . $child_name;
                 }
 
@@ -330,51 +338,50 @@ class AdministrationController extends Controller
                 $menus .= '"parameter_id": "' . $child_parameter_id . '",';
                 $menus .= '"parent_id": ' . $child_parent_id . ',';
 
-                if($this->hasGrandies($child_id)){
+                if ($this->hasGrandies($child_id)) {
                     $this->getMastersChildren($child_id);
-                }else{
-                    if($menu_counter == $menu_count){
+                } else {
+                    if ($menu_counter == $menu_count) {
                         $menus .= '}';
-                    }
-                    else if($menu_counter == 0){
+                    } else if ($menu_counter == 0) {
                         $menus .= '},';
-                    }else{
+                    } else {
                         $menus .= '},';
                     }
-               }
+                }
             }
             $menus .= '},';
             return $menus;
-        }else{
+        } else {
             return  '},';
         }
     }
     public function hasGrandies($id)
     {
         $count = DB::table('par_menus')->where('parent_id', $id)->count();
-        
-        if($count > 0){
+
+        if ($count > 0) {
             return true;
-        }else{ 
+        } else {
             return false;
         }
     }
-public function getSystemNavigationMenuItems(Request $request)
+    public function getSystemNavigationMenuItems(Request $request)
     {
         $strict_mode = $request->input('strict_mode');
         $filters = $request->input('filters');
         $filters = (array)json_decode($filters);
-        $filters=array_filter($filters);
-        $menu_id='';
+        $filters = array_filter($filters);
+        $menu_id = '';
         if (!empty($filters)) {
-         $menu_id=$filters['menu_id'];
+            $menu_id = $filters['menu_id'];
         }
-        if(validateIsNumeric($menu_id)){
-          $row = $this->getSystemMenuItem(0, $menu_id);
-        }else{
-          $row = $this->getSystemMenuItem(0, 0);  
+        if (validateIsNumeric($menu_id)) {
+            $row = $this->getSystemMenuItem(0, $menu_id);
+        } else {
+            $row = $this->getSystemMenuItem(0, 0);
         }
-    
+
         //dd($row);
         $menus = '[';
         if (count($row)) {
@@ -385,17 +392,17 @@ public function getSystemNavigationMenuItems(Request $request)
                 $id = $item['id'];
                 $name = $item['name'];
                 $tab_title = $item['tab_title'];
-                $parent_module_name=$tab_title;
+                $parent_module_name = $tab_title;
                 $text = $name;
                 $level = $item['level'];
                 $parent_id = $item['parent_id'];
                 $child_id = $item['parent_id'];
                 $viewType = $item['viewType'];
                 $iconCls = $item['iconcls'];
-                $background = '';//$item['background'];
+                $background = ''; //$item['background'];
                 //$has_module = $item['has_module'];
-               // $tied_module_id = $item['tied_module_id'];
-                $tied_module ='';// $item['tied_module'];
+                // $tied_module_id = $item['tied_module_id'];
+                $tied_module = ''; // $item['tied_module'];
                 $routeId = $item['routeId'];
                 $order_no = $item['order_no'];
                 $is_menu = $item['is_menu'];
@@ -411,9 +418,9 @@ public function getSystemNavigationMenuItems(Request $request)
                 $menus .= '"module_name": "' . $parent_module_name . '",';
                 $menus .= '"iconCls": "' . $iconCls . '",';
                 $menus .= '"background": "' . $background . '",';
-               // $menus .= '"has_module": "' . $has_module . '",';
-               // $menus .= '"tied_module_id": "' . $tied_module_id . '",';
-               // $menus .= '"tied_module": "' . $tied_module . '",';
+                // $menus .= '"has_module": "' . $has_module . '",';
+                // $menus .= '"tied_module_id": "' . $tied_module_id . '",';
+                // $menus .= '"tied_module": "' . $tied_module . '",';
                 $menus .= '"menu_id": "' . $id . '",';
                 $menus .= '"id": "' . $id . '",';
                 $menus .= '"access_level": "' . $access_level . '",';
@@ -436,11 +443,11 @@ public function getSystemNavigationMenuItems(Request $request)
                         $child_id = $child['id'];
                         $child_name = $child['name'];
                         $child_title = $child['tab_title'];
-                        $module_name=$parent_module_name.' >> '.$child_title;
+                        $module_name = $parent_module_name . ' >> ' . $child_title;
                         $child_text = $child_name;
                         $child_level = $child['level'];
                         $child_viewType = $child['viewType'];
-                        $child_iconCls = 'x-fa fa-angle-double-right';//$child['iconCls'];
+                        $child_iconCls = 'x-fa fa-angle-double-right'; //$child['iconCls'];
                         $child_route = $child['routeId'];
                         $child_order_no = $child['order_no'];
                         $child_is_menu = $child['is_menu'];
@@ -450,7 +457,7 @@ public function getSystemNavigationMenuItems(Request $request)
                         $child_parameter_id = $child['parameter_id'];
                         $child_access_level = $this->getMenuAccessLevel($child_id);
 
-                        if ($id == 254) {//online applications
+                        if ($id == 254) { //online applications
                             //$child_title = $child_name . ' Online Applications-' . $child_name;
                         }
 
@@ -487,7 +494,7 @@ public function getSystemNavigationMenuItems(Request $request)
                                 $grandchild_text = $grandchild_name;
                                 $grandchild_level = $grandchild['level'];
                                 $grandchild_viewType = $grandchild['viewType'];
-                                $grandchild_iconCls = 'x-fa fa-arrow-circle-right';//$grandchild['iconCls'];
+                                $grandchild_iconCls = 'x-fa fa-arrow-circle-right'; //$grandchild['iconCls'];
                                 $grandchild_route = $grandchild['routeId'];
                                 $grandchild_order_no = $grandchild['order_no'];
                                 $grandchild_is_menu = $grandchild['is_menu'];
@@ -498,16 +505,16 @@ public function getSystemNavigationMenuItems(Request $request)
                                 $grandchild_parameter_id = $grandchild['parameter_id'];
                                 $grandchild_access_level = $this->getMenuAccessLevel($grandchild_id);
 
-                                if ($id == 254) {//online applications
+                                if ($id == 254) { //online applications
                                     //$grandchild_tab_title = $child_name . ' Online Applications-' . $grandchild_name;
                                 }
-                                if ($id == 182) {//Registration module
+                                if ($id == 182) { //Registration module
                                     //$grandchild_tab_title = $child_name . ' Registration-' . $grandchild_name;
                                 }
-                                if ($child_id == 277) {//GMP module
+                                if ($child_id == 277) { //GMP module
                                     //$grandchild_tab_title = 'GMP-' . $grandchild_name;
                                 }
-                                if ($child_id == 327) {//PMS module
+                                if ($child_id == 327) { //PMS module
                                     //$grandchild_tab_title = 'PMS-' . $grandchild_name;
                                 }
 
@@ -565,9 +572,9 @@ public function getSystemNavigationMenuItems(Request $request)
         echo $menus;
     }
 
-    
 
-   
+
+
 
 
     function getSystemMenuItem($level = 0, $parent_id = 0)
@@ -579,35 +586,33 @@ public function getSystemNavigationMenuItems(Request $request)
         $user_id = \Auth::user()->id;
         $groups = getUserGroups($user_id);
 
-        $belongsToSuperGroup = true;//belongsToSuperGroup($groups);
+        $belongsToSuperGroup = true; //belongsToSuperGroup($groups);
         $qry = DB::table('par_menus')
             ->distinct()
             ->select('par_menus.*')
             ->where($where)
             ->where('par_menus.is_disabled', 0);
-        if($level==0 || $level===0 && $parent_id!=0){
+        if ($level == 0 || $level === 0 && $parent_id != 0) {
 
             // $qry = $parent_id == 0 ? $qry->orderBy('par_menus.order_no') : $qry->where('par_menus.id', $parent_id)->orderBy('par_menus.order_no');
-          $qry = $parent_id == 0 ? $qry->orderBy('par_menus.order_no') : $qry->where(function ($query) use ($parent_id) {
+            $qry = $parent_id == 0 ? $qry->orderBy('par_menus.order_no') : $qry->where(function ($query) use ($parent_id) {
                 $query->where('par_menus.id', $parent_id)
-                      ->orWhere('par_menus.id', 1);
+                    ->orWhere('par_menus.id', 1);
             })->orderBy('par_menus.order_no');
-
-        }else{
-         $qry = $parent_id == 0 ? $qry->orderBy('par_menus.order_no') : $qry->where('par_menus.parent_id', $parent_id)->orderBy('par_menus.order_no');
-
+        } else {
+            $qry = $parent_id == 0 ? $qry->orderBy('par_menus.order_no') : $qry->where('par_menus.parent_id', $parent_id)->orderBy('par_menus.order_no');
         }
-    
+
         $qry = $belongsToSuperGroup == true ? $qry->whereRaw("1=1") : $qry->join('tra_permissions', 'par_menus.id', '=', 'tra_permissions.menu_id')
             ->where('tra_permissions.status', 1)
             ->where('tra_permissions.accesslevel_id', '<>', 1)
             //->where('par_menus.is_disabled', 0)
             ->whereIn('tra_permissions.group_id', $groups);
 
-            // if(validateIsNumeric($menu_id)){
-            //    $qry->orWhere('par_menus.id', '=', $menu_id);
-            //    $qry->orWhere('par_menus.parent_id', '=', $menu_id);
-            // }
+        // if(validateIsNumeric($menu_id)){
+        //    $qry->orWhere('par_menus.id', '=', $menu_id);
+        //    $qry->orWhere('par_menus.parent_id', '=', $menu_id);
+        // }
 
         $menus = $qry->get();
         $menus = convertStdClassObjToArray($menus);
@@ -736,7 +741,7 @@ public function getSystemNavigationMenuItems(Request $request)
                     $res = updateRecord($table_name, $previous_data, $where, $table_data, $user_id);
                 }
             } else {
-              
+
                 $res = insertRecord($table_name, $table_data, $user_id);
             }
         } catch (\Exception $exception) {
@@ -879,15 +884,15 @@ public function getSystemNavigationMenuItems(Request $request)
         $department_id = $request->input('department_id');
         $zone_id = $request->input('zone_id');
         try {
-            $qry = DB::table('par_groups as t1') 
-                 ->leftjoin('par_regions as t2', 't1.region_id', '=', 't2.id')
+            $qry = DB::table('par_groups as t1')
+                ->leftjoin('par_regions as t2', 't1.region_id', '=', 't2.id')
                 // ->join('par_departments as t3', 't1.department_id', '=', 't3.id')
                 ->leftjoin('par_zones as t4', 't1.zone_id', '=', 't4.id')
                 ->leftJoin('par_user_categories as t5', 't1.user_category_id', '=', 't5.id')
                 ->leftJoin('par_externaluser_categories as t6', 't1.externaluser_category_id', '=', 't6.id')
-                
+
                 ->leftJoin('par_system_dashboards as t7', 't1.system_dashboard_id', '=', 't7.id')
-                ->select('t1.*','t5.name as user_category','t2.name as region','t6.name as externaluser_category','t7.name as system_dashboard','t4.name as zone');
+                ->select('t1.*', 't5.name as user_category', 't2.name as region', 't6.name as externaluser_category', 't7.name as system_dashboard', 't4.name as zone');
             // if (isset($directorate_id) && $directorate_id != '') {
             //     $qry->where('t1.directorate_id', $directorate_id);
             // }
@@ -965,14 +970,14 @@ public function getSystemNavigationMenuItems(Request $request)
         }
         return response()->json($res);
     }
-public function getSystemRoles(Request $request)
+    public function getSystemRoles(Request $request)
     {
         $user_group = $request->input('user_group');
         $row = $this->getSystemRole(0, 0, $user_group);
-		
-		$roles = '{"roles": "."';
+
+        $roles = '{"roles": "."';
         $roles .= ',';
-		// $roles .= ',';
+        // $roles .= ',';
         $roles .= '"children": [';
         //$roles = '[';
         if (count($row)) {
@@ -983,29 +988,29 @@ public function getSystemRoles(Request $request)
 
                 $id = $item['menu_id'];
                 $permission_id = $item['permission_id'];
-               
+
                 $name = aes_decrypt($item['menu_name']);
                 $level = aes_decrypt($item['level_name']);
-                 $level_id = $item['level_id'];
+                $level_id = $item['level_id'];
                 $iconCls = $item['iconcls'];
-           
+
                 $roles .= '{';
-                 $roles .= '"menu_id": "' . $id . '",';
+                $roles .= '"menu_id": "' . $id . '",';
                 $roles .= '"menu_name": "' . $name . '",';
-               $roles .= '"level_name": "' . $level . '",';
-                  $roles .= '"level_id": "' . $level_id . '",';
+                $roles .= '"level_name": "' . $level . '",';
+                $roles .= '"level_id": "' . $level_id . '",';
                 $roles .= '"iconCls": "' . $iconCls . '",';
-               
-                
+
+
                 $children = $this->getSystemRole(1, $id, $user_group);
-                  if (count($children) > 0) {
-					$roles .= '"permission_id": "' . $permission_id . '",';
-              
+                if (count($children) > 0) {
+                    $roles .= '"permission_id": "' . $permission_id . '",';
+
                     $roles .= '"expanded": false,';
                     $children_count = count($children);
                     $children_counter = 0;
                     $roles .= '"children": [';
-					 foreach ($children as $child) {
+                    foreach ($children as $child) {
                         $children_counter++;
                         $child_id = $child['menu_id'];
                         $child_permission_id = $child['permission_id'];
@@ -1015,25 +1020,25 @@ public function getSystemRoles(Request $request)
                         $child_iconCls = $item['iconcls'];
 
                         $roles .= '{';
-                        
-						 $roles .= '"menu_id": "' . $child_id . '",';
+
+                        $roles .= '"menu_id": "' . $child_id . '",';
                         $roles .= '"permission_id": "' . $child_permission_id . '",';
                         $roles .= '"menu_name": "' . $child_name . '",';
                         $roles .= '"level_name": "' . $child_level . '",';
-                       $roles .= '"level_id": "' . $child_level_id . '",';
-                      
-                        
+                        $roles .= '"level_id": "' . $child_level_id . '",';
+
+
                         //level 2 menu items
                         $grandchildren = $this->getSystemRole(2, $child_id, $user_group);
                         if (count($grandchildren) > 0) {
-							 $roles .= '"iconCls": "' . $child_iconCls . '",';
+                            $roles .= '"iconCls": "' . $child_iconCls . '",';
                             $roles .= '"expanded": false,';
                             $grandchildren_count = count($grandchildren);
                             $grandchildren_counter = 0;
-                             $roles .= '"iconCls": "tree-parent",';
+                            $roles .= '"iconCls": "tree-parent",';
                             $roles .= '"children": [';
                             foreach ($grandchildren as $grandchild) {
-                               $grandchildren_counter++;
+                                $grandchildren_counter++;
                                 $grandchild_id = $grandchild['menu_id'];
                                 $grand_permission_id = $grandchild['permission_id'];
                                 $grandchild_name = aes_decrypt($grandchild['menu_name']);
@@ -1059,33 +1064,30 @@ public function getSystemRoles(Request $request)
                             }
                             $roles .= ']';
                         } else {
-							 $roles .= '"iconCls": "' . $child_iconCls . '",';
-                             $roles .= '"leaf": true';
+                            $roles .= '"iconCls": "' . $child_iconCls . '",';
+                            $roles .= '"leaf": true';
                         }
-						
+
                         if ($children_counter == $children_count) {
                             //Last Child in this level. Level=1
                             $roles .= '}';
                         } else {
                             $roles .= '},';
                         }
-						
                     }
-                    
+
                     $roles .= ']';
-					
                 } else {
-					$roles .= '"permission_id": "' . $permission_id . '",';
-              
+                    $roles .= '"permission_id": "' . $permission_id . '",';
+
                     $roles .= '"leaf": true';
                 }
-				
+
                 if ($menu_counter == $menu_count) {
                     $roles .= '}';
                 } else {
                     $roles .= '},';
                 }
-                
             }
         }
         $roles .= ']}';
@@ -1188,7 +1190,6 @@ public function getSystemRoles(Request $request)
                         }
                     }
                     $roles .= '],';
-
                 } else {
                     //$menus.="viewType: '".$viewType."',";
                     $roles .= '"leaf": true';
@@ -1207,51 +1208,51 @@ public function getSystemRoles(Request $request)
 
 
 
-// public function getSystemRoles(Request $request)
-// {
-//     $user_group = $request->input('user_group');
-//     $roles = $this->buildRoleTree(0, 0, $user_group);
-//     return response()->json(["roles" => $roles]);
-// }
+    // public function getSystemRoles(Request $request)
+    // {
+    //     $user_group = $request->input('user_group');
+    //     $roles = $this->buildRoleTree(0, 0, $user_group);
+    //     return response()->json(["roles" => $roles]);
+    // }
 
-// private function buildRoleTree($level, $parent_id, $user_group)
-// {
-//     $roles = [];
+    // private function buildRoleTree($level, $parent_id, $user_group)
+    // {
+    //     $roles = [];
 
-//     $rows = $this->getSystemRole($level, $parent_id, $user_group);
+    //     $rows = $this->getSystemRole($level, $parent_id, $user_group);
 
-//     foreach ($rows as $row) {
-//         $id = $row['menu_id'];
-//         $permission_id = $row['permission_id'];
-//         $name = aes_decrypt($row['menu_name']);
-//         $level_name = aes_decrypt($row['level_name']);
-//         $level_id = $row['level_id'];
-//         $iconCls = $row['iconCls'];
+    //     foreach ($rows as $row) {
+    //         $id = $row['menu_id'];
+    //         $permission_id = $row['permission_id'];
+    //         $name = aes_decrypt($row['menu_name']);
+    //         $level_name = aes_decrypt($row['level_name']);
+    //         $level_id = $row['level_id'];
+    //         $iconCls = $row['iconCls'];
 
-//         $role = [
-//             "menu_id" => $id,
-//             "permission_id" => $permission_id,
-//             "node" => $id,
-//             "menu_name" => $name,
-//             "level_name" => $level_name,
-//             "level_id" => $level_id,
-//             "iconCls" => $iconCls
-//         ];
+    //         $role = [
+    //             "menu_id" => $id,
+    //             "permission_id" => $permission_id,
+    //             "node" => $id,
+    //             "menu_name" => $name,
+    //             "level_name" => $level_name,
+    //             "level_id" => $level_id,
+    //             "iconCls" => $iconCls
+    //         ];
 
-//         $children = $this->buildRoleTree(1, $id, $user_group);
-//         if (!empty($children)) {
-//             $role["expanded"] = true;
-//             $role["leaf"] = false;
-//             $role["children"] = $children;
-//         } else {
-//             $role["leaf"] = true;
-//         }
+    //         $children = $this->buildRoleTree(1, $id, $user_group);
+    //         if (!empty($children)) {
+    //             $role["expanded"] = true;
+    //             $role["leaf"] = false;
+    //             $role["children"] = $children;
+    //         } else {
+    //             $role["leaf"] = true;
+    //         }
 
-//         $roles[] = $role;
-//     }
+    //         $roles[] = $role;
+    //     }
 
-//     return $roles;
-// }
+    //     return $roles;
+    // }
 
 
 
@@ -1311,7 +1312,7 @@ public function getSystemRoles(Request $request)
                             );
                             $parentmenus_id = $menus[$i];
                             $accesslevel_id = $menuLevels[$i];
-                            
+
                             if (isset($menuPermissions[$i])) {
                                 $menuPermission_id = $menuPermissions[$i];
                                 $menuPermission = Permission::find($menuPermission_id);
@@ -1325,9 +1326,8 @@ public function getSystemRoles(Request $request)
                                 }
                             } else {
                                 Permission::create($params);
-                                
                             }
-                            $this->saveChildMenuItem($group_id,$accesslevel_id,$parentmenus_id);
+                            $this->saveChildMenuItem($group_id, $accesslevel_id, $parentmenus_id);
                         }
                     }
                     $res = array(
@@ -1349,58 +1349,54 @@ public function getSystemRoles(Request $request)
         }
         return response()->json($res);
     }
-    function saveChildMenuItem($group_id,$accesslevel_id,$grandparentmenus_id){
-        
-            $records = DB::table('par_menus')->where('parent_id', $grandparentmenus_id)->get();
-                                if(count($records) >0){
-                                        foreach($records as $rec){
-                                            $parentmenus_id = $rec->id;
-                                                $permissions = array(
-                                                    'group_id' => $group_id,
-                                                    'menu_id' => $rec->id,
-                                                    'accesslevel_id' => $accesslevel_id,
-                                                    'status' => 1,
-                                                    'created_by' => \Auth::user()->id,
-                                                    'altered_by' => \Auth::user()->id
-                                                );
-                                                $check = DB::table('tra_permissions')
-                                                                ->where(array('group_id' => $group_id,'menu_id' => $rec->id))
-                                                    ->first();
-                                                if(!$check){
-                                                    DB::table('tra_permissions')->insert($permissions);
-                                                }
-                                                $this->saveGrandChildMenuItem($group_id,$accesslevel_id,$parentmenus_id);
-                                        }
-                                    
-                                }
-            
+    function saveChildMenuItem($group_id, $accesslevel_id, $grandparentmenus_id)
+    {
+
+        $records = DB::table('par_menus')->where('parent_id', $grandparentmenus_id)->get();
+        if (count($records) > 0) {
+            foreach ($records as $rec) {
+                $parentmenus_id = $rec->id;
+                $permissions = array(
+                    'group_id' => $group_id,
+                    'menu_id' => $rec->id,
+                    'accesslevel_id' => $accesslevel_id,
+                    'status' => 1,
+                    'created_by' => \Auth::user()->id,
+                    'altered_by' => \Auth::user()->id
+                );
+                $check = DB::table('tra_permissions')
+                    ->where(array('group_id' => $group_id, 'menu_id' => $rec->id))
+                    ->first();
+                if (!$check) {
+                    DB::table('tra_permissions')->insert($permissions);
+                }
+                $this->saveGrandChildMenuItem($group_id, $accesslevel_id, $parentmenus_id);
+            }
+        }
     }
-    function saveGrandChildMenuItem($group_id,$accesslevel_id,$grandparentmenus_id){
-        
-            $records = DB::table('par_menus')->where('parent_id', $grandparentmenus_id)->get();
-                                if(count($records) >0){
-                                        foreach($records as $rec){
-                                            $parentmenus_id = $rec->id;
-                                                $permissions = array(
-                                                    'group_id' => $group_id,
-                                                    'menu_id' => $rec->id,
-                                                    'accesslevel_id' => $accesslevel_id,
-                                                    'status' => 1,
-                                                    'created_by' => \Auth::user()->id,
-                                                    'altered_by' => \Auth::user()->id
-                                                );
-                                                $check = DB::table('tra_permissions')
-                                                                ->where(array('group_id' => $group_id,'menu_id' => $rec->id))
-                                                    ->first();
-                                                if(!$check){
-                                                    DB::table('tra_permissions')->insert($permissions);
-                                                }
-                                                
-                                        }
-                                    
-                                }
-        
-        
+    function saveGrandChildMenuItem($group_id, $accesslevel_id, $grandparentmenus_id)
+    {
+
+        $records = DB::table('par_menus')->where('parent_id', $grandparentmenus_id)->get();
+        if (count($records) > 0) {
+            foreach ($records as $rec) {
+                $parentmenus_id = $rec->id;
+                $permissions = array(
+                    'group_id' => $group_id,
+                    'menu_id' => $rec->id,
+                    'accesslevel_id' => $accesslevel_id,
+                    'status' => 1,
+                    'created_by' => \Auth::user()->id,
+                    'altered_by' => \Auth::user()->id
+                );
+                $check = DB::table('tra_permissions')
+                    ->where(array('group_id' => $group_id, 'menu_id' => $rec->id))
+                    ->first();
+                if (!$check) {
+                    DB::table('tra_permissions')->insert($permissions);
+                }
+            }
+        }
     }
     public function updateSystemPermissionAccessRoles(Request $req)
     {
@@ -1524,7 +1520,7 @@ public function getSystemRoles(Request $request)
         return response()->json($res);
     }
 
-     public function addSelectedUsersFromGroup(Request $request)
+    public function addSelectedUsersFromGroup(Request $request)
     {
         $selected = $request->input('selected');
         $group_id = $request->input('group_id');
@@ -1532,20 +1528,20 @@ public function getSystemRoles(Request $request)
         $user = $this->user_id;
         try {
             $set_users = DB::table('tra_user_group as t1')
-                    ->where('group_id', $group_id)
-                    ->whereIn('user_id', $selected_ids)
-                    ->select('user_id')
-                    ->get();
+                ->where('group_id', $group_id)
+                ->whereIn('user_id', $selected_ids)
+                ->select('user_id')
+                ->get();
 
             $mapped_users[] = Arr::pluck($set_users, 'user_id');
-            $userArray = call_user_func_array('array_merge',$mapped_users);
+            $userArray = call_user_func_array('array_merge', $mapped_users);
 
             foreach ($selected_ids as $id) {
 
 
-                 if(!in_array( $id, $userArray )){
-                    $res = insertRecord('tra_user_group', ['user_id'=>$id, 'group_id'=>$group_id], $user);
-                 }
+                if (!in_array($id, $userArray)) {
+                    $res = insertRecord('tra_user_group', ['user_id' => $id, 'group_id' => $group_id], $user);
+                }
             }
 
             $res = array(
@@ -1594,7 +1590,8 @@ public function getSystemRoles(Request $request)
         return response()->json($res);
     }
 
-    public function mapGroupToStage(Request $req){
+    public function mapGroupToStage(Request $req)
+    {
         $selected = $req->input('selected');
         $group_id = $req->input('group_id');
         $workflow_id = $req->input('workflow_id');
@@ -1602,35 +1599,35 @@ public function getSystemRoles(Request $request)
         $user = $this->user_id;
 
         DB::beginTransaction();
-        try{
+        try {
             // $mapped_groups = DB::table('wf_stages_groups as t1')
             //         ->where('group_id', $group_id)
             //         ->whereIn('stage_id', $stage_idArray)
             //         ->select('stage_id')
             //         ->get();
-          
-           //clear current setup
+
+            //clear current setup
             DB::table('wf_stages_groups as t1')
-                ->join('wf_workflow_stages as t2','t1.stage_id','t2.id')
-                ->where(array('group_id'=>$group_id,'workflow_id'=>$workflow_id))
+                ->join('wf_workflow_stages as t2', 't1.stage_id', 't2.id')
+                ->where(array('group_id' => $group_id, 'workflow_id' => $workflow_id))
                 ->delete();
-            
+
             //$mapped_stage[] = Arr::pluck($mapped_groups, 'stage_id');
             //$mappedstageIds = call_user_func_array('array_merge',$mapped_stage);
 
             foreach ($stage_idArray as $stage_id) {
 
-                  //  if(!in_array( $stage_id, $mappedstageIds)){
-                       
-                         $res = insertRecord('wf_stages_groups', ['stage_id'=>$stage_id, 'group_id'=>$group_id], $user);
-                  //  }
-                }
+                //  if(!in_array( $stage_id, $mappedstageIds)){
+
+                $res = insertRecord('wf_stages_groups', ['stage_id' => $stage_id, 'group_id' => $group_id], $user);
+                //  }
+            }
 
             $res = array(
-                    'success' => true,
-                    'message' => 'Group Mapped to stage(s) successfully!!'
-                );
-        DB::commit();
+                'success' => true,
+                'message' => 'Group Mapped to stage(s) successfully!!'
+            );
+            DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
             $res = array(
@@ -1644,9 +1641,10 @@ public function getSystemRoles(Request $request)
                 'message' => $throwable->getMessage()
             );
         }
-    return json_encode($res);
+        return json_encode($res);
     }
-    public function getApplicationAssignmentProcessList(Request $req){
+    public function getApplicationAssignmentProcessList(Request $req)
+    {
 
         $section_id = $req->input('section_id');
         $module_id = $req->input('module_id');
@@ -1659,12 +1657,12 @@ public function getSystemRoles(Request $request)
                 ->leftJoin('sub_modules as t3', 't1.sub_module_id', '=', 't3.id')
                 ->leftJoin('par_sections as t4', 't1.section_id', '=', 't4.id')
                 ->leftJoin('par_application_assignment_setup as t5', function ($join) use ($group_id) {
-                        $join->on('t1.id', '=', 't5.process_id')
-                            ->on('t5.group_id', '=', DB::raw($group_id));
-                    })
-                ->select('t1.name as process_name','t1.id as process_id', 't2.name as module', 't3.name as submodule', 't4.name as section','t5.id as has_access');
-           
-                
+                    $join->on('t1.id', '=', 't5.process_id')
+                        ->on('t5.group_id', '=', DB::raw($group_id));
+                })
+                ->select('t1.name as process_name', 't1.id as process_id', 't2.name as module', 't3.name as submodule', 't4.name as section', 't5.id as has_access');
+
+
             if (validateIsNumeric($section_id)) {
                 $qry->where('t1.section_id', $section_id);
             }
@@ -1692,31 +1690,31 @@ public function getSystemRoles(Request $request)
             );
         }
         return response()->json($res);
-   }
-   public function mapApplicationAssignmentSetup(Request $req){
+    }
+    public function mapApplicationAssignmentSetup(Request $req)
+    {
         $selected = $req->input('selected');
         $group_id = $req->input('group_id');
         $process_idArray = json_decode($selected);
         $user = $this->user_id;
 
         DB::beginTransaction();
-        try{
-           //clear current setup
+        try {
+            //clear current setup
             DB::table('par_application_assignment_setup')
-                ->where('group_id',$group_id)
+                ->where('group_id', $group_id)
                 ->delete();
 
             foreach ($process_idArray as $process_id) {
-                       
-                $res = insertRecord('par_application_assignment_setup', ['process_id'=>$process_id, 'group_id'=>$group_id], $user);
-                  
-                }
+
+                $res = insertRecord('par_application_assignment_setup', ['process_id' => $process_id, 'group_id' => $group_id], $user);
+            }
 
             $res = array(
-                    'success' => true,
-                    'message' => 'Group assaigned successfully!!'
-                );
-        DB::commit();
+                'success' => true,
+                'message' => 'Group assaigned successfully!!'
+            );
+            DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
             $res = array(
@@ -1730,47 +1728,46 @@ public function getSystemRoles(Request $request)
                 'message' => $throwable->getMessage()
             );
         }
-    return json_encode($res);
-   }
-   public function getTablescolumns(Request $req)
-   {
-    $table_name = $req->table_name;
-    $col = array();
-    if($table_name != ''){
-        $columns = DB::getSchemaBuilder()->getColumnListing($table_name);
-        foreach ($columns as $column) {
-           $col[]=['column_name'=>$column];
+        return json_encode($res);
+    }
+    public function getTablescolumns(Request $req)
+    {
+        $table_name = $req->table_name;
+        $col = array();
+        if ($table_name != '') {
+            $columns = DB::getSchemaBuilder()->getColumnListing($table_name);
+            foreach ($columns as $column) {
+                $col[] = ['column_name' => $column];
+            }
+            return $col;
+        } else {
+            return [];
         }
-        return $col;
-    }else{
-        return [];
-       
-   }
     }
     public function saveParameterConfig(Request $req)
     {
-    try{
-        $id = $req->id;
-        //$menu_id = $req->menu_id;
-        $param_title = $req->param_title;
-        $param_name= $req->param_name;
-        $table_name= $req->table_name;
-        $no_joins= $req->no_joins;
-       
-        DB::beginTransaction();
-        //insert the defination
-          $user_id = \Auth::user()->id;
-          $table_data['created_on'] = Carbon::now();
-          $table_data['created_by'] = $user_id;
-          //$table_data['menu_id'] = $menu_id;
-          $table_data['param_title'] = $param_title;
-          $table_data['param_name'] = $param_name;
-          $table_data['table_name'] = $table_name;
-          $table_data['no_joins'] = $no_joins;
-          $param_def_table_name = 'par_parameter_definations';
-          $where = array(
-                            'id' => $id
-                        );
+        try {
+            $id = $req->id;
+            //$menu_id = $req->menu_id;
+            $param_title = $req->param_title;
+            $param_name = $req->param_name;
+            $table_name = $req->table_name;
+            $no_joins = $req->no_joins;
+
+            DB::beginTransaction();
+            //insert the defination
+            $user_id = \Auth::user()->id;
+            $table_data['created_on'] = Carbon::now();
+            $table_data['created_by'] = $user_id;
+            //$table_data['menu_id'] = $menu_id;
+            $table_data['param_title'] = $param_title;
+            $table_data['param_name'] = $param_name;
+            $table_data['table_name'] = $table_name;
+            $table_data['no_joins'] = $no_joins;
+            $param_def_table_name = 'par_parameter_definations';
+            $where = array(
+                'id' => $id
+            );
 
             if (isset($id) && $id != "") {
                 if (recordExists($param_def_table_name, $where)) {
@@ -1789,55 +1786,55 @@ public function getSystemRoles(Request $request)
                 $res = insertRecord($param_def_table_name, $table_data, $user_id);
             }
 
-        if($res['success']){
-            $param_id = $res['record_id'];
-            $next_is_child = false;
-             //delete existing trace of the param
-            DB::table('par_parameter_join_tables')->where('param_id',$param_id)->delete();
-            for ($i = $no_joins-1; $i >= 0; $i--) { 
+            if ($res['success']) {
+                $param_id = $res['record_id'];
+                $next_is_child = false;
+                //delete existing trace of the param
+                DB::table('par_parameter_join_tables')->where('param_id', $param_id)->delete();
+                for ($i = $no_joins - 1; $i >= 0; $i--) {
 
-                $join_type_id = $req->input('join_type_id'.$i);
-                $join_table_name = $req->input('join_table_name'.$i);
-                $join_column_name = $req->input('join_column_name'.$i);
-                $param_column_name = $req->input('param_column_name'.$i);
-                $table_label = $req->input('table_label'.$i);
-                $join_disp_column_name = $req->input('join_disp_column_name'.$i);
-                $is_parent = $req->input('is_parent'.$i);
-                $link_column_name = $req->input('link_column_name'.$i);
-                if($next_is_child){
-                    $is_child = 1;
-                }else{
-                    $is_child = 0;
-                }
-                if($is_parent == 1){
-                    $next_is_child = true;
-                }else{
-                    $next_is_child = false;
-                }
+                    $join_type_id = $req->input('join_type_id' . $i);
+                    $join_table_name = $req->input('join_table_name' . $i);
+                    $join_column_name = $req->input('join_column_name' . $i);
+                    $param_column_name = $req->input('param_column_name' . $i);
+                    $table_label = $req->input('table_label' . $i);
+                    $join_disp_column_name = $req->input('join_disp_column_name' . $i);
+                    $is_parent = $req->input('is_parent' . $i);
+                    $link_column_name = $req->input('link_column_name' . $i);
+                    if ($next_is_child) {
+                        $is_child = 1;
+                    } else {
+                        $is_child = 0;
+                    }
+                    if ($is_parent == 1) {
+                        $next_is_child = true;
+                    } else {
+                        $next_is_child = false;
+                    }
 
-                //insert tables to depedent
-                DB::table('par_parameter_join_tables')->insert(array(
-                    'param_id'=>$param_id,
-                    'join_type_id'=>$join_type_id,
-                    'join_table_name'=>$join_table_name,
-                    'join_column_name'=>$join_column_name,
-                    'join_disp_column_name'=>$join_disp_column_name,
-                    'param_column_name'=>$param_column_name,
-                    'table_label'=>$table_label,
-                    'created_on'=>Carbon::now(),
-                    'created_by'=>$user_id,
-                    'is_parent'=>$is_parent,
-                    'is_child'=>$is_child,
-                    'link_column_name'=>$link_column_name
-                ));
-          }
-        }
-         $res = array(
+                    //insert tables to depedent
+                    DB::table('par_parameter_join_tables')->insert(array(
+                        'param_id' => $param_id,
+                        'join_type_id' => $join_type_id,
+                        'join_table_name' => $join_table_name,
+                        'join_column_name' => $join_column_name,
+                        'join_disp_column_name' => $join_disp_column_name,
+                        'param_column_name' => $param_column_name,
+                        'table_label' => $table_label,
+                        'created_on' => Carbon::now(),
+                        'created_by' => $user_id,
+                        'is_parent' => $is_parent,
+                        'is_child' => $is_child,
+                        'link_column_name' => $link_column_name
+                    ));
+                }
+            }
+            $res = array(
                 'success' => true,
                 'message' => 'Saved successfully'
             );
-       
-     DB::commit();
+
+            DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
             $res = array(
@@ -1851,32 +1848,32 @@ public function getSystemRoles(Request $request)
                 'message' => $throwable->getMessage()
             );
         }
-    return json_encode($res);
-   }
-   public function getParameterConfig(Request $req)
-   {
-       $def_id = $req->input('def_id');
+        return json_encode($res);
+    }
+    public function getParameterConfig(Request $req)
+    {
+        $def_id = $req->input('def_id');
         try {
-            $param = DB::table('par_parameter_definations')->where('id',$def_id)->first();
-            $param_joins = DB::table('par_parameter_join_tables')->where('param_id',$param->id)->get();
+            $param = DB::table('par_parameter_definations')->where('id', $def_id)->first();
+            $param_joins = DB::table('par_parameter_join_tables')->where('param_id', $param->id)->get();
             $no_joins = $param->no_joins;
             $results = array();
             $i = 0;
             foreach ($param_joins as $param_join) {
-                $results['join_type_id'.$i] = $param_join->join_type_id;
-                $results['join_table_name'.$i] = $param_join->join_table_name;
-                $results['join_column_name'.$i] = $param_join->join_column_name;
-                $results['param_column_name'.$i] = $param_join->param_column_name;
-                $results['join_disp_column_name'.$i] = $param_join->join_disp_column_name;
-                $results['table_label'.$i] = $param_join->table_label;
+                $results['join_type_id' . $i] = $param_join->join_type_id;
+                $results['join_table_name' . $i] = $param_join->join_table_name;
+                $results['join_column_name' . $i] = $param_join->join_column_name;
+                $results['param_column_name' . $i] = $param_join->param_column_name;
+                $results['join_disp_column_name' . $i] = $param_join->join_disp_column_name;
+                $results['table_label' . $i] = $param_join->table_label;
                 $i++;
             }
-           $results['id'] = $param->id;
-          // $results['def_id'] = $param->id;
-           $results['param_title'] = $param->param_title;
-           $results['param_name'] = $param->param_name;
-           $results['table_name'] = $param->table_name;
-           $results['no_joins'] = $param->no_joins;
+            $results['id'] = $param->id;
+            // $results['def_id'] = $param->id;
+            $results['param_title'] = $param->param_title;
+            $results['param_name'] = $param->param_name;
+            $results['table_name'] = $param->table_name;
+            $results['no_joins'] = $param->no_joins;
 
             $res = array(
                 'success' => true,
@@ -1896,25 +1893,24 @@ public function getSystemRoles(Request $request)
             );
         }
         return response()->json($res);
-   }
-   public function checkParamMenuDefination(Request $req)
-   {
-       $menu_id = $req->menu_id;
+    }
+    public function checkParamMenuDefination(Request $req)
+    {
+        $menu_id = $req->menu_id;
 
-       try{
-        $param_def = DB::table('par_parameter_definations')->where('menu_id',$menu_id)->count();
-        if($param_def > 0){
-            $is_defined = 1;
-        }else{
-            $is_defined = 0;
-        }
-        $res = array(
+        try {
+            $param_def = DB::table('par_parameter_definations')->where('menu_id', $menu_id)->count();
+            if ($param_def > 0) {
+                $is_defined = 1;
+            } else {
+                $is_defined = 0;
+            }
+            $res = array(
                 'success' => true,
                 'is_defined' => $is_defined,
                 'message' => 'All is well'
             );
-       }
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
                 'message' => $exception->getMessage()
@@ -1926,8 +1922,5 @@ public function getSystemRoles(Request $request)
             );
         }
         return response()->json($res);
-   }
-   
-   
-   
+    }
 }

@@ -4,11 +4,11 @@
  * @Author: Job.Murumba
  * @Date:   2023-11-22 17:01:26
  * @Last Modified by:   Job.Murumba
- * @Last Modified time: 2023-11-24 12:18:03
+ * @Last Modified time: 2024-01-12 12:54:40
  */
 
 
-namespace App\Modules\Dashboard\Http\Controllers;
+namespace Modules\Dashboard\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -16,6 +16,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use App\Modules\Dashboard\Entities\SystemGuideline;
 use Illuminate\Support\Carbon;
+//use App\Http\Controllers\Controller;
 
 class DashboardController extends Controller
 {

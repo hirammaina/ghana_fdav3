@@ -1,4 +1,11 @@
 <?php
+/**
+ * @Author: Job.Murumba
+ * @Date:   2024-01-10 10:38:15
+ * @Last Modified by:   Job.Murumba
+ * @Last Modified time: 2024-01-12 13:19:20
+ */
+
 
 namespace Modules\Configurations\Http\Controllers;
 
@@ -384,7 +391,7 @@ class ConfigurationsController extends Controller
         $model_name = $request->input('model_name');
         $strict_mode = $request->input('strict_mode');
         try {
-            $model = 'App\\Modules\\Configurations\\Entities\\' . $model_name;
+            $model = 'Modules\\Configurations\\Entities\\' . $model_name;
             if (isset($strict_mode) && $strict_mode == 1) {
                 $results = $model::where('is_enabled', 1)
                     ->get()
