@@ -1,1 +1,4 @@
- ../production/
+ /production
+ /portal_v2/public/dev-portallv/src/app/app-settings.ts
+ /portal_v2/public/dev-portallv/src/index.html
+ /portal_v2/public/front-end/index.html
