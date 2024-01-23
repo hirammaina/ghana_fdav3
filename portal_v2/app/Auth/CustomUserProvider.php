@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Auth;
 
 use App\User;
@@ -60,8 +61,6 @@ class CustomUserProvider implements UserProvider
             return $user;
         }
         return null;
-
-
     }
 
     /**
@@ -77,7 +76,6 @@ class CustomUserProvider implements UserProvider
         $user->setRememberToken($token);
 
         $user->save();
-
     }
 
     /**
@@ -88,12 +86,12 @@ class CustomUserProvider implements UserProvider
      */
     public function retrieveByCredentials(array $credentials)
     {
-        
+
         // TODO: Implement retrieveByCredentials() method.
-        $qry = User::where(array('email'=> $credentials['email'],'id'=> $credentials['id'] ));
-       
+        $qry = User::where(array('email' => $credentials['email'], 'id' => $credentials['id']));
+
         if ($qry->count() > 0) {
-             $user = $qry->select('*')->first();
+            $user = $qry->select('*')->first();
             return $user;
         }
         return null;
@@ -114,14 +112,13 @@ class CustomUserProvider implements UserProvider
     {
         // TODO: Implement validateCredentials() method.
         // we'll assume if a user was retrieved, it's good
-        
+
         $email = $credentials['email'];
         $password = $credentials['password'];
         $uuid = $credentials['uuid'];
         $hashedPwd = hashPwd($email, $uuid, $password);
         // && $user->password == $hashedPwd
-        if ($user->email == $credentials['email'])
-        {
+        if ($user->email == $credentials['email']) {
             $user->last_login_time = Carbon::now();
             $user->save();
             //log
@@ -133,11 +130,9 @@ class CustomUserProvider implements UserProvider
                 'time' => Carbon::now()
             );
             DB::table('wb_login_logs')->insert($loginLogParams);
-          
-            return $user;
 
+            return $user;
         }
         return false;
     }
-
 }

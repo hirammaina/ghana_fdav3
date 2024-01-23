@@ -4,7 +4,7 @@
  * @Author: HiramMaina
  * @Create Time: 2024-01-10 10:38:56
  * @Modified by: JobMurumba
- * @Modified time: 2024-01-17 12:32:45
+ * @Modified time: 2024-01-22 18:11:01
  * @Description:
  */
 
@@ -4299,6 +4299,7 @@ class UtilitiesController extends Controller
             ->where('application_code', $application_code)
             ->first();
 
+
         $sub_module_id = $rec->sub_module_id;
 
         if ($rec->module_id == 1) {
@@ -4319,7 +4320,10 @@ class UtilitiesController extends Controller
         if ($module_data) {
             $data_query = $module_data->data_query;
 
-            $invoice_feessql = DB::select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
+            //Job replaced single qoutes with double qoutes where module_id=2,sub_module_id=1, wb_applicationinvoicedata_queries then removed raw db select cant accet that ,Job 22-01-23
+            //$invoice_feessql = DB::select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
+
+            $invoice_feessql = DB::select(($data_query . ' where t1.application_code= ' . $application_code));
 
             if (is_array($invoice_feessql) && count($invoice_feessql) > 0) {
                 $invoice_appfeearray = (array)$invoice_feessql[0];
@@ -4337,9 +4341,12 @@ class UtilitiesController extends Controller
                     ->leftJoin('par_cost_categories as t6', 't2.cost_category_id', 't6.id')
                     ->leftJoin('par_cost_elements as t7', 't2.element_id', 't7.id')
                     ->join('par_currencies as t8', 't2.currency_id', 't8.id')
-                    ->select(DB::raw("t1.id,'Quotation' as invoice_description,now() as date_of_invoicing, '' as invoice_number, concat(t5.name,'-', t6.name, '-', t7.name) as element_costs, sum(t2.cost*$quantity) as total_invoice_amount,t8.name as currency"))
+                    ->select(DB::raw("t1.id, 'Quotation' as invoice_description, now() as date_of_invoicing, '' as invoice_number, concat(t5.name, '-', t6.name, '-', t7.name) as element_costs, sum(t2.cost * $quantity) as total_invoice_amount, t8.name as currency"))
                     ->where($invoice_appfeearray)
+                    ->groupBy('t1.id', 't5.name', 't6.name', 't7.name', 't8.name')  // Add all non-aggregated columns to GROUP BY
                     ->get();
+
+
                 if ($module_id == 4  && $sub_module_id != 81) {
                     $fees_data = array();
                     $import_data =  $this->getImportInvoiceElementFeesData($module_id, $application_code, 6);
@@ -4403,17 +4410,33 @@ class UtilitiesController extends Controller
     }
     function getGeneratedInvoices($application_code)
     {
+        // $invoice_data = DB::connection('mis_db')->table('tra_application_invoices as t1')
+        //     ->join('tra_invoice_details as t2', 't1.id', 't2.invoice_id')
+        //     ->join('par_currencies as t3', 't2.paying_currency_id', 't3.id')
+        //     ->join('tra_element_costs as t4', 't2.element_costs_id', 't4.id')
+        //     ->join('par_fee_types as t5', 't4.feetype_id', 't5.id')
+        //     ->leftJoin('par_cost_categories as t6', 't4.cost_category_id', 't6.id')
+        //     ->leftJoin('par_cost_elements as t7', 't4.element_id', 't7.id')
+        //     ->leftJoin('tra_payments as t8', 't1.id', 't8.invoice_id')
+        //     ->select(DB::raw("t1.id,t1.application_code, t1.id as invoice_id, t1.tracking_no, 'Proforma Invoice' as invoice_description,  t1.invoice_no as invoice_number,t1.tracking_no, t1.date_of_invoicing,concat(t5.name,'-', t6.name, '-', t7.name) as element_costs, (t2.total_element_amount) as total_invoice_amount,t3.name as currency,if(t8.id >0, 'Paid', 'Not Paid') as payment_status,880223050476 as iremboInvoiceNumber, t8.amount_paid"))
+        //     ->where(array('t1.application_code' => $application_code))
+        //     ->get();
+        // return $invoice_data;
+
         $invoice_data = DB::connection('mis_db')->table('tra_application_invoices as t1')
-            ->join('tra_invoice_details as t2', 't1.id', 't2.invoice_id')
-            ->join('par_currencies as t3', 't2.paying_currency_id', 't3.id')
-            ->join('tra_element_costs as t4', 't2.element_costs_id', 't4.id')
-            ->join('par_fee_types as t5', 't4.feetype_id', 't5.id')
-            ->leftJoin('par_cost_categories as t6', 't4.cost_category_id', 't6.id')
-            ->leftJoin('par_cost_elements as t7', 't4.element_id', 't7.id')
-            ->leftJoin('tra_payments as t8', 't1.id', 't8.invoice_id')
-            ->select(DB::raw("t1.id,t1.application_code, t1.id as invoice_id, t1.tracking_no, 'Proforma Invoice' as invoice_description,  t1.invoice_no as invoice_number,t1.tracking_no, t1.date_of_invoicing,concat(t5.name,'-', t6.name, '-', t7.name) as element_costs, (t2.total_element_amount) as total_invoice_amount,t3.name as currency,if(t8.id >0, 'Paid', 'Not Paid') as payment_status,880223050476 as iremboInvoiceNumber, t8.amount_paid"))
-            ->where(array('t1.application_code' => $application_code))
+            ->join('tra_invoice_details as t2', 't1.id', '=', 't2.invoice_id')
+            ->join('par_currencies as t3', 't2.paying_currency_id', '=', 't3.id')
+            ->join('tra_element_costs as t4', 't2.element_costs_id', '=', 't4.id')
+            ->join('par_fee_types as t5', 't4.feetype_id', '=', 't5.id')
+            ->leftJoin('par_cost_categories as t6', 't4.cost_category_id', '=', 't6.id')
+            ->leftJoin('par_cost_elements as t7', 't4.element_id', '=', 't7.id')
+            ->leftJoin('tra_payments as t8', 't1.id', '=', 't8.invoice_id')
+            ->select(
+                DB::raw("t1.id, t1.application_code, t1.id as invoice_id, t1.tracking_no, 'Proforma Invoice' as invoice_description, t1.invoice_no as invoice_number, t1.tracking_no, t1.date_of_invoicing, CONCAT(t5.name, '-', t6.name, '-', t7.name) as element_costs, (t2.total_element_amount) as total_invoice_amount, t3.name as currency, CASE WHEN t8.id > 0 THEN 'Paid' ELSE 'Not Paid' END as payment_status, 880223050476 as iremboInvoiceNumber, t8.amount_paid")
+            )
+            ->where('t1.application_code', $application_code)
             ->get();
+
         return $invoice_data;
     }
     public function  onLoadGeneratedApplicationInvoice(Request $req)

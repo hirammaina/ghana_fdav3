@@ -13,11 +13,12 @@
 
 
 use Modules\Productapplicationsreport\Http\Controllers\ProductApplicationsReportController;
+
 Route::group(['middleware' => 'web', 'prefix' => 'productapplicationsreport'], function () {
     //Route::get('/', [ProductApplicationsReportController::class, 'index']);
-    Route::get('ExportProductApplicationDetails',  [ProductApplicationsReportController::class,'ExportProductApplicationDetails']);
-    Route::get('ExportPremiseApplicationDetails',  [ProductApplicationsReportController::class,'ExportPremiseApplicationDetails']);
-    Route::get('ExportGMPApplicationDetails',  [ProductApplicationsReportController::class,'ExportGMPApplicationDetails']);
-    Route::get('ExportClinicalTrailApplicationDetails',  [ProductApplicationsReportController::class,'ExportClinicalTrailApplicationDetails']);
-    Route::get('ExportImportExportApplicationDetails',  [ProductApplicationsReportController::class,'ExportImportExportApplicationDetails']);
+    Route::get('ExportProductApplicationDetails',  [ProductApplicationsReportController::class, 'ExportProductApplicationDetails']);
+    Route::get('ExportPremiseApplicationDetails',  [ProductApplicationsReportController::class, 'ExportPremiseApplicationDetails']);
+    Route::get('ExportGMPApplicationDetails',  [ProductApplicationsReportController::class, 'ExportGMPApplicationDetails']);
+    Route::get('ExportClinicalTrailApplicationDetails',  [ProductApplicationsReportController::class, 'ExportClinicalTrailApplicationDetails']);
+    Route::get('ExportImportExportApplicationDetails',  [ProductApplicationsReportController::class, 'ExportImportExportApplicationDetails']);
 });

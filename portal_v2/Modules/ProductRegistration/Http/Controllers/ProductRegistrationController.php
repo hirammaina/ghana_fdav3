@@ -324,6 +324,7 @@ class ProductRegistrationController extends Controller
     }
     public function onSaveProductApplication(Request $req)
     {
+
         try {
             DB::beginTransaction();
             $product_id = $req->product_id;
@@ -410,7 +411,8 @@ class ProductRegistrationController extends Controller
                 }
 
                 if ($resp['success']) {
-                    $sql = DB::connection('mis_db')->table('tra_application_documentsdefination')->where(array('application_code' => $application_code))->first();
+                    //$sql = DB::connection('mis_db')->table('tra_application_documentsdefination')->where(array('application_code' => $application_code))->first();
+                    $sql = DB::table('mis_db.tra_application_documentsdefination')->where(array('application_code' => $application_code))->first();
                     if (!$sql) {
                         //print_r('test');
                         initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no . rand(0, 100), $trader_id);
@@ -431,7 +433,13 @@ class ProductRegistrationController extends Controller
                 }
             } else {
 
+
+
                 $resp = insertRecord('wb_product_information', $product_infor, $email_address);
+
+
+
+
 
                 $product_res =  $resp;
                 $ref_id = getSingleRecordColValue('tra_submodule_referenceformats', array('sub_module_id' => $sub_module_id, 'module_id' => $module_id, 'reference_type_id' => 1), 'reference_format_id', 'mis_db');
@@ -443,6 +451,7 @@ class ProductRegistrationController extends Controller
                 $assessment_code = getSingleRecordColValue('par_assessment_procedures', array('id' => $req->assessment_procedure_id), 'code', 'mis_db');
                 $device_typecode = getSingleRecordColValue('par_device_types', array('id' => $req->device_type_id), 'code', 'mis_db');
                 $process_id = getSingleRecordColValue('wf_tfdaprocesses', array('module_id' => $module_id, 'section_id' => $section_id, 'sub_module_id' => $sub_module_id), 'id', 'mis_db');
+
                 if ($class_code == '') {
                     $class_code = $section_code;
                 }
@@ -481,8 +490,9 @@ class ProductRegistrationController extends Controller
 
                 $resp = insertRecord('wb_product_applications', $app_data, $email_address);
 
+
                 if ($resp['success']) {
-                    initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no . rand(0, 100), $trader_id);
+                    //initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no . rand(0, 100), $trader_id);
                     saveApplicationSubmissionDetails($application_code, 'wb_product_applications');
 
 
@@ -512,6 +522,7 @@ class ProductRegistrationController extends Controller
                         'created_on' => Carbon::now()
                     );
                 }
+
                 if (count($routesadmin)) {
                     DB::table('wb_prod_routeofadministrations')->where('product_id', $product_id)->delete();
                     DB::table('wb_prod_routeofadministrations')->insert($routesadmin);
@@ -1530,6 +1541,7 @@ class ProductRegistrationController extends Controller
             $section_id = $req->section_id;
             $application_status = $req->application_status;
             $mis_db = DB::connection('mis_db')->getDatabaseName();
+
             $data = array();
             //get the records 
             $records = DB::table('wb_product_applications as t1')
@@ -1789,8 +1801,8 @@ class ProductRegistrationController extends Controller
         try {
             $application_code = $req->application_code;
             $data = array();
-
-            $mis_db = DB::connection('mis_db')->getDatabaseName();
+            $mis_db = "mis_db";
+            // $mis_db = DB::connection('mis_db')->getDatabaseName();
             //get the records ,date_format(manufacturing_date, '%m/%d/%Y') as manufacturing_date, date_format(expiry_date, '%m/%d/%Y') as expiry_date
             $records = DB::table('wb_product_applications as t1')
                 ->select(DB::raw("t1.*,t5.name as local_agent_name,t5.name as local_agent,  t2.*,t1.application_status_id as status_id, t3.name as status_name,t6.manufacturer_id, t4.router_link,t1.trader_id as applicant_id, t4.name as process_title"))
@@ -3004,7 +3016,8 @@ class ProductRegistrationController extends Controller
 
 
             $product_id = getSingleRecordColValue('wb_product_applications', array('application_code' => $req->application_code), 'product_id');
-            $mis_db = DB::connection('mis_db')->getDatabaseName();
+            // $mis_db = DB::connection('mis_db')->getDatabaseName();
+            $mis_db = "mis_db";
             $records = DB::table('wb_sample_information as t1')
                 ->select('t1.*', 't2.name as quantity_unit', 't3.name as pack_unit', 't4.name as sample_status', 't5.name as sample_storage')
                 ->leftjoin($mis_db . '.par_packaging_units as t2', 't1.quantity_unit_id', '=', 't2.id')
@@ -3226,7 +3239,7 @@ class ProductRegistrationController extends Controller
             $application_code = $req->application_code;
             $data = array();
             //get the records 
-            $mis_db = DB::connection('mis_db')->getDatabaseName();
+            $mis_db = "mis_db"; //DB::connection('mis_db')->getDatabaseName();
             $records = DB::table('wb_appsubmissions_typedetails as t1')
                 ->select(DB::raw("t1.*,t1.application_status_id as status_id, t3.name as status_name, t4.router_link,t1.trader_id as applicant_id, t4.name as process_title"))
                 ->leftJoin('wb_statuses as t3', 't1.application_status_id', '=', 't3.id')
@@ -3239,6 +3252,7 @@ class ProductRegistrationController extends Controller
                 ->leftJoin($mis_db . '.tra_premises as t5', 't1.local_agent_id', '=', 't5.id')
                 ->where(array('t1.group_application_code' => $application_code, 't4.appsubmissions_type_id' => 2))
                 ->first();
+
             $records->{"form_fields"} = getApplicationGeneralFormsFields($records);
 
             $res = array('success' => true, 'data' => $records);
@@ -3261,7 +3275,7 @@ class ProductRegistrationController extends Controller
             $trader_id = $req->trader_id;
             $data = array();
             $group_application_code = $req->group_application_code;
-            $mis_db = DB::connection('mis_db')->getDatabaseName();
+            $mis_db = "mis_db";
 
             if (validateIsNumeric($group_application_code)) {
                 //get the records 

@@ -526,6 +526,7 @@ class DashboardController extends Controller
     function getUserIntrayDashboard($request, $is_internaluser, $isuser_assignment = false)
     {
 
+
         $user_id = $this->user_id;
         //$limsusr_id = getLimsUserId($user_id);
 
@@ -725,7 +726,6 @@ class DashboardController extends Controller
                 $results = $qry->get();
             }
             //LIMS records 
-
 
             $res = array(
                 'success' => true,

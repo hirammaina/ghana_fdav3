@@ -594,7 +594,7 @@ class DocumentManagementController extends Controller
 				->join('par_document_types as t2', 't1.document_type_id', '=', 't2.id')
 				->select(DB::raw("t4.remarks, t1.id as document_requirement_id, t4.application_code,
 						t4.node_ref, t2.name as document_type, t4.id,t4.initial_file_name,t4.file_name, t1.module_id,t1.sub_module_id,t1.section_id,
-						t4.file_type,t4.uploaded_on,CONCAT_WS(' ',decrypt(t5.first_name),decrypt(t5.last_name)) as uploaded_by,t1.is_mandatory,
+						t4.file_type,t4.uploaded_on,CONCAT_WS(' ',decryptVal(t5.first_name),decryptVal(t5.last_name)) as uploaded_by,t1.is_mandatory,
 						t1.id as document_requirement_id, t1.document_type_id,t2.name as document_type, t1.name as document_requirement"))
 				->leftJoin('tra_application_uploadeddocuments as t4', function ($join) use ($application_code) {
 					$join->on("t1.id", "=", "t4.document_requirement_id")
@@ -1433,17 +1433,30 @@ class DocumentManagementController extends Controller
 			}
 			$data = array();
 			$upload_url =  Config('constants.dms.system_uploadurl');
-			$qry = DB::connection('mis_db')->table('par_document_types as t1')
-				->join('tra_documentupload_requirements as t2', 't1.id', '=', 't2.document_type_id')
+			// $qry = DB::connection('mis_db')->table('par_document_types as t1')
+			// 	->join('tra_documentupload_requirements as t2', 't1.id', '=', 't2.document_type_id')
+			// 	->select(DB::raw("t4.remarks, t1.id as document_type_id, t4.product_id, t2.id as document_requirement_id,
+			// 			 t1.name as document_type,t2.name as document_requirement, t4.id,t4.initial_file_name,t4.file_name,t4.document_folder,thumbnail_folder,
+			// 			t4.filetype,t4.uploaded_on,CONCAT_WS(' ',decryptVal(t5.first_name),decryptVal(t5.last_name)) as uploaded_by"))
+			// 	->leftJoin('tra_uploadedproduct_images as t4', function ($join) use ($product_id) {
+			// 		$join->on("t2.id", "=", "t4.document_requirement_id")
+			// 			->where("t4.portal_product_id", "=", $product_id);
+			// 	})
+			// 	->leftJoin('users as t5', 't4.uploaded_by', '=', 't5.id')
+			// 	->where(array('t1.id' => 6, 'sub_module_id' => $sub_module_id, 'section_id' => $section_id));
+
+			$qry = DB::table('mis_db.par_document_types as t1')
+				->join('mis_db.tra_documentupload_requirements as t2', 't1.id', '=', 't2.document_type_id')
 				->select(DB::raw("t4.remarks, t1.id as document_type_id, t4.product_id, t2.id as document_requirement_id,
 						 t1.name as document_type,t2.name as document_requirement, t4.id,t4.initial_file_name,t4.file_name,t4.document_folder,thumbnail_folder,
-						t4.filetype,t4.uploaded_on,CONCAT_WS(' ',decrypt(t5.first_name),decrypt(t5.last_name)) as uploaded_by"))
-				->leftJoin('tra_uploadedproduct_images as t4', function ($join) use ($product_id) {
+						t4.filetype,t4.uploaded_on,CONCAT_WS(' ',mis_db.decryptVal(t5.first_name),mis_db.decryptVal(t5.last_name)) as uploaded_by"))
+				->leftJoin('mis_db.tra_uploadedproduct_images as t4', function ($join) use ($product_id) {
 					$join->on("t2.id", "=", "t4.document_requirement_id")
 						->where("t4.portal_product_id", "=", $product_id);
 				})
-				->leftJoin('users as t5', 't4.uploaded_by', '=', 't5.id')
+				->leftJoin('mis_db.users as t5', 't4.uploaded_by', '=', 't5.id')
 				->where(array('t1.id' => 6, 'sub_module_id' => $sub_module_id, 'section_id' => $section_id));
+
 
 			$results = $qry->get();
 			foreach ($results  as $res) {

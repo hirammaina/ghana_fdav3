@@ -16,11 +16,12 @@ if (!function_exists('aes_encrypt')) {
     }
 }
 if (!function_exists('sys_error_handler')) {
-    function sys_error_handler($error='', $level=1, $me=[], $class_array=[], $user_id)
+    function sys_error_handler($error = '', $level = 1, $me = [], $class_array = [], $user_id)
     {
         return DbHelper::sys_error_handler($error, $level, $me, $class_array, $user_id);
     }
-}if (!function_exists('generateInvoiceNo')) {
+}
+if (!function_exists('generateInvoiceNo')) {
     function generateInvoiceNo($user_id)
     {
         return UtilityHelper::generateInvoiceNo($user_id);
@@ -33,9 +34,9 @@ if (!function_exists('aes_encryptAll')) {
     }
 }
 if (!function_exists('returnColumnParamFromArray')) {
-    function returnColumnParamFromArray($dataArray,$dataValue,$col)
+    function returnColumnParamFromArray($dataArray, $dataValue, $col)
     {
-        return UtilityHelper::returnColumnParamFromArray($dataArray,$dataValue,$col);
+        return UtilityHelper::returnColumnParamFromArray($dataArray, $dataValue, $col);
     }
 }
 
@@ -53,9 +54,9 @@ if (!function_exists('getEncryptionKey')) {
 }
 
 if (!function_exists('unsetPrimaryIDsInArray')) {
-    function unsetPrimaryIDsInArray($array,$primary_key)
+    function unsetPrimaryIDsInArray($array, $primary_key)
     {
-        return DbHelper::unsetPrimaryIDsInArray($array,$primary_key);
+        return DbHelper::unsetPrimaryIDsInArray($array, $primary_key);
     }
 }
 if (!function_exists('formatBytes')) {
@@ -87,9 +88,9 @@ if (!function_exists('generateUniqID')) {
     }
 }
 if (!function_exists('generateApplicationCode')) {
-    function generateApplicationCode($module_id, $table_name,$con='mysql')
+    function generateApplicationCode($module_id, $table_name, $con = 'mysql')
     {
-        return ReferencingHelper::generateApplicationCode($module_id, $table_name,$con);
+        return ReferencingHelper::generateApplicationCode($module_id, $table_name, $con);
     }
 }
 if (!function_exists('generatePwdSaltOnRegister')) {
@@ -141,23 +142,21 @@ if (!function_exists('getApplicationGeneralFormsFields')) {
 }
 
 if (!function_exists('returnActionColumn')) {
-    function returnActionColumn($status_id,$actionColumnData)
+    function returnActionColumn($status_id, $actionColumnData)
     {
-        return UtilityHelper::returnActionColumn($status_id,$actionColumnData);
+        return UtilityHelper::returnActionColumn($status_id, $actionColumnData);
     }
-    
 }
 if (!function_exists('saveApplicationSubmissionDetails')) {
-    function saveApplicationSubmissionDetails($application_code,$table_name)
+    function saveApplicationSubmissionDetails($application_code, $table_name)
     {
-        return UtilityHelper::saveApplicationSubmissionDetails($application_code,$table_name);
+        return UtilityHelper::saveApplicationSubmissionDetails($application_code, $table_name);
     }
-    
 }
 if (!function_exists('returnFuncResponses')) {
-    function returnFuncResponses($resp,$title,$return_field,$return_value)
+    function returnFuncResponses($resp, $title, $return_field, $return_value)
     {
-        return UtilityHelper::returnFuncResponses($resp,$title,$return_field,$return_value);
+        return UtilityHelper::returnFuncResponses($resp, $title, $return_field, $return_value);
     }
 }
 
@@ -175,31 +174,30 @@ if (!function_exists('convertStdClassObjToArray')) {
     }
 }
 if (!function_exists('funcForeignexistValidation')) {
-    function funcForeignexistValidation($foreign_key,$record_id,$check_foreigntable)
+    function funcForeignexistValidation($foreign_key, $record_id, $check_foreigntable)
     {
-        return DbHelper::funcForeignexistValidation($foreign_key,$record_id,$check_foreigntable);
-       
+        return DbHelper::funcForeignexistValidation($foreign_key, $record_id, $check_foreigntable);
     }
 }
 
 if (!function_exists('insertRecordNoTransaction')) {
-    function insertRecordNoTransaction($table_name, $table_data, $user_id)
+    function insertRecordNoTransaction($table_name, $table_data, $user_id, $con = "mysql")
     {
-        return DbHelper::insertRecordNoTransaction($table_name, $table_data, $user_id);
+        return DbHelper::insertRecordNoTransaction($table_name, $table_data, $user_id, $con);
     }
 }
 
 if (!function_exists('insertRecord')) {
-    function insertRecord($table_name, $table_data, $user_id,$con='mysql')
+    function insertRecord($table_name, $table_data, $user_id, $con = 'mysql')
     {
-        return DbHelper::insertRecord($table_name, $table_data, $user_id,$con);
+        return DbHelper::insertRecord($table_name, $table_data, $user_id, $con);
     }
 }
 
 if (!function_exists('updateRecord')) {
-    function updateRecord($table_name, $previous_data, $where, $table_data, $user_id,$con='mysql')
+    function updateRecord($table_name, $previous_data, $where, $table_data, $user_id, $con = 'mysql')
     {
-        return DbHelper::updateRecord($table_name, $previous_data, $where, $table_data, $user_id,$con);
+        return DbHelper::updateRecord($table_name, $previous_data, $where, $table_data, $user_id, $con);
     }
 }
 
@@ -218,9 +216,9 @@ if (!function_exists('deleteRecord')) {
 }
 
 if (!function_exists('deleteRecordNoTransaction')) {
-    function deleteRecordNoTransaction($table_name, $previous_data, $where_data, $user_id,$con='mysql')
+    function deleteRecordNoTransaction($table_name, $previous_data, $where_data, $user_id, $con = 'mysql')
     {
-        return DbHelper::deleteRecordNoTransaction($table_name, $previous_data, $where_data, $user_id,$con);
+        return DbHelper::deleteRecordNoTransaction($table_name, $previous_data, $where_data, $user_id, $con);
     }
 }
 
@@ -267,16 +265,17 @@ if (!function_exists('decryptSimpleArray')) {
 }
 
 if (!function_exists('recordExists')) {
-    function recordExists($table_name, $where,$con='mysql')
+    function recordExists($table_name, $where, $con = 'mysql')
+    //function recordExists($table_name, $where, $con = 'mysql')
     {
-        return DbHelper::recordExists($table_name, $where,$con);
+        return DbHelper::recordExists($table_name, $where, $con);
     }
 }
 
 if (!function_exists('getPreviousRecords')) {
-    function getPreviousRecords($table_name, $where,$con="mysql")
+    function getPreviousRecords($table_name, $where, $con = "mysql")
     {
-        return DbHelper::getPreviousRecords($table_name, $where,$con);
+        return DbHelper::getPreviousRecords($table_name, $where, $con);
     }
 }
 
@@ -315,21 +314,21 @@ if (!function_exists('belongsToSuperGroup')) {
     }
 }
 if (!function_exists('getParameterItem')) {
-    function getParameterItem($table_name,$record_id,$con)
+    function getParameterItem($table_name, $record_id, $con)
     {
-        return DbHelper::getParameterItem($table_name,$record_id,$con);
+        return DbHelper::getParameterItem($table_name, $record_id, $con);
     }
 }
 if (!function_exists('getParameterItems')) {
-    function getParameterItems($table_name,$filter,$con)
+    function getParameterItems($table_name, $filter, $con)
     {
-        return DbHelper::getParameterItems($table_name,$filter,$con);
+        return DbHelper::getParameterItems($table_name, $filter, $con);
     }
 }
 if (!function_exists('returnParamFromArray')) {
-    function returnParamFromArray($dataArray,$dataValue)
+    function returnParamFromArray($dataArray, $dataValue)
     {
-        return UtilityHelper::returnParamFromArray($dataArray,$dataValue);
+        return UtilityHelper::returnParamFromArray($dataArray, $dataValue);
     }
 }
 
@@ -342,9 +341,9 @@ if (!function_exists('insertReturnID')) {
 }
 
 if (!function_exists('insertRecordNoAudit')) {
-    function insertRecordNoAudit($table_name, $table_data,$con)
+    function insertRecordNoAudit($table_name, $table_data, $con)
     {
-        return DbHelper::insertRecordNoAudit($table_name, $table_data,$con);
+        return DbHelper::insertRecordNoAudit($table_name, $table_data, $con);
     }
 }
 
@@ -377,16 +376,16 @@ if (!function_exists('converter22')) {
 }
 
 if (!function_exists('getSingleRecord')) {
-    function getSingleRecord($table, $where, $con='mysql')
+    function getSingleRecord($table, $where, $con = 'mysql')
     {
-        return DbHelper::getSingleRecord($table, $where,$con);
+        return DbHelper::getSingleRecord($table, $where, $con);
     }
 }
 
 if (!function_exists('getSingleRecordColValue')) {
-    function getSingleRecordColValue($table, $where, $col,$con='mysql')
+    function getSingleRecordColValue($table, $where, $col, $con = 'mysql')
     {
-        return DbHelper::getSingleRecordColValue($table, $where, $col,$con);
+        return DbHelper::getSingleRecordColValue($table, $where, $col, $con);
     }
 }
 
@@ -403,21 +402,21 @@ if (!function_exists('validateIsNumeric')) {
     }
 }
 if (!function_exists('generateProductReferenceNo')) {
-    function generateProductReferenceNo($section_id,$classification_id,$sub_module_id)
+    function generateProductReferenceNo($section_id, $classification_id, $sub_module_id)
     {
-        return ReferencingHelper::generateProductReferenceNo($section_id,$classification_id,$sub_module_id);
+        return ReferencingHelper::generateProductReferenceNo($section_id, $classification_id, $sub_module_id);
     }
 }
 if (!function_exists('generatePremisesReferenceNo')) {
-    function generatePremisesReferenceNo($business_type_id,$sub_module_id)
+    function generatePremisesReferenceNo($business_type_id, $sub_module_id)
     {
-        return ReferencingHelper::generatePremisesReferenceNo($business_type_id,$sub_module_id);
+        return ReferencingHelper::generatePremisesReferenceNo($business_type_id, $sub_module_id);
     }
 }
 if (!function_exists('generateGMPReferenceNo')) {
-    function generateGMPReferenceNo($section_id,$sub_module_id)
+    function generateGMPReferenceNo($section_id, $sub_module_id)
     {
-        return ReferencingHelper::generateGMPReferenceNo($section_id,$sub_module_id);
+        return ReferencingHelper::generateGMPReferenceNo($section_id, $sub_module_id);
     }
 }
 
@@ -425,14 +424,12 @@ if (!function_exists('dms_createFolder')) {
     function dms_createFolder($parent_folder, $name, $comment, $user_email)
     {
         return DMSHelper::dms_createFolder($parent_folder, $name, $comment, $user_email);
-
     }
 }
 if (!function_exists('createDMSParentFolder')) {
     function createDMSParentFolder($parent_folder, $module_id, $name, $comment, $owner)
     {
         return DMSHelper::createDMSParentFolder($parent_folder, $module_id, $name, $comment, $owner);
-
     }
 }
 
@@ -441,21 +438,18 @@ if (!function_exists('authDms')) {
     function authDms($usr_name)
     {
         return DMSHelper::authDms($usr_name);
-
     }
 }
 if (!function_exists('validateTicketDMS')) {
     function validateTicketDMS($ticket)
     {
         return DMSHelper::validateTicketDMS($ticket);
-
     }
 }
 if (!function_exists('logoutDMS')) {
     function logoutDMS($ticket)
     {
         return DMSHelper::logoutDMS($ticket);
-
     }
 }
 
@@ -463,133 +457,116 @@ if (!function_exists('logoutDMS')) {
     function logoutDMS($ticket)
     {
         return DMSHelper::logoutDMS($ticket);
-
     }
 }
 if (!function_exists('dmsCreateAccount')) {
     function dmsCreateAccount($user_data)
     {
         return DMSHelper::dmsCreateAccount($user_data);
-
     }
 }
 if (!function_exists('dmsDeleteAccount')) {
     function dmsDeleteAccount($userName)
     {
         return DMSHelper::dmsDeleteAccount($userName);
-
     }
 }
 if (!function_exists('dmsGetAccount')) {
     function dmsGetAccount($userName)
     {
         return DMSHelper::dmsGetAccount($userName);
-
     }
 }
 if (!function_exists('dmsGetAllAccount')) {
     function dmsGetAllAccount()
     {
         return DMSHelper::dmsGetAllAccount();
-
     }
 }
 
 if (!function_exists('dmsUpdateAccount')) {
-    function dmsUpdateAccount($userName,$userDetails)
+    function dmsUpdateAccount($userName, $userDetails)
     {
-        return DMSHelper::dmsUpdateAccount($userName,$userDetails);
-
+        return DMSHelper::dmsUpdateAccount($userName, $userDetails);
     }
 }
 if (!function_exists('dmsUpdateAccountPassword')) {
-    function dmsUpdateAccountPassword($userName,$oldPassword,$newPassword)
+    function dmsUpdateAccountPassword($userName, $oldPassword, $newPassword)
     {
-        return DMSHelper::dmsUpdateAccountPassword($userName,$oldPassword,$newPassword);
-
+        return DMSHelper::dmsUpdateAccountPassword($userName, $oldPassword, $newPassword);
     }
 }
 if (!function_exists('dmsGetAppSiteRoot')) {
     function dmsGetAppSiteRoot($root_site = null)
     {
         return DMSHelper::dmsGetAppSiteRoot($root_site);
-
     }
 }
 if (!function_exists('dmsCreateAppSiteRoot')) {
     function dmsCreateAppSiteRoot($site_details)
     {
         return DMSHelper::dmsCreateAppSiteRoot($site_details);
-
     }
 }
 
 if (!function_exists('dmsGetAppSiteContainer')) {
-    function dmsGetAppSiteContainer($site_id,$container=null)
+    function dmsGetAppSiteContainer($site_id, $container = null)
     {
-        return DMSHelper::dmsGetAppSiteContainer($site_id,$container);
-
+        return DMSHelper::dmsGetAppSiteContainer($site_id, $container);
     }
 }
 if (!function_exists('dmsGetAppSiteContainerNodes')) {
-    function dmsGetAppSiteContainerNodes($site_id,$container)
+    function dmsGetAppSiteContainerNodes($site_id, $container)
     {
-        return DMSHelper::dmsGetAppSiteContainerNodes($site_id,$container);
-
+        return DMSHelper::dmsGetAppSiteContainerNodes($site_id, $container);
     }
 }
 if (!function_exists('dmsGetAppRootNodes')) {
     function dmsGetAppRootNodes($defination)
     {
         return DMSHelper::dmsGetAppRootNodes($defination);
-
     }
 }
 if (!function_exists('dmsGetAppRootNodesChildren')) {
     function dmsGetAppRootNodesChildren($parent_node)
     {
         return DMSHelper::dmsGetAppRootNodesChildren($parent_node);
-
     }
 }
 if (!function_exists('dmsGetAppRootNodesContents')) {
     function dmsGetAppRootNodesContents($parent_node)
     {
         return DMSHelper::dmsGetAppRootNodesContents($parent_node);
-
     }
 }
 if (!function_exists('dmsCreateAppRootNodesChildren')) {
-    function dmsCreateAppRootNodesChildren($parent_node,$node_details)
+    function dmsCreateAppRootNodesChildren($parent_node, $node_details)
     {
-        return DMSHelper::dmsCreateAppRootNodesChildren($parent_node,$node_details);
-
+        return DMSHelper::dmsCreateAppRootNodesChildren($parent_node, $node_details);
     }
 }
 if (!function_exists('dmsUpdateAppRootNodesChildren')) {
-    function dmsUpdateAppRootNodesChildren($node_id,$node_details)
+    function dmsUpdateAppRootNodesChildren($node_id, $node_details)
     {
-        return DMSHelper::dmsUpdateAppRootNodesChildren($node_id,$node_details);
-
+        return DMSHelper::dmsUpdateAppRootNodesChildren($node_id, $node_details);
     }
-}if (!function_exists('dmsUploadNodeDocument')) {
-    function dmsUploadNodeDocument($destination_node,$document_path, $origFileName,$update_noderef=null, $description=null)
+}
+if (!function_exists('dmsUploadNodeDocument')) {
+    function dmsUploadNodeDocument($destination_node, $document_path, $origFileName, $update_noderef = null, $description = null)
     {
-        return DMSHelper::dmsUploadNodeDocument($destination_node,$document_path, $origFileName,$update_noderef, $description);
+        return DMSHelper::dmsUploadNodeDocument($destination_node, $document_path, $origFileName, $update_noderef, $description);
     }
 }
 if (!function_exists('dmsDeleteAppRootNodesChildren')) {
     function dmsDeleteAppRootNodesChildren($node_id)
     {
         return DMSHelper::dmsDeleteAppRootNodesChildren($node_id);
-
     }
 }
 if (!function_exists('getNonStructuredDestinationNode')) {
-    function getNonStructuredDestinationNode($document_type_id,$document_site_id)
+    function getNonStructuredDestinationNode($document_type_id, $document_site_id)
     {
-        return DMSHelper::getNonStructuredDestinationNode($document_type_id,$document_site_id);
-
+        return DMSHelper::getNonStructuredDestinationNode($document_type_id, $document_site_id);
     }
 }
 
@@ -599,7 +576,6 @@ if (!function_exists('dms_FolderDocuments')) {
     function dms_FolderDocuments($folder_id, $user_email)
     {
         return DMSHelper::dms_FolderDocuments($folder_id, $user_email);
-
     }
 }
 //check folder documents
@@ -607,69 +583,58 @@ if (!function_exists('check_DmsFolderDocuments')) {
     function check_DmsFolderDocuments($folder_id, $user_email)
     {
         return DMSHelper::check_DmsFolderDocuments($folder_id, $user_email);
-
     }
 }
 if (!function_exists('downloadDocumentUrl')) {
-    function downloadDocumentUrl($node_ref,$version_id = null)
+    function downloadDocumentUrl($node_ref, $version_id = null)
     {
-        return DMSHelper::downloadDocumentUrl($node_ref,$version_id);
-
+        return DMSHelper::downloadDocumentUrl($node_ref, $version_id);
     }
 }
 if (!function_exists('dmsGetNodePreviousVersions')) {
-    function dmsGetNodePreviousVersions($node_ref,$version_ref=null)
+    function dmsGetNodePreviousVersions($node_ref, $version_ref = null)
     {
-        return DMSHelper::dmsGetNodePreviousVersions($node_ref,$version_ref);
-
+        return DMSHelper::dmsGetNodePreviousVersions($node_ref, $version_ref);
     }
 }
 if (!function_exists('getApplicationSubModuleNodeDetails')) {
-    function getApplicationSubModuleNodeDetails($section_id,$module_id, $sub_module_id,$trader_id,$con='mis_db')
+    function getApplicationSubModuleNodeDetails($section_id, $module_id, $sub_module_id, $trader_id, $con = 'mis_db')
     {
-        return DMSHelper::getApplicationSubModuleNodeDetails($section_id,$module_id, $sub_module_id,$trader_id,$con);
-
+        return DMSHelper::getApplicationSubModuleNodeDetails($section_id, $module_id, $sub_module_id, $trader_id, $con);
     }
 }
 if (!function_exists('getApplicationRootNode')) {
-    function getApplicationRootNode($application_code,$module_id,$sub_module_id)
+    function getApplicationRootNode($application_code, $module_id, $sub_module_id)
     {
-        return DMSHelper::getApplicationRootNode($application_code,$module_id,$sub_module_id);
-
+        return DMSHelper::getApplicationRootNode($application_code, $module_id, $sub_module_id);
     }
 }
-if (!function_exists('getNonStructureDocumentRootNode')){
+if (!function_exists('getNonStructureDocumentRootNode')) {
 
     function getNonStructureDocumentRootNode($document_type_id)
     {
         return DMSHelper::getNonStructureDocumentRootNode($document_type_id);
-
     }
-    
 }
-if (!function_exists('getApplicationApplicableDocuments')){
+if (!function_exists('getApplicationApplicableDocuments')) {
 
-    function getApplicationApplicableDocuments(	$section_id,$sub_module_id,	$status_id)
+    function getApplicationApplicableDocuments($section_id, $sub_module_id,    $status_id)
     {
-        return DMSHelper::getApplicationApplicableDocuments($section_id,$sub_module_id,	$status_id);
-
+        return DMSHelper::getApplicationApplicableDocuments($section_id, $sub_module_id,    $status_id);
     }
-    
 }
 
 
 if (!function_exists('getDocumentTypeRootNode')) {
-    function getDocumentTypeRootNode($parent_node_ref,$application_code,$document_type_id,$trader_email)
+    function getDocumentTypeRootNode($parent_node_ref, $application_code, $document_type_id, $trader_email)
     {
-        return DMSHelper::getDocumentTypeRootNode($parent_node_ref,$application_code,$document_type_id,$trader_email);
-
+        return DMSHelper::getDocumentTypeRootNode($parent_node_ref, $application_code, $document_type_id, $trader_email);
     }
 }
 if (!function_exists('saveApplicationDocumentNodedetails')) {
-    function saveApplicationDocumentNodedetails($application_code,$tracking_no,$dms_node_id,$user,$con='mis_db')
+    function saveApplicationDocumentNodedetails($application_code, $tracking_no, $dms_node_id, $user, $con = 'mis_db')
     {
-        return DMSHelper::saveApplicationDocumentNodedetails($application_code,$tracking_no,$dms_node_id,$user,$con);
-
+        return DMSHelper::saveApplicationDocumentNodedetails($application_code, $tracking_no, $dms_node_id, $user, $con);
     }
 }
 //initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number, $trader_id)
@@ -677,7 +642,6 @@ if (!function_exists('initializeApplicationDMS')) {
     function initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number, $trader_id)
     {
         return DMSHelper::initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number, $trader_id);
-
     }
 }
 //end of the dms function call
@@ -686,7 +650,6 @@ if (!function_exists('utf8ize')) {
     {
         return UtilityHelper::utf8ize($d);
     }
-
 }
 
 if (!function_exists('formatDate')) {
@@ -702,37 +665,36 @@ if (!function_exists('formatDaterpt')) {
         return UtilityHelper::formatDaterpt($date);
     }
 }
-    if (!function_exists('checkForOngoingApplications')) {
-        function checkForOngoingApplications($registered_id, $table_name, $reg_column, $process_id)
-        {
-            return UtilityHelper::checkForOngoingApplications($registered_id, $table_name, $reg_column, $process_id);
-        }
-    }if (!function_exists('checkForPortalOngoingApplications')) {
-        function checkForPortalOngoingApplications($registered_id, $table_name, $reg_column, $process_id)
-        {
-            return UtilityHelper::checkForPortalOngoingApplications($registered_id, $table_name, $reg_column, $process_id);
-        }
+if (!function_exists('checkForOngoingApplications')) {
+    function checkForOngoingApplications($registered_id, $table_name, $reg_column, $process_id)
+    {
+        return UtilityHelper::checkForOngoingApplications($registered_id, $table_name, $reg_column, $process_id);
     }
-    
-    if (!function_exists('getApplicationPrimaryReferenceNo')) {
-        function getApplicationPrimaryReferenceNo($where_statement, $applications_table)
-        {
-            return UtilityHelper::getApplicationPrimaryReferenceNo($where_statement, $applications_table);
-    
-        }
+}
+if (!function_exists('checkForPortalOngoingApplications')) {
+    function checkForPortalOngoingApplications($registered_id, $table_name, $reg_column, $process_id)
+    {
+        return UtilityHelper::checkForPortalOngoingApplications($registered_id, $table_name, $reg_column, $process_id);
     }
-    if (!function_exists('generateApplicationSubRefNumber')) {
-        function generateApplicationSubRefNumber($reg_product_id,$table_name,$ref_id, $codes_array, $sub_module_id, $user_id)
-        {
-            return UtilityHelper::generateApplicationSubRefNumber($reg_product_id,$table_name,$ref_id, $codes_array, $sub_module_id, $user_id);
-        }
+}
+
+if (!function_exists('getApplicationPrimaryReferenceNo')) {
+    function getApplicationPrimaryReferenceNo($where_statement, $applications_table)
+    {
+        return UtilityHelper::getApplicationPrimaryReferenceNo($where_statement, $applications_table);
     }
-    
+}
+if (!function_exists('generateApplicationSubRefNumber')) {
+    function generateApplicationSubRefNumber($reg_product_id, $table_name, $ref_id, $codes_array, $sub_module_id, $user_id)
+    {
+        return UtilityHelper::generateApplicationSubRefNumber($reg_product_id, $table_name, $ref_id, $codes_array, $sub_module_id, $user_id);
+    }
+}
+
 if (!function_exists('createDMSModuleFolders')) {
     function createDMSModuleFolders($parent_id, $module_id, $owner)
     {
         return DMSHelper::createDMSModuleFolders($parent_id, $module_id, $owner);
-
     }
 }
 
@@ -859,15 +821,15 @@ if (!function_exists('returnUniqueArray')) {
     }
 }
 if (!function_exists('generateApplicationRefNumber')) {
-    function generateApplicationRefNumber($ref_id, $codes_array, $year, $process_id, $zone_id, $user_id,$con='mis_db')
+    function generateApplicationRefNumber($ref_id, $codes_array, $year, $process_id, $zone_id, $user_id, $con = 'mis_db')
     {
-        return ReferencingHelper::generateApplicationRefNumber($ref_id, $codes_array, $year, $process_id, $zone_id, $user_id,$con);
+        return ReferencingHelper::generateApplicationRefNumber($ref_id, $codes_array, $year, $process_id, $zone_id, $user_id, $con);
     }
 }
 if (!function_exists('getRecordCodeNo')) {
-    function getRecordCodeNo($table_name,$record_id)
+    function getRecordCodeNo($table_name, $record_id)
     {
-        return ReferencingHelper::getRecordCodeNo($table_name,$record_id);
+        return ReferencingHelper::getRecordCodeNo($table_name, $record_id);
     }
 }
 if (!function_exists('generateTraderNo')) {
@@ -883,9 +845,9 @@ if (!function_exists('getAssignedProcesses')) {
     }
 }
 if (!function_exists('updateApplicationCode')) {
-    function updateApplicationCode($table_name,$application_code_no, $record_id)
+    function updateApplicationCode($table_name, $application_code_no, $record_id)
     {
-        return DbHelper::updateApplicationCode($table_name,$application_code_no, $record_id);
+        return DbHelper::updateApplicationCode($table_name, $application_code_no, $record_id);
     }
 }
 
@@ -903,24 +865,23 @@ if (!function_exists('generateJasperReport')) {
         return $reportsHelper->generateJasperReport($input_file_name, $output_filename, $file_type, $params);
     }
 }
-if(!function_exists('sendMailNotification')){
-	function sendMailNotification($trader_name, $to,$subject,$message,$cc=null,$bcc='',$attachment=null,$attachement_name=''){
-		 return NotificationHelper::sendMailNotification($trader_name, $to,$subject,$message,$cc,$bcc,$attachment,$attachement_name);
-	
-	}
+if (!function_exists('sendMailNotification')) {
+    function sendMailNotification($trader_name, $to, $subject, $message, $cc = null, $bcc = '', $attachment = null, $attachement_name = '')
+    {
+        return NotificationHelper::sendMailNotification($trader_name, $to, $subject, $message, $cc, $bcc, $attachment, $attachement_name);
+    }
 }
 
-if(!function_exists('getEmailTemplateInfo')){
-	function getEmailTemplateInfo($template_id, $vars){
-		 return DbHelper::getEmailTemplateInfo($template_id, $vars);
-	
-	}
+if (!function_exists('getEmailTemplateInfo')) {
+    function getEmailTemplateInfo($template_id, $vars)
+    {
+        return DbHelper::getEmailTemplateInfo($template_id, $vars);
+    }
 }
 if (!function_exists('getProductPrimaryReferenceNo')) {
     function getProductPrimaryReferenceNo($where_statement, $applications_table)
     {
         return UtilityHelper::getProductPrimaryReferenceNo($where_statement, $applications_table);
-
     }
 }
 if (!function_exists('generateProductsSubRefNumber')) {
@@ -930,14 +891,15 @@ if (!function_exists('generateProductsSubRefNumber')) {
     }
 }
 if (!function_exists('funcSaveRegisteredProductOtherdetails')) {
-    function funcSaveRegisteredProductOtherdetails($tra_product_id, $online_product_id,$trader_id)
+    function funcSaveRegisteredProductOtherdetails($tra_product_id, $online_product_id, $trader_id)
     {
-        return UtilityHelper::funcSaveRegisteredProductOtherdetails($tra_product_id, $online_product_id,$trader_id);
+        return UtilityHelper::funcSaveRegisteredProductOtherdetails($tra_product_id, $online_product_id, $trader_id);
     }
-}if (!function_exists('getProductRetentionStatus')) {
-    function getProductRetentionStatus($section_id,$reg_product_id)
+}
+if (!function_exists('getProductRetentionStatus')) {
+    function getProductRetentionStatus($section_id, $reg_product_id)
     {
-        return UtilityHelper::getProductRetentionStatus($section_id,$reg_product_id);
+        return UtilityHelper::getProductRetentionStatus($section_id, $reg_product_id);
     }
 }
 
@@ -949,15 +911,15 @@ if (!function_exists('getInvoiceDetails')) {
     }
 }
 if (!function_exists('getTableData')) {
-    function getTableData($table_name, $where,$con='mysql')
+    // function getTableData($table_name, $where,$con='mysql')
+    function getTableData($table_name, $where, $con = 'mysql')
     {
-        return DbHelper::getTableData($table_name, $where,$con);
+        return DbHelper::getTableData($table_name, $where, $con);
     }
 }
 if (!function_exists('getRecordsWithIds')) {
-    function getRecordsWithIds($table_name,$checkValues,$col,$con='mysql')
+    function getRecordsWithIds($table_name, $checkValues, $col, $con = 'mysql')
     {
-        return DbHelper::getRecordsWithIds($table_name,$checkValues,$col,$con);
+        return DbHelper::getRecordsWithIds($table_name, $checkValues, $col, $con);
     }
 }
-

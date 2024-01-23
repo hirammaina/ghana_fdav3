@@ -44,8 +44,8 @@ class OrganisationConfigController extends Controller
         try {
             $model = 'Modules\\OrganisationConfig\\Entities\\' . $model_name;
             $results = $model::where('is_enabled', 1)
-            ->get()
-            ->toArray();
+                ->get()
+                ->toArray();
             $res = array(
                 'success' => true,
                 'results' => $results,
@@ -93,5 +93,4 @@ class OrganisationConfigController extends Controller
         }
         return response()->json($res);
     }
-
 }

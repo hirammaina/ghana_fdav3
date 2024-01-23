@@ -13,9 +13,8 @@
 
 use Modules\OrganisationConfig\Http\Controllers\OrganisationConfigController;
 
-Route::group(['middleware' => ['auth:api', 'web'], 'prefix' => 'organisationconfig'], function()
-{
+Route::group(['middleware' => ['auth:api', 'web'], 'prefix' => 'organisationconfig'], function () {
     Route::get('/', [OrganisationConfigController::class, 'index']);
-     Route::get('getOrgConfigParamFromModel', [OrganisationConfigController::class,'getOrgConfigParamFromModel']);
-    Route::get('getDepartments', [OrganisationConfigController::class,'getDepartments']);
+    Route::get('getOrgConfigParamFromModel', [OrganisationConfigController::class, 'getOrgConfigParamFromModel']);
+    Route::get('getDepartments', [OrganisationConfigController::class, 'getDepartments']);
 });

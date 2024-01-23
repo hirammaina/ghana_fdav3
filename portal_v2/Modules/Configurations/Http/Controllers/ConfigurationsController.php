@@ -132,7 +132,9 @@ class ConfigurationsController extends Controller
             unset($requestData['zone_notin']);
             $zone_notin = $req->zone_notin;
             //check for exempted data or tables from system 
+
             $check_exempt = DB::connection('mis_db')->table('tra_exemptedpublic_tables')->where(array('table_name' => $table_name))->count();
+            // $check_exempt = DB::table('mis_db.tra_exemptedpublic_tables')->where(array('table_name' => $table_name))->count();
 
             if ($check_exempt > 0 || $table_name == null || $table_name == '') {
                 $res = array('success' => false, 'message' => 'Table has been blocked for access');
@@ -140,6 +142,7 @@ class ConfigurationsController extends Controller
             }
             $sql = DB::connection('mis_db')
                 ->table($table_name . ' as t1');
+
             if (isset($requestData['zone_notin'])) {
             }
 
@@ -149,6 +152,7 @@ class ConfigurationsController extends Controller
                 //check the current allow services 
                 //filter for sub_module
                 $module_id = $req->module_id;
+                if (!is_numeric($module_id)) $module_id = null;
                 unset($requestData['module_id']);
                 $sql =  $sql->join('tra_online_portalservices as t2', 't1.id', '=', 't2.sub_module_id')->where(array('is_online' => 1, 't1.module_id' => $module_id));
             }
@@ -161,7 +165,9 @@ class ConfigurationsController extends Controller
             }
             if ($table_name == 'par_classifications') {
                 $prodclass_category_id = $req->prodclass_category_id;
+                if (!is_numeric($prodclass_category_id)) $prodclass_category_id = null;
                 $section_id = $req->section_id;
+                if (!is_numeric($section_id)) $section_id = null;
                 if (validateIsNumeric($prodclass_category_id)) {
                     $sql->join('par_prodcat_classifications as t2', 't1.id', '=', 't2.classification_id')->where(array('t2.prodclass_category_id' => $prodclass_category_id));
                 } else if (validateIsNumeric($section_id)) {
@@ -177,7 +183,9 @@ class ConfigurationsController extends Controller
             }
             if ($table_name == 'par_assessment_procedures') {
                 $section_id = $req->section_id;
+                if (!is_numeric($section_id)) $section_id = null;
                 $assessmentprocedure_type_id = $req->assessmentprocedure_type_id;
+                if (!is_numeric($assessmentprocedure_type_id)) $assessmentprocedure_type_id = null;
 
                 unset($requestData['section_id']);
                 unset($requestData['assessmentprocedure_type_id']);
@@ -187,6 +195,7 @@ class ConfigurationsController extends Controller
             }
             if ($table_name == 'par_distribution_categories') {
                 $section_id = $req->section_id;
+                if (!is_numeric($section_id)) $section_id = null;
 
                 unset($requestData['section_id']);
                 $sql->join('tra_sectiondistribution_categories as t2', 't1.id', '=', 't2.distribution_category_id')
@@ -195,6 +204,7 @@ class ConfigurationsController extends Controller
 
             if ($table_name == 'par_business_types') {
                 $section_id = $req->section_id;
+                if (!is_numeric($section_id)) $section_id = null;
 
                 unset($requestData['section_id']);
                 $sql->join('tra_sectionsbusiness_types as t2', 't1.id', '=', 't2.business_type_id')
@@ -231,6 +241,7 @@ class ConfigurationsController extends Controller
             if ($table_name == 'par_importexport_permittypes') {
 
                 $sub_module_id = $req->sub_module_id;
+                if (!is_numeric($sub_module_id)) $sub_module_id = null;
 
                 unset($requestData['sub_module_id']);
             }
@@ -247,6 +258,7 @@ class ConfigurationsController extends Controller
             if ($table_name == 'par_product_classificationrules') {
                 if (!empty($requestData)) {
                     $device_type_id = $requestData['device_type_id'];
+                    if (!is_numeric($device_type_id)) $device_type_id = null;
                     unset($requestData['device_type_id']);
                     $sql = $sql->where($requestData)->where(array('t1.device_type_id' => $device_type_id));
                 }
@@ -255,6 +267,7 @@ class ConfigurationsController extends Controller
             if ($table_name == 'wb_formfields_definations') {
 
                 $module_id = $req->module_id;
+                if (!is_numeric($module_id)) $module_id = null;
                 unset($requestData['module_id']);
                 $sql->join('wb_form_fields as t2', 't1.form_field_id', '=', 't2.id')
                     ->join('wb_app_formsdefination as t3', 't1.app_formsdefination_id', '=', 't3.id')

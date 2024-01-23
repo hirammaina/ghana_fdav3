@@ -38,41 +38,43 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
         ],
-		 'mysql_posgres' => array(
-			'driver'   => 'pgsql',
-			'host'     => 'localhost',
-			'database' => 'tfdamis_serverv2',
-			'username' => 'postgres',
-			'password' => 'admin123',
-			'charset'  => 'utf8',
-			'prefix'   => '',
-			'schema'   => 'public',
-		),
+        'mysql_posgres' => array(
+            'driver'   => 'pgsql',
+            'host'     => 'localhost',
+            'database' => 'tfdamis_serverv2',
+            'username' => 'postgres',
+            'password' => 'admin123',
+            'charset'  => 'utf8',
+            'prefix'   => '',
+            'schema'   => 'mis_db',
+        ),
         'mysql' => [
             'driver' => 'pgsql',
             'host' => aes_decrypt(env('DB_HOST', '127.0.0.1')),
             'port' => aes_decrypt(env('DB_PORT', '5432')),
             'database' => aes_decrypt(env('DB_DATABASE', 'ghana_irimsmis')),
-            'username' => aes_decrypt( env('DB_USERNAME', 'forge')),
+            'username' => aes_decrypt(env('DB_USERNAME', 'forge')),
             'password' => aes_decrypt(env('DB_PASSWORD', '')),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8',
             'prefix' => '',
             'strict' => false,
             'engine' => null,
+            "schema" => "mis_db"
         ],
         'pgsql' => [
             'driver' => 'pgsql',
             'host' => aes_decrypt(env('DB_HOST', '127.0.0.1')),
             'port' => aes_decrypt(env('DB_PORT', '5432')),
             'database' => aes_decrypt(env('DB_DATABASE', 'ghana_irimsmis')),
-            'username' => aes_decrypt( env('DB_USERNAME', 'forge')),
+            'username' => aes_decrypt(env('DB_USERNAME', 'forge')),
             'password' => aes_decrypt(env('DB_PASSWORD', '')),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8',
             'prefix' => '',
             'strict' => false,
             'engine' => null,
+            "schema" => "mis_db"
         ],
         'portal_db' => [
             'driver' => 'mysql',
@@ -82,11 +84,12 @@ return [
             'username' =>  aes_decrypt(env('PORTAL_USERNAME', 'forge')),
             'password' =>  aes_decrypt(env('PORTAL_PASSWORD', '')),
             'unix_socket' => env('PORTAL_SOCKET', ''),
-             'charset' => 'utf8mb4',
+            'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
             'strict' => false,
             'engine' => null,
+            "schema" => "portal_db"
         ],
         'financial_db' => [
             'driver' => 'mysql',
@@ -101,6 +104,7 @@ return [
             'prefix' => '',
             'strict' => false,
             'engine' => null,
+            "schema" => "mis_db"
         ],
         'lims_db' => [
             'driver' => 'mysql',
@@ -144,7 +148,7 @@ return [
             'strict' => false,
             'engine' => null,
         ],
-       
+
         'report_db' => [
             'driver' => 'mysql',
             'host' => env('REPORT_HOST', '127.0.0.1'),
@@ -158,6 +162,7 @@ return [
             'prefix' => '',
             'strict' => false,
             'engine' => null,
+            "schema" => "mis_db"
         ],
         'sqlsrv' => [
             'driver' => 'sqlsrv',

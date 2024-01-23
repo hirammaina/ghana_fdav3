@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: Kip
@@ -14,9 +15,10 @@ use Carbon\Carbon;
 
 class DbHelper
 {
-    public static function insertRecordNoTransaction($table_name, $table_data, $user_id,$con)
+    public static function insertRecordNoTransaction($table_name, $table_data, $user_id, $con)
     {
         $record_id = DB::connection($con)->table($table_name)->insertGetId($table_data);
+        //$record_id = DB::table($con . "." . $table_name)->insertGetId($table_data);
         $data = serialize($table_data);
         $audit_detail = array(
             'table_name' => $table_name,
@@ -27,78 +29,91 @@ class DbHelper
             'created_by' => $user_id,
             'created_at' => Carbon::now()
         );
-        DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
-      
+        //DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+        DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
+
+
         return $record_id;
-    } 
-    public static function getTableData($table_name, $where,$con)
+    }
+    public static function getTableData($table_name, $where, $con)
     {
         $qry = DB::connection($con)->table($table_name)
             ->where($where);
+        // $qry = DB::table($con . "." . $table_name)
+        //     ->where($where);
         $results = $qry->first();
         return $results;
     }
-    public static function updateApplicationCode($table_name,$application_code_no, $record_id){
-        $where_data = array('id'=>$record_id);
-        $data = array('application_code'=>$application_code_no, 'dola'=>Carbon::now());
+    public static function updateApplicationCode($table_name, $application_code_no, $record_id)
+    {
+        $where_data = array('id' => $record_id);
+        $data = array('application_code' => $application_code_no, 'dola' => Carbon::now());
         DB::table($table_name)->where($where_data)->update($data);
-
     }
-    public static function getParameterItem($table_name,$record_id,$con){
-       $record_name = '';
-        $rec = DB::connection($con)->table($table_name)->where(array('id'=>$record_id))->value('name');
-        if($rec){
+    public static function getParameterItem($table_name, $record_id, $con)
+    {
+        $record_name = '';
+        $rec = DB::connection($con)->table($table_name)->where(array('id' => $record_id))->value('name');
+        // $rec = DB::table($con . "." . $table_name)->where(array('id' => $record_id))->value('name');
+        if ($rec) {
             $record_name = $rec;
-        }  
-        return $record_name;   
-
+        }
+        return $record_name;
     }
     static function sys_error_handler($error, $level, $me, $class_array, $user_id)
     {
         //defaults
-            $function = "failed to fetch";
-            //class
-            if(isset($class_array[5])){
-              $class = $class_array[5];
-            }else{
-              $class = "Failed to fetch";
-            }
-            //specifics
-            if(isset($me[0]['function'])){
-              $function = $me[0]['function'];
-            }
-            if(isset($me[0]['class'])){
-              $class = $me[0]['class'];
-            }
-            $origin = "function-->".$function." class-->".$class;
+        $function = "failed to fetch";
+        //class
+        if (isset($class_array[5])) {
+            $class = $class_array[5];
+        } else {
+            $class = "Failed to fetch";
+        }
+        //specifics
+        if (isset($me[0]['function'])) {
+            $function = $me[0]['function'];
+        }
+        if (isset($me[0]['class'])) {
+            $class = $me[0]['class'];
+        }
+        $origin = "function-->" . $function . " class-->" . $class;
         //log error
-        DB::connection('mis_db')->table('wb_system_error_logs')->insert(['error'=>$error, 'error_level_id'=>$level, 'originated_from_user_id'=>$user_id, 'error_origin'=>$origin]);
+        DB::connection('mis_db')->table('wb_system_error_logs')->insert(['error' => $error, 'error_level_id' => $level, 'originated_from_user_id' => $user_id, 'error_origin' => $origin]);
+        // DB::table('mis_db.wb_system_error_logs')->insert(['error' => $error, 'error_level_id' => $level, 'originated_from_user_id' => $user_id, 'error_origin' => $origin]);
 
         $res = array(
-                'success' => false,
-                'error'=>$error,
-                'message' => "An Error occured please contact system admin"
-            );
+            'success' => false,
+            'error' => $error,
+            'message' => "An Error occured please contact system admin"
+        );
         return $res;
     }
-    public static function getParameterItems($table_name,$filter,$con){
+    public static function getParameterItems($table_name, $filter, $con)
+    {
         $record_name = '';
-         $rec = DB::connection($con)
-                    ->table($table_name);
+        $rec = DB::connection($con)
+            ->table($table_name);
 
-        if($filter != ''){
+        // $rec = DB::table($con . "." . $table_name);
+
+        if ($filter != '') {
             $rec = $rec->where($filter);
         }
         $rec = $rec->get();
-       
-         return convertStdClassObjToArray($rec);
+
+        return convertStdClassObjToArray($rec);
     }
-    public static function updateRecordNoTransaction($table_name, $previous_data, $where_data, $current_data, $user_id,$con)
+    public static function updateRecordNoTransaction($table_name, $previous_data, $where_data, $current_data, $user_id, $con)
     {
         $affectedRows = DB::connection($con)->table($table_name)
             ->where($where_data)
             ->update($current_data);
-            
+
+        // $affectedRows = DB::table($con . "." . $table_name)
+        //     ->where($where_data)
+        //     ->update($current_data);
+
         if ($affectedRows > 0) {
             $record_id = $previous_data['results'][0]['id'];
             $data_previous = serialize($previous_data);
@@ -112,17 +127,19 @@ class DbHelper
                 'ip_address' => self::getIPAddress(),
                 'created_by' => $user_id,
                 'created_at' => Carbon::now()
-            );//511600
-            DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            ); //511600
+            //DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
             return true;
         } else {
             return false;
         }
     }
 
-    public static function deleteRecordNoTransaction($table_name, $previous_data, $where_data, $user_id,$con)
+    public static function deleteRecordNoTransaction($table_name, $previous_data, $where_data, $user_id, $con)
     {
         $affectedRows = DB::connection($con)->table($table_name)->where($where_data)->delete();
+        // $affectedRows = DB::table($con . "." . $table_name)->where($where_data)->delete();
         if ($affectedRows) {
             $record_id = $previous_data['results'][0]['id'];
             $data_previous = serialize($previous_data);
@@ -135,7 +152,8 @@ class DbHelper
                 'created_by' => $user_id,
                 'created_at' => date('Y-m-d H:i:s')
             );
-            DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            // DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
             return true;
         } else {
             return false;
@@ -149,8 +167,8 @@ class DbHelper
         );
         $affectedRows = DB::table($table_name)->where($where_data)->update($deletion_update);
         if ($affectedRows > 0) {
-            $current_data=$previous_data;
-            $current_data[0]['is_enabled']=0;
+            $current_data = $previous_data;
+            $current_data[0]['is_enabled'] = 0;
             $record_id = $previous_data[0]['id'];
             $data_previous = serialize($previous_data);
             $data_current = serialize($current_data);
@@ -164,7 +182,8 @@ class DbHelper
                 'created_by' => $user_id,
                 'created_at' => Carbon::now()
             );
-            DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            // DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
             return true;
         } else {
             return false;
@@ -178,8 +197,8 @@ class DbHelper
         );
         $affectedRows = DB::table($table_name)->where($where_data)->update($deletion_update);
         if ($affectedRows > 0) {
-            $current_data=$previous_data;
-            $current_data[0]['is_enabled']=1;
+            $current_data = $previous_data;
+            $current_data[0]['is_enabled'] = 1;
             $record_id = $previous_data[0]['id'];
             $data_previous = serialize($previous_data);
             $data_current = serialize($current_data);
@@ -193,21 +212,22 @@ class DbHelper
                 'created_by' => $user_id,
                 'created_at' => Carbon::now()
             );
-            DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            //DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
             return true;
         } else {
             return false;
         }
     }
 
-    static function insertRecord($table_name, $table_data, $user_id,$con)
+    static function insertRecord($table_name, $table_data, $user_id, $con)
     {
         $res = array();
         try {
-            DB::transaction(function () use ($table_name, $table_data, $user_id, &$res,$con) {
+            DB::transaction(function () use ($table_name, $table_data, $user_id, &$res, $con) {
                 $res = array(
                     'success' => true,
-                    'record_id' => self::insertRecordNoTransaction($table_name, $table_data, $user_id,$con),
+                    'record_id' => self::insertRecordNoTransaction($table_name, $table_data, $user_id, $con),
                     'message' => 'Data Saved Successfully!!'
                 );
             }, 5);
@@ -226,14 +246,15 @@ class DbHelper
         return $res;
     }
 
-    static function insertRecordNoAudit($table_name, $table_data,$con)
+    static function insertRecordNoAudit($table_name, $table_data, $con)
     {
         $res = array();
         try {
-            DB::transaction(function () use ($table_name, $table_data, &$res,$con) {
+            DB::transaction(function () use ($table_name, $table_data, &$res, $con) {
 
                 //the data 
                 DB::connection($con)->table($table_name)->insert($table_data);
+                //DB::table($con . "." . $table_name)->insert($table_data);
                 $res = array(
                     'success' => true,
                     'message' => 'Data Saved Successfully!!'
@@ -253,31 +274,29 @@ class DbHelper
         return $res;
     }
 
-    static function updateRecord($table_name, $previous_data, $where_data, $current_data, $user_id,$con)
+    static function updateRecord($table_name, $previous_data, $where_data, $current_data, $user_id, $con)
     {
         $res = array();
         try {
-                DB::transaction(function () use ($table_name, $previous_data, $where_data, $current_data, $user_id, &$res,$con) {
-                    if(self::updateRecordNoTransaction($table_name, $previous_data, $where_data, $current_data, $user_id,$con)) {
-                        
-                    } else {
-                        
-                    }
-                    $res = array(
-                        'success' => true,
-                        'message' => 'Data updated Successfully!!'
-                    );
-                }, 5);
+            DB::transaction(function () use ($table_name, $previous_data, $where_data, $current_data, $user_id, &$res, $con) {
+                if (self::updateRecordNoTransaction($table_name, $previous_data, $where_data, $current_data, $user_id, $con)) {
+                } else {
+                }
+                $res = array(
+                    'success' => true,
+                    'message' => 'Data updated Successfully!!'
+                );
+            }, 5);
         } catch (\Exception $exception) {
-                $res = array(
-                    'success' => false,
-                    'message' => $exception->getMessage()
-                );
+            $res = array(
+                'success' => false,
+                'message' => $exception->getMessage()
+            );
         } catch (\Throwable $throwable) {
-                $res = array(
-                    'success' => false,
-                    'message' => $throwable->getMessage()
-                );
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
         }
         return $res;
     }
@@ -285,9 +304,10 @@ class DbHelper
     static function deleteRecord($table_name, $previous_data, $where_data, $user_id)
     {
         $res = array();
+        $con = "mis_db";
         try {
-            DB::transaction(function () use ($table_name, $previous_data, $where_data, $user_id, &$res) {
-                if(self::deleteRecordNoTransaction($table_name, $previous_data, $where_data, $user_id)) {
+            DB::transaction(function () use ($table_name, $previous_data, $where_data, $user_id, &$res, $con) {
+                if (self::deleteRecordNoTransaction($table_name, $previous_data, $where_data, $user_id, $con)) {
                     $res = array(
                         'success' => true,
                         'message' => 'Delete request executed successfully!!'
@@ -318,7 +338,7 @@ class DbHelper
         $res = array();
         try {
             DB::transaction(function () use ($table_name, $previous_data, $where_data, $user_id, &$res) {
-                if(self::softDeleteRecordNoTransaction($table_name, $previous_data, $where_data, $user_id)) {
+                if (self::softDeleteRecordNoTransaction($table_name, $previous_data, $where_data, $user_id)) {
                     $res = array(
                         'success' => true,
                         'message' => 'Delete request executed successfully!!'
@@ -350,7 +370,7 @@ class DbHelper
 
         try {
             DB::transaction(function () use ($table_name, $previous_data, $where_data, $user_id, &$res) {
-                if(self::undoSoftDeletesNoTransaction($table_name, $previous_data, $where_data, $user_id)) {
+                if (self::undoSoftDeletesNoTransaction($table_name, $previous_data, $where_data, $user_id)) {
                     $res = array(
                         'success' => true,
                         'message' => 'Delete request executed successfully!!'
@@ -408,19 +428,21 @@ class DbHelper
         return $res;
     }
 
-    static function recordExists($table_name, $where,$con)
+    static function recordExists($table_name, $where, $con)
     {
         $recordExist = DB::connection($con)->table($table_name)->where($where)->get();
+        // $recordExist = DB::table($con . "." . $table_name)->where($where)->get();
         if ($recordExist && count($recordExist) > 0) {
             return true;
         }
         return false;
     }
 
-    static function getPreviousRecords($table_name, $where,$con)
+    static function getPreviousRecords($table_name, $where, $con)
     {
         try {
             $prev_records = DB::connection($con)->table($table_name)->where($where)->get();
+            // $prev_records = DB::table($con . "." . $table_name)->where($where)->get();
             if ($prev_records && count($prev_records) > 0) {
                 $prev_records = self::convertStdClassObjToArray($prev_records);
             }
@@ -458,7 +480,8 @@ class DbHelper
                     'created_by' => $user_id,
                     'created_at' => date('Y-m-d H:i:s')
                 );
-                DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+                //  DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+                DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
                 $res = true;
                 break;
             case "update":
@@ -474,7 +497,8 @@ class DbHelper
                     'created_by' => $user_id,
                     'created_at' => date('Y-m-d H:i:s')
                 );
-                DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+                //DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+                DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
                 $res = true;
                 break;
             case "delete":
@@ -488,7 +512,8 @@ class DbHelper
                     'created_by' => $user_id,
                     'created_at' => date('Y-m-d H:i:s')
                 );
-                DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+                //DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+                DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
                 $res = true;
                 break;
             default:
@@ -598,7 +623,8 @@ class DbHelper
             return false;
         }
     }
-    static function getRecordsWithIds($table_name,$checkValues,$col,$con){
+    static function getRecordsWithIds($table_name, $checkValues, $col, $con)
+    {
         //get values
         $qry = DB::connection($con)->table($table_name)
             ->select($col)
@@ -621,8 +647,8 @@ class DbHelper
             ->whereIn('t1.group_id', $user_groups)
             ->groupBy('t2.identifier');
         $results = $qry->get();
-        $results=self::convertStdClassObjToArray($results);
-        $keys=self::convertAssArrayToSimpleArray($results,'process_identifier');
+        $results = self::convertStdClassObjToArray($results);
+        $keys = self::convertAssArrayToSimpleArray($results, 'process_identifier');
         //get values
         $qry = DB::table('tra_processes_permissions as t1')
             ->join('par_menuitems_processes as t2', 't1.process_id', '=', 't2.id')
@@ -630,50 +656,52 @@ class DbHelper
             ->whereIn('t1.group_id', $user_groups)
             ->groupBy('t2.identifier');
         $results = $qry->get();
-        $results=self::convertStdClassObjToArray($results);
-        $values=self::convertAssArrayToSimpleArray($results,'accessibility');
-        $combined=array_combine($keys,$values);
+        $results = self::convertStdClassObjToArray($results);
+        $values = self::convertAssArrayToSimpleArray($results, 'accessibility');
+        $combined = array_combine($keys, $values);
         return $combined;
     }
 
-    static function getSingleRecord($table, $where,$con)
+    static function getSingleRecord($table, $where, $con)
     {
         $record = DB::connection($con)->table($table)->where($where)->first();
+        // $record = DB::table($con . "." . $table)->where($where)->first();
         return $record;
     }
 
-    static function getSingleRecordColValue($table, $where, $col,$con)
+    static function getSingleRecordColValue($table, $where, $col, $con)
     {
         $val = DB::connection($con)->table($table)->where($where)->value($col);
+        //$val = DB::table($con . "." . $table)->where($where)->value($col);
         return $val;
     }
-    
-    
-    static function unsetPrimaryIDsInArray($array,$primary_key)
+
+
+    static function unsetPrimaryIDsInArray($array, $primary_key)
     {
-        
+
         foreach ($array as $key => $item) {
-          
+
             unset($item[$primary_key]);
-             unset($item['portal_id']);
+            unset($item['portal_id']);
             $array[$key] = $item;
         }
         return $array;
-
     }
     static function getEmailTemplateInfo($template_id, $vars)
-	{
-			$template_info = DB::connection('mis_db')->table('email_messages_templates')
-					->where('id', $template_id)
-					->first();
-			if (is_null($template_info)) {
-					$template_info = (object)array(
-							'subject' => 'Error',
-							'body' => 'Sorry this email was delivered wrongly, kindly ignore.'
-					);
-			}
-			$template_info->subject = strtr($template_info->subject, $vars);
-			$template_info->body = strtr($template_info->body, $vars);
-			return $template_info;
-	}
+    {
+        $template_info = DB::connection('mis_db')->table('email_messages_templates')
+            // $template_info = DB::table('mis_db.email_messages_templates')
+            ->where('id', $template_id)
+            ->first();
+        if (is_null($template_info)) {
+            $template_info = (object)array(
+                'subject' => 'Error',
+                'body' => 'Sorry this email was delivered wrongly, kindly ignore.'
+            );
+        }
+        $template_info->subject = strtr($template_info->subject, $vars);
+        $template_info->body = strtr($template_info->body, $vars);
+        return $template_info;
+    }
 }
