@@ -1413,7 +1413,7 @@ class DocumentManagementController extends Controller
 		$sub_module_id = $req->sub_module_id;
 		$section_id = $req->section_id;
 
-		$product_id = '';
+		$product_id = null;
 		$document_type_id = $req->input('document_type_id');
 		if (!is_numeric($application_code)) {
 			return $res = array(
@@ -1429,8 +1429,10 @@ class DocumentManagementController extends Controller
 				$products_details = getTableData('wb_product_notifications', array('application_code' => $application_code));
 			}
 			if ($products_details) {
+
 				$product_id = $products_details->product_id;
 			}
+
 			$data = array();
 			$upload_url =  Config('constants.dms.system_uploadurl');
 			// $qry = DB::connection('mis_db')->table('par_document_types as t1')
@@ -1452,7 +1454,7 @@ class DocumentManagementController extends Controller
 						t4.filetype,t4.uploaded_on,CONCAT_WS(' ',mis_db.decryptVal(t5.first_name),mis_db.decryptVal(t5.last_name)) as uploaded_by"))
 				->leftJoin('mis_db.tra_uploadedproduct_images as t4', function ($join) use ($product_id) {
 					$join->on("t2.id", "=", "t4.document_requirement_id")
-						->where("t4.portal_product_id", "=", $product_id);
+						->where("t4.portal_product_id", "=", $product_id ?? null);
 				})
 				->leftJoin('mis_db.users as t5', 't4.uploaded_by', '=', 't5.id')
 				->where(array('t1.id' => 6, 'sub_module_id' => $sub_module_id, 'section_id' => $section_id));

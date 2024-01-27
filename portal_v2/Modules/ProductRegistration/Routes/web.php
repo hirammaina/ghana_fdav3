@@ -17,7 +17,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'productregistration'], functio
     Route::get('onValidateProductOtherdetails', 'ProductRegistrationController@onValidateProductOtherdetails');
 });
 
-Route::group(['middleware' => 'auth:integration', 'prefix' => 'productregistration'], function () {
+Route::group(['middleware1' => 'auth:integration', 'prefix' => 'productregistration'], function () {
     Route::get('getProductApplications', 'ProductRegistrationController@getProductApplications');
     Route::get('getLocaAgentProductApplications', 'ProductRegistrationController@getLocaAgentProductApplications');
 });

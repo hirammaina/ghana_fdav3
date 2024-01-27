@@ -98,6 +98,8 @@ class VerifyCsrfToken extends Middleware
         'clinicaltrials/saveAltClinicalTrialApplication',
         'promotionadverts/savePromotionalAdvertapplication',
         'promotionadverts/OnSavePromotionalProductParticulars',
-        'utilities/onsaveProductConfigData'
+        'utilities/onsaveProductConfigData',
+        'productregistration/onSaveGroupedApplicationdetails',
+        "utilities/onGroupedApplicationInvoiceGeneration"
     ];
 }

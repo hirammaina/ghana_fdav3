@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: Kip
@@ -28,7 +29,7 @@ class DbHelper
             'created_by' => $user_id,
             'created_at' => Carbon::now()
         );
-      DB::connection('audit_db')->table('tra_misaudit_trail')->insert($audit_detail);
+        DB::connection('audit_db')->table('tra_misaudit_trail')->insert($audit_detail);
         return $record_id;
     }
     public static function updateRecordNoTransaction($con, $table_name, $previous_data, $where_data, $current_data, $user_id)
@@ -216,7 +217,6 @@ class DbHelper
                     );
                 } else {
                     $res = $update;
-                    
                 }
             }, 5);
         } catch (\Exception $exception) {
@@ -524,62 +524,64 @@ class DbHelper
     static function getUserGroups($user_id)
     {
         $groupsSimpleArray = array();
-        if(validateIsNumeric($user_id)){
+        if (validateIsNumeric($user_id)) {
             $groups = DB::table('tra_user_group')->where('user_id', $user_id)->get();
             $groupsSimpleArray = self::convertStdClassObjToArray($groups);
             $groupsSimpleArray = self::convertAssArrayToSimpleArray($groupsSimpleArray, 'group_id');
             //get acting groups 
             $acting_usergroups = self::getActingGroups($user_id);
-            $groupsSimpleArray = array_merge($groupsSimpleArray,$acting_usergroups);
-        
+            $groupsSimpleArray = array_merge($groupsSimpleArray, $acting_usergroups);
         }
-      
+
         return $groupsSimpleArray;
     }
-    static function getActingGroups($user_id){
+    static function getActingGroups($user_id)
+    {
         $date_today = Carbon::now();
         $groups = DB::table('tra_actingposition_management')
-                    ->where('user_id', $user_id)
-                    ->whereRaw("acting_date_to >= '".formatDate($date_today)."' ")
-                    ->get();
-                   
-                    $groupsSimpleArray = self::convertStdClassObjToArray($groups);
-                    $groupsSimpleArray = self::convertAssArrayToSimpleArray($groupsSimpleArray, 'group_id');
-            return $groupsSimpleArray;
+            ->where('user_id', $user_id)
+            ->whereRaw("acting_date_to >= '" . formatDate($date_today) . "' ")
+            ->get();
+
+        $groupsSimpleArray = self::convertStdClassObjToArray($groups);
+        $groupsSimpleArray = self::convertAssArrayToSimpleArray($groupsSimpleArray, 'group_id');
+        return $groupsSimpleArray;
     }
-    static function convertArrayToString($array){
+    static function convertArrayToString($array)
+    {
         $string = '';
-            if(is_array($array)){
-                $string='';
-                foreach($array as $row){
-                    $string = $row .','.$string;
-                }
+        if (is_array($array)) {
+            $string = '';
+            foreach ($array as $row) {
+                $string = $row . ',' . $string;
             }
-            return $string;
+        }
+        return $string;
     }
-    static function getAllUsersOnActingGroups($user_id){
+    static function getAllUsersOnActingGroups($user_id)
+    {
         $date_today = Carbon::now();
         //get all users who are acting 
         $actingUsersList = DB::table('tra_actingposition_management as t1')
-                        ->join('tra_user_group as t2', 't1.group_id', 't2.group_id')
-                        ->where('t2.user_id', $user_id)
-                        ->select('t1.user_id')
-                        ->get();
+            ->join('tra_user_group as t2', 't1.group_id', 't2.group_id')
+            ->where('t2.user_id', $user_id)
+            ->select('t1.user_id')
+            ->get();
         $actingUsersList = self::convertStdClassObjToArray($actingUsersList);
         $actingUsersList = self::convertAssArrayToSimpleArray($actingUsersList, 'user_id');
 
         $groupUserdetails = DB::table('tra_actingposition_management as t1')
-                    ->join('tra_user_group as t2', 't1.group_id', 't2.group_id')
-                    ->where('t1.user_id', $user_id)
-                    ->select('t2.id as user_id')
-                    ->whereRaw("acting_date_to >= '".formatDate($date_today)."' ")
-                    ->get();
-                   
-                    $groupUserdetails = self::convertStdClassObjToArray($groupUserdetails);
-                    $groupUserdetails = self::convertAssArrayToSimpleArray($groupUserdetails, 'user_id');
-        $all_users =  array_merge($actingUsersList,$groupUserdetails);
-    
-            return $all_users;
+            ->join('tra_user_group as t2', 't1.group_id', 't2.group_id')
+            ->where('t1.user_id', $user_id)
+            ->select('t2.id as user_id')
+            ->whereRaw("acting_date_to >= '" . formatDate($date_today) . "' ")
+            ->get();
+
+        $groupUserdetails = self::convertStdClassObjToArray($groupUserdetails);
+        $groupUserdetails = self::convertAssArrayToSimpleArray($groupUserdetails, 'user_id');
+        $all_users =  array_merge($actingUsersList, $groupUserdetails);
+
+        return $all_users;
     }
     static function getSuperUserGroupIds()
     {
@@ -594,7 +596,7 @@ class DbHelper
     static function belongsToSuperGroup($user_groups)
     {
         $superUserIDs = self::getSuperUserGroupIds();
-        $arr_intersect = array_intersect($superUserIDs, is_array($user_groups)?$user_groups:[]);
+        $arr_intersect = array_intersect($superUserIDs, is_array($user_groups) ? $user_groups : []);
         if (count($arr_intersect) > 0) {
             return true;
         } else {
@@ -604,20 +606,23 @@ class DbHelper
 
     static function getAssignedProcessStages($user_id, $module_id)
     {
+
         //get process stages
         $qry1 = DB::table('wf_tfdaprocesses as t1')
             ->join('wf_workflow_stages as t2', 't1.workflow_id', '=', 't2.workflow_id')
             ->select('t2.id as stage_id');
+
         if (validateIsNumeric($module_id)) {
-            $qry1->where('t1.module_id', $module_id);
+            //  $qry1->where('t1.module_id', $module_id);
         }
         $possible_stages = $qry1->get();
 
         $possible_stages = convertStdClassObjToArray($possible_stages);
         $possible_stages = self::convertAssArrayToSimpleArray($possible_stages, 'stage_id');
 
+
         $groups = self::getUserGroups($user_id);
-        
+
         $qry2 = DB::table('wf_stages_groups')
             ->select('stage_id')
             ->whereIn('group_id', $groups);
@@ -655,24 +660,23 @@ class DbHelper
         $combined = array_combine($keys, $values);
         return $combined;
     }
-    static function getUserSystemDashaboard($user_id){
+    static function getUserSystemDashaboard($user_id)
+    {
         $system_dashboardview = '';
-        if(validateIsNumeric($user_id)){
+        if (validateIsNumeric($user_id)) {
             $system_dashboard = DB::table('tra_user_group as t1')
-            ->join('par_groups as t2', 't1.group_id', 't2.id')
-            ->join('par_system_dashboards as t3', 't2.system_dashboard_id', 't3.id')
-            ->select('t3.viewtype')
-            ->where('user_id', $user_id)->first();
-if($system_dashboard){
-$system_dashboardview = $system_dashboard->viewtype;
-}
+                ->join('par_groups as t2', 't1.group_id', 't2.id')
+                ->join('par_system_dashboards as t3', 't2.system_dashboard_id', 't3.id')
+                ->select('t3.viewtype')
+                ->where('user_id', $user_id)->first();
+            if ($system_dashboard) {
+                $system_dashboardview = $system_dashboard->viewtype;
+            }
         }
-      
+
         return   $system_dashboardview;
-
-
     }
-    static function getSingleRecord($table, $where,$con)
+    static function getSingleRecord($table, $where, $con)
     {
         $record = DB::connection($con)->table($table)->where($where)->first();
         return $record;
@@ -684,40 +688,40 @@ $system_dashboardview = $system_dashboard->viewtype;
         return $val;
     }
 
-    static function getTableData($table_name, $where,$col)
+    static function getTableData($table_name, $where, $col)
     {
         $qry = DB::connection($col)->table($table_name)
             ->where($where);
         $results = $qry->first();
         return $results;
     }
-	// handler
-	 static function sys_error_handler($error, $level, $me, $class_array, $user_id)
+    // handler
+    static function sys_error_handler($error, $level, $me, $class_array, $user_id)
     {
         //defaults
-            $function = "failed to fetch";
-            //class
-            if(isset($class_array[5])){
-              $class = $class_array[5];
-            }else{
-              $class = "Failed to fetch";
-            }
-            //specifics
-            if(isset($me[0]['function'])){
-              $function = $me[0]['function'];
-            }
-            if(isset($me[0]['class'])){
-              $class = $me[0]['class'];
-            }
-            $origin = "function-->".$function." class-->".$class;
+        $function = "failed to fetch";
+        //class
+        if (isset($class_array[5])) {
+            $class = $class_array[5];
+        } else {
+            $class = "Failed to fetch";
+        }
+        //specifics
+        if (isset($me[0]['function'])) {
+            $function = $me[0]['function'];
+        }
+        if (isset($me[0]['class'])) {
+            $class = $me[0]['class'];
+        }
+        $origin = "function-->" . $function . " class-->" . $class;
         //log error
-        DB::table('system_error_logs')->insert(['error'=>$error, 'error_level_id'=>$level, 'originated_from_user_id'=>$user_id, 'error_origin'=>$origin]);
+        DB::table('system_error_logs')->insert(['error' => $error, 'error_level_id' => $level, 'originated_from_user_id' => $user_id, 'error_origin' => $origin]);
 
         $res = array(
-                'success' => false,
-                'message' => "An Error occured please contact system admin",
-                'error'=>$error
-            );
+            'success' => false,
+            'message' => "An Error occured please contact system admin",
+            'error' => $error
+        );
         return $res;
     }
 
@@ -729,7 +733,7 @@ $system_dashboardview = $system_dashboard->viewtype;
     }
 
     static function updatePortalApplicationStatus($mis_application_id, $portal_status_id, $mis_table_name, $portal_table_name)
-    {//application_id=mis application_id
+    { //application_id=mis application_id
         $portal_db = DB::connection('portal_db');
         try {
             $portal_db->beginTransaction();
@@ -742,7 +746,7 @@ $system_dashboardview = $system_dashboard->viewtype;
                 ->update(array('application_status_id' => $portal_status_id));
             $portal_db->commit();
             //update the submission details 
-            self::savePortalApplicationSubmissionDetails($application_code,$portal_table_name);
+            self::savePortalApplicationSubmissionDetails($application_code, $portal_table_name);
 
             $res = array(
                 'success' => true,
@@ -763,47 +767,46 @@ $system_dashboardview = $system_dashboard->viewtype;
         }
         return $res;
     }
-    static function  savePortalApplicationSubmissionDetails($application_code,$table_name){
+    static function  savePortalApplicationSubmissionDetails($application_code, $table_name)
+    {
         $portal_db = DB::connection('portal_db');
-            $rec = $portal_db->table($table_name.' as t1')
-                            ->join('wb_statuses as t2', 't1.application_status_id', '=','t2.id')
-                            ->select('t1.*', 't2.status_type_id')
-                            ->where('application_code',$application_code)
-                            ->first();
-            if($rec){
-                $process_id = getSingleRecordColValue('wf_tfdaprocesses', array('section_id' => $rec->section_id,'module_id' => $rec->module_id,'sub_module_id' => $rec->sub_module_id,), 'id');
-                $data = array('application_code'=>$rec->application_code,
-                                'application_id'=>$rec->id,
-                                'reference_no'=>$rec->reference_no,
-                                'tracking_no'=>$rec->tracking_no,	
-                                'process_id'=>$process_id,	
-                                'module_id'=>$rec->module_id,
-                                'sub_module_id'=>$rec->sub_module_id,
-                                'trader_id'=>$rec->trader_id,
-                                'status_type_id'=>$rec->status_type_id,
-                                'section_id'=>$rec->section_id,
-                                'application_status_id'=>$rec->application_status_id,
-                                'date_submitted'=>Carbon::now(),
-                                'created_on'=>Carbon::now()
-                            );
-                            if($rec->module_id == 1){
-                                $prodclass_category_id = getSingleRecordColValue('wb_product_information', array('id' => $rec->product_id), 'prodclass_category_id');
-                                $data['prodclass_category_id'] = $prodclass_category_id;
-                            }
-                $sub_data = $portal_db->table('wb_onlinesubmissions')->where('application_code',$application_code)->count();
-                if($sub_data >0){
-                        //update 
-                        $portal_db->table('wb_onlinesubmissions')->where('application_code',$application_code)->update($data);
-                }
-                else{
-                        $portal_db->table('wb_onlinesubmissions')->insert($data);
-                }
+        $rec = $portal_db->table($table_name . ' as t1')
+            ->join('wb_statuses as t2', 't1.application_status_id', '=', 't2.id')
+            ->select('t1.*', 't2.status_type_id')
+            ->where('application_code', $application_code)
+            ->first();
+        if ($rec) {
+            $process_id = getSingleRecordColValue('wf_tfdaprocesses', array('section_id' => $rec->section_id, 'module_id' => $rec->module_id, 'sub_module_id' => $rec->sub_module_id,), 'id');
+            $data = array(
+                'application_code' => $rec->application_code,
+                'application_id' => $rec->id,
+                'reference_no' => $rec->reference_no,
+                'tracking_no' => $rec->tracking_no,
+                'process_id' => $process_id,
+                'module_id' => $rec->module_id,
+                'sub_module_id' => $rec->sub_module_id,
+                'trader_id' => $rec->trader_id,
+                'status_type_id' => $rec->status_type_id,
+                'section_id' => $rec->section_id,
+                'application_status_id' => $rec->application_status_id,
+                'date_submitted' => Carbon::now(),
+                'created_on' => Carbon::now()
+            );
+            if ($rec->module_id == 1) {
+                $prodclass_category_id = getSingleRecordColValue('wb_product_information', array('id' => $rec->product_id), 'prodclass_category_id');
+                $data['prodclass_category_id'] = $prodclass_category_id;
             }
-
-
+            $sub_data = $portal_db->table('wb_onlinesubmissions')->where('application_code', $application_code)->count();
+            if ($sub_data > 0) {
+                //update 
+                $portal_db->table('wb_onlinesubmissions')->where('application_code', $application_code)->update($data);
+            } else {
+                $portal_db->table('wb_onlinesubmissions')->insert($data);
+            }
+        }
     }
     static function updatePortalApplicationStatusWithCode($application_code, $portal_table_name, $portal_status_id)
-    {//application_id=mis application_id
+    { //application_id=mis application_id
         $portal_db = DB::connection('portal_db');
         try {
             $portal_db->beginTransaction();
@@ -812,7 +815,7 @@ $system_dashboardview = $system_dashboard->viewtype;
                 ->where('application_code', $application_code)
                 ->update(array('application_status_id' => $portal_status_id));
             $portal_db->commit();
-            self::savePortalApplicationSubmissionDetails($application_code,$portal_table_name);
+            self::savePortalApplicationSubmissionDetails($application_code, $portal_table_name);
             $res = array(
                 'success' => true,
                 'message' => 'Portal status updated successfully!!'
@@ -870,7 +873,6 @@ $system_dashboardview = $system_dashboard->viewtype;
             $record_name = $rec;
         }
         return $record_name;
-
     }
 
     static function unsetPrimaryIDsInArray($array)
@@ -954,7 +956,7 @@ $system_dashboardview = $system_dashboard->viewtype;
 
     static function updateApplicationRegulationDetails($app_details, $document_types, $decision_id)
     {
-       
+
         $module_id = $app_details->module_id;
         $section_id = $app_details->section_id;
         $application_code = $app_details->application_code;
@@ -990,7 +992,7 @@ $system_dashboardview = $system_dashboard->viewtype;
     }
 
     static function updateApplicationConditionDetails($app_details, $document_types, $decision_id)
-    {//delete insert
+    { //delete insert
         $module_id = $app_details->module_id;
         $section_id = $app_details->section_id;
         $application_code = $app_details->application_code;
@@ -1105,19 +1107,20 @@ $system_dashboardview = $system_dashboard->viewtype;
             DB::table('tra_notifications')->insert($insert_params);
         }
     }
- static function getStageQueryChecklistCategory($workflow_stage){
-       $qry = DB::table('par_checklist_categories as t1')
-                ->Join('tra_proc_applicable_checklists as t2', function ($join) use ($workflow_stage) {
-                    $join->on('t2.checklist_category_id', '=', 't1.id')
-                        ->on('t2.stage_id', '=', DB::raw($workflow_stage));
-                })
-                ->select('t2.checklist_category_id');
-               
-            $results = $qry->first();
-        if(!empty($results)){
+    static function getStageQueryChecklistCategory($workflow_stage)
+    {
+        $qry = DB::table('par_checklist_categories as t1')
+            ->Join('tra_proc_applicable_checklists as t2', function ($join) use ($workflow_stage) {
+                $join->on('t2.checklist_category_id', '=', 't1.id')
+                    ->on('t2.stage_id', '=', DB::raw($workflow_stage));
+            })
+            ->select('t2.checklist_category_id');
+
+        $results = $qry->first();
+        if (!empty($results)) {
             $category = $results->checklist_category_id;
             return $category;
-        }else{
+        } else {
             return 0;
         }
     }
@@ -1135,20 +1138,20 @@ $system_dashboardview = $system_dashboard->viewtype;
             ->delete();
     }
 
-static function getLastApplicationSubmissionDetails($application_code) {
-       $qry = DB::table('tra_submissions')
-                ->where('application_code', $application_code)
-                ->orderBy('id', 'DESC');
-               
-            $results = $qry->first();
-          
-        if(!empty($results)){
-            $res = array('success'=>true, 'results'=> $results);
+    static function getLastApplicationSubmissionDetails($application_code)
+    {
+        $qry = DB::table('tra_submissions')
+            ->where('application_code', $application_code)
+            ->orderBy('id', 'DESC');
+
+        $results = $qry->first();
+
+        if (!empty($results)) {
+            $res = array('success' => true, 'results' => $results);
             return $res;
-        }else{
-            $res = array('success'=>false, 'results'=> $results);
-            return $res; 
+        } else {
+            $res = array('success' => false, 'results' => $results);
+            return $res;
         }
     }
-
 }

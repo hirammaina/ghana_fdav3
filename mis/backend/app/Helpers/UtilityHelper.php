@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: Kip
@@ -11,8 +12,8 @@ namespace App\Helpers;
 use Carbon\Carbon;
 use PDF;
 use Illuminate\Support\Facades\DB;
-use App\Modules\Workflow\Entities\SerialTracker;
-use App\Modules\Workflow\Entities\TrackingNoSerialTracker;
+use Modules\Workflow\Entities\SerialTracker;
+use Modules\Workflow\Entities\TrackingNoSerialTracker;
 
 class UtilityHelper
 {
@@ -25,14 +26,14 @@ class UtilityHelper
         $hours = $diff / (60 * 60);
         return $hours;
     }
-static function returnTableNamefromModule($table_name,$module_id){
-		if($table_name == ''){
-				$table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
-				$table_name = $table_name;
-				
-			}
-		return $table_name;
-	}
+    static function returnTableNamefromModule($table_name, $module_id)
+    {
+        if ($table_name == '') {
+            $table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
+            $table_name = $table_name;
+        }
+        return $table_name;
+    }
     static function is_connected()
     {
         $connected = @fsockopen("www.google.com", 80);
@@ -45,37 +46,37 @@ static function returnTableNamefromModule($table_name,$module_id){
         }
         return $is_conn;
     }
-	static function toUpperCase($flat_array){
+    static function toUpperCase($flat_array)
+    {
         $ucase = array();
         foreach ($flat_array as $item) {
-			$item = strtolower($item);
+            $item = strtolower($item);
             $ucase[] = str_replace('_', ' ', ucwords($item));
         }
         return $ucase;
     }
-	 static function number_to_alpha($num,$code)
-        {   
-            $alphabets = array('', 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z');
+    static function number_to_alpha($num, $code)
+    {
+        $alphabets = array('', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z');
 
-            $division = floor($num / 26);
-            $remainder = $num % 26; 
+        $division = floor($num / 26);
+        $remainder = $num % 26;
 
-            if($remainder == 0)
-            {
-                $division = $division - 1;
-                $code .= 'Z';
-            }
-            else
-                $code .= $alphabets[$remainder];
+        if ($remainder == 0) {
+            $division = $division - 1;
+            $code .= 'Z';
+        } else
+            $code .= $alphabets[$remainder];
 
-            if($division > 26)
-                return number_to_alpha($division, $code);   
-            else
-                $code .= $alphabets[$division];     
+        if ($division > 26)
+            return number_to_alpha($division, $code);
+        else
+            $code .= $alphabets[$division];
 
-            return strrev($code);
-        }
-   static function getfile_extension($fileName) {
+        return strrev($code);
+    }
+    static function getfile_extension($fileName)
+    {
         $fileName_arr = explode('.', $fileName);
         //count taken (if more than one . exist; files like abc.fff.2013.pdf
         $file_ext_count = count($fileName_arr);
@@ -85,15 +86,15 @@ static function returnTableNamefromModule($table_name,$module_id){
         $ext = $fileName_arr[$cnt];
         return $ext;
     }
-    static function generateTraderNo($table_name){
+    static function generateTraderNo($table_name)
+    {
         $trader_no = mt_rand(1000, 99999);
         //check if it exists 
-        $where = array('identification_no'=>$trader_no);
+        $where = array('identification_no' => $trader_no);
         $check = recordExists($table_name, $where);
-        if($check){
+        if ($check) {
             return generateTraderNo($table_name);
-        }
-        else{
+        } else {
             return $trader_no;
         }
     }
@@ -144,7 +145,6 @@ static function returnTableNamefromModule($table_name,$module_id){
 
         $data = utf8ize($data);
         echo json_encode($data);
-
     }
 
     static function utf8ize($d)
@@ -219,7 +219,7 @@ static function returnTableNamefromModule($table_name,$module_id){
 
     static function getPortalApplicationInitialStatus($module_id, $portal_statustype_id)
     {
-        $statusDetails = (object)array(//just a default status
+        $statusDetails = (object)array( //just a default status
             'status_id' => 1,
             'name' => 'New'
         );
@@ -247,16 +247,16 @@ static function returnTableNamefromModule($table_name,$module_id){
         if (!is_null($max_details)) {
             $last_id = $max_details->last_id + 1;
         }
-        $application_code = '103'.$sub_module_id . $last_id;
+        $application_code = '103' . $sub_module_id . $last_id;
         return $application_code;
     }
 
     static function generateApplicationRefNumber($application_id, $table_name, $sub_module_id, $reference_type_id, $codes_array, $process_id, $zone_id, $user_id, $module_id, $section_id)
     {
         try {
-			if(!validateIsNumeric($reference_type_id )){
-				$reference_type_id = 1;
-			}
+            if (!validateIsNumeric($reference_type_id)) {
+                $reference_type_id = 1;
+            }
             $year = date('Y');
             $where = array(
                 'year' => $year,
@@ -275,7 +275,7 @@ static function returnTableNamefromModule($table_name,$module_id){
                 ->where($where_ref)
                 ->where('reference_type_id', $reference_type_id)
                 ->value('reference_format_id');
-                
+
             if (!is_numeric($ref_id)) {
                 $res = array(
                     'success' => false,
@@ -308,36 +308,33 @@ static function returnTableNamefromModule($table_name,$module_id){
             $codes_array['serial_no'] = $serial_no;
             $codes_array['reg_year'] = $reg_year;
             $ref_number = self::generateRefNumber($codes_array, $ref_id);
-			
-			$check_record = DB::table($table_name)
-				->where(array('reference_no' => $ref_number))
-				->count();
-			if($check_record >0 && $ref_number != ''){
-				return self::generateApplicationRefNumber($application_id, $table_name, $sub_module_id, $reference_type_id, $codes_array, $process_id, $zone_id, $user_id, $module_id, $section_id);
-			}
-			else{
-				DB::table($table_name)
-                ->where('id', $application_id)
-                ->update(array('reference_no' => $ref_number, 'refno_generated' => 1));
-				//update the referencenos on the invoices and paymetns and submission table 
-				$record = DB::table($table_name)
-						->where('id', $application_id)
-						->first();
-				$application_code = $record->application_code;
-				DB::table('tra_submissions')
-                ->where('application_code', $application_code)
-                ->update(array('reference_no' => $ref_number));
-				DB::table('tra_payments')
-                ->where('application_code', $application_code)
-                ->update(array('reference_no' => $ref_number));
-				DB::table('tra_application_invoices')
-                ->where('application_code', $application_code)
-                ->update(array('reference_no' => $ref_number));
-				
-				
-			}
-            
-                
+
+            $check_record = DB::table($table_name)
+                ->where(array('reference_no' => $ref_number))
+                ->count();
+            if ($check_record > 0 && $ref_number != '') {
+                return self::generateApplicationRefNumber($application_id, $table_name, $sub_module_id, $reference_type_id, $codes_array, $process_id, $zone_id, $user_id, $module_id, $section_id);
+            } else {
+                DB::table($table_name)
+                    ->where('id', $application_id)
+                    ->update(array('reference_no' => $ref_number, 'refno_generated' => 1));
+                //update the referencenos on the invoices and paymetns and submission table 
+                $record = DB::table($table_name)
+                    ->where('id', $application_id)
+                    ->first();
+                $application_code = $record->application_code;
+                DB::table('tra_submissions')
+                    ->where('application_code', $application_code)
+                    ->update(array('reference_no' => $ref_number));
+                DB::table('tra_payments')
+                    ->where('application_code', $application_code)
+                    ->update(array('reference_no' => $ref_number));
+                DB::table('tra_application_invoices')
+                    ->where('application_code', $application_code)
+                    ->update(array('reference_no' => $ref_number));
+            }
+
+
             $res = array(
                 'success' => true,
                 'ref_no' => $ref_number
@@ -359,14 +356,14 @@ static function returnTableNamefromModule($table_name,$module_id){
     static function generateApplicationTrackingNumber($sub_module_id, $reference_type_id, $codes_array, $process_id, $zone_id, $user_id, $is_refno)
     {
         try {
-			$module_id = getSingleRecordColValue('sub_modules', array('id'=>$sub_module_id), 'module_id');
-			$table_name = getSingleRecordColValue('modules', array('id'=>$module_id), 'table_name');
+            $module_id = getSingleRecordColValue('sub_modules', array('id' => $sub_module_id), 'module_id');
+            $table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
             $year = date('Y');
             $where = array(
                 'year' => $year,
                 'process_id' => $process_id,
-				'reference_type_id'=>$reference_type_id,
-                
+                'reference_type_id' => $reference_type_id,
+
                 'zone_id' => $zone_id
             );
             //get ref id
@@ -429,127 +426,128 @@ static function returnTableNamefromModule($table_name,$module_id){
         }
         return $res;
     }
-static function convert_number_to_words($number) {
-		   
-			$hyphen      = '-';
-			$conjunction = ' and ';
-			$separator   = ', ';
-			$negative    = 'negative ';
-			$decimal     = ' point ';
-			$dictionary  = array(
-				0                   => 'zero',
-				1                   => 'one',
-				2                   => 'two',
-				3                   => 'three',
-				4                   => 'four',
-				5                   => 'five',
-				6                   => 'six',
-				7                   => 'seven',
-				8                   => 'eight',
-				9                   => 'nine',
-				10                  => 'ten',
-				11                  => 'eleven',
-				12                  => 'twelve',
-				13                  => 'thirteen',
-				14                  => 'fourteen',
-				15                  => 'fifteen',
-				16                  => 'sixteen',
-				17                  => 'seventeen',
-				18                  => 'eighteen',
-				19                  => 'nineteen',
-				20                  => 'twenty',
-				30                  => 'thirty',
-				40                  => 'fourty',
-				50                  => 'fifty',
-				60                  => 'sixty',
-				70                  => 'seventy',
-				80                  => 'eighty',
-				90                  => 'ninety',
-				100                 => 'hundred',
-				1000                => 'thousand',
-				1000000             => 'million',
-				1000000000          => 'billion',
-				1000000000000       => 'trillion',
-				1000000000000000    => 'quadrillion',
-				1000000000000000000 => 'quintillion'
-			);
-		   
-			if (!is_numeric($number)) {
-				return false;
-			}
-		   
-			if (($number >= 0 && (int) $number < 0) || (int) $number < 0 - PHP_INT_MAX) {
-				// overflow
-				trigger_error(
-					'convert_number_to_words only accepts numbers between -' . PHP_INT_MAX . ' and ' . PHP_INT_MAX,
-					E_USER_WARNING
-				);
-				return false;
-			}
-		
-			if ($number < 0) {
-				return $negative . self::convert_number_to_words(abs($number));
-			}
-		   	
-			$string = $fraction = null;
-		   
-			if (strpos($number, '.') !== false) {
-				list($number, $fraction) = explode('.', $number);
-			}
-		   
-			switch (true) {
-				case $number < 21:
-					$string = $dictionary[$number];
-					break;
-				case $number < 100:
-					$tens   = ((int) ($number / 10)) * 10;
-					$units  = $number % 10;
-					$string = $dictionary[$tens];
-					if ($units) {
-						$string .= $hyphen . $dictionary[$units];
-					}
-					break;
-				case $number < 1000:
-					$hundreds  = (int)($number / 100);
-					$remainder = $number % 100;
-					$string = $dictionary[$hundreds] . ' ' . $dictionary[100];
-					if ($remainder) {
-						$rem=self::convert_number_to_words($remainder);
-						$string .= $conjunction . $rem;
-					}
-					break;
-				default:
-					$baseUnit = pow(1000, floor(log($number, 1000)));
-					$numBaseUnits = (int) ($number / $baseUnit);
-					$remainder = $number % $baseUnit;
-					$num=self::convert_number_to_words($numBaseUnits);
-					$string =  $num. ' ' . $dictionary[$baseUnit];
-					if ($remainder) {
-						$string .= $remainder < 100 ? $conjunction : $separator;
-						$rem=self::convert_number_to_words($remainder);
-						$string .= $rem;
-					}
-					break;
-			}
-		   
-			if (null !== $fraction && is_numeric($fraction)) {
-				$string .= $decimal;
-				$words = array();
-				foreach (str_split((string) $fraction) as $number) {
-					$words[] = $dictionary[$number];
-				}
-				$string .= implode(' ', $words);
-			}
-		   
-			return $string;
-		}
+    static function convert_number_to_words($number)
+    {
+
+        $hyphen      = '-';
+        $conjunction = ' and ';
+        $separator   = ', ';
+        $negative    = 'negative ';
+        $decimal     = ' point ';
+        $dictionary  = array(
+            0                   => 'zero',
+            1                   => 'one',
+            2                   => 'two',
+            3                   => 'three',
+            4                   => 'four',
+            5                   => 'five',
+            6                   => 'six',
+            7                   => 'seven',
+            8                   => 'eight',
+            9                   => 'nine',
+            10                  => 'ten',
+            11                  => 'eleven',
+            12                  => 'twelve',
+            13                  => 'thirteen',
+            14                  => 'fourteen',
+            15                  => 'fifteen',
+            16                  => 'sixteen',
+            17                  => 'seventeen',
+            18                  => 'eighteen',
+            19                  => 'nineteen',
+            20                  => 'twenty',
+            30                  => 'thirty',
+            40                  => 'fourty',
+            50                  => 'fifty',
+            60                  => 'sixty',
+            70                  => 'seventy',
+            80                  => 'eighty',
+            90                  => 'ninety',
+            100                 => 'hundred',
+            1000                => 'thousand',
+            1000000             => 'million',
+            1000000000          => 'billion',
+            1000000000000       => 'trillion',
+            1000000000000000    => 'quadrillion',
+            1000000000000000000 => 'quintillion'
+        );
+
+        if (!is_numeric($number)) {
+            return false;
+        }
+
+        if (($number >= 0 && (int) $number < 0) || (int) $number < 0 - PHP_INT_MAX) {
+            // overflow
+            trigger_error(
+                'convert_number_to_words only accepts numbers between -' . PHP_INT_MAX . ' and ' . PHP_INT_MAX,
+                E_USER_WARNING
+            );
+            return false;
+        }
+
+        if ($number < 0) {
+            return $negative . self::convert_number_to_words(abs($number));
+        }
+
+        $string = $fraction = null;
+
+        if (strpos($number, '.') !== false) {
+            list($number, $fraction) = explode('.', $number);
+        }
+
+        switch (true) {
+            case $number < 21:
+                $string = $dictionary[$number];
+                break;
+            case $number < 100:
+                $tens   = ((int) ($number / 10)) * 10;
+                $units  = $number % 10;
+                $string = $dictionary[$tens];
+                if ($units) {
+                    $string .= $hyphen . $dictionary[$units];
+                }
+                break;
+            case $number < 1000:
+                $hundreds  = (int)($number / 100);
+                $remainder = $number % 100;
+                $string = $dictionary[$hundreds] . ' ' . $dictionary[100];
+                if ($remainder) {
+                    $rem = self::convert_number_to_words($remainder);
+                    $string .= $conjunction . $rem;
+                }
+                break;
+            default:
+                $baseUnit = pow(1000, floor(log($number, 1000)));
+                $numBaseUnits = (int) ($number / $baseUnit);
+                $remainder = $number % $baseUnit;
+                $num = self::convert_number_to_words($numBaseUnits);
+                $string =  $num . ' ' . $dictionary[$baseUnit];
+                if ($remainder) {
+                    $string .= $remainder < 100 ? $conjunction : $separator;
+                    $rem = self::convert_number_to_words($remainder);
+                    $string .= $rem;
+                }
+                break;
+        }
+
+        if (null !== $fraction && is_numeric($fraction)) {
+            $string .= $decimal;
+            $words = array();
+            foreach (str_split((string) $fraction) as $number) {
+                $words[] = $dictionary[$number];
+            }
+            $string .= implode(' ', $words);
+        }
+
+        return $string;
+    }
     static function generatePremiseRefNumber($ref_id, $codes_array, $year, $process_id, $zone_id, $user_id)
     {
         $where = array(
             'year' => $year,
             'process_id' => $process_id,
-			
-                'reference_type_id' => 1,
+
+            'reference_type_id' => 1,
             'zone_id' => $zone_id
         );
         $serial_num_tracker = new SerialTracker();
@@ -585,8 +583,8 @@ static function convert_number_to_words($number) {
         $where = array(
             'year' => $year,
             'process_id' => $process_id,
-			
-                'reference_type_id' => 1,
+
+            'reference_type_id' => 1,
             'zone_id' => $zone_id
         );
         $serial_num_tracker = new SerialTracker();
@@ -629,31 +627,31 @@ static function convert_number_to_words($number) {
         $ref_number = self::generateRefNumber($codes_array, $ref_id);
         return $ref_number;
     }
-static function getPermitSignatoryDetails()
+    static function getPermitSignatoryDetails()
     {
         $record = DB::table('authority_directors as t1')
-			->leftJoin('users as t2', 't1.director_id', 't2.id')
-			->select('t1.*',  DB::raw("concat(decrypt(t2.first_name),' ',decrypt(t2.last_name)) as director"))
+            ->leftJoin('users as t2', 't1.director_id', 't2.id')
+            ->select('t1.*',  DB::raw("concat(decrypt(t2.first_name),' ',decrypt(t2.last_name)) as director"))
             ->where('is_active', 1)
-			->first();
+            ->first();
         return $record;
-    }static function getUserSignatureDetails($usr_id){
-		
-		$usr_signature = '';
-		$record = DB::table('tra_users_signature_uploads as t1')
-						->select('t1.*')
-						->where(array('t1.user_id'=>$usr_id))
-						->first();
-		if($record){
-			$usr_signature = $record->savedname;
-		}
-		else{
-			
-			$usr_signature = 'signature_placeholder.png';
-		}
-		return $usr_signature;
-		
-	}
+    }
+    static function getUserSignatureDetails($usr_id)
+    {
+
+        $usr_signature = '';
+        $record = DB::table('tra_users_signature_uploads as t1')
+            ->select('t1.*')
+            ->where(array('t1.user_id' => $usr_id))
+            ->first();
+        if ($record) {
+            $usr_signature = $record->savedname;
+        } else {
+
+            $usr_signature = 'signature_placeholder.png';
+        }
+        return $usr_signature;
+    }
     static function generateApplicationCertificateNumber($application_id, $table_name, $sub_module_id, $reference_type_id, $codes_array, $process_id, $zone_id, $user_id, $module_id, $section_id)
     {
         try {
@@ -666,9 +664,9 @@ static function getPermitSignatoryDetails()
             );
 
             //get ref id
-            
-                $where_ref = array('sub_module_id' => $sub_module_id);
-            
+
+            $where_ref = array('sub_module_id' => $sub_module_id);
+
             $ref_id = DB::table('tra_submodule_referenceformats')
                 ->where($where_ref)
                 ->where('reference_type_id', $reference_type_id)
@@ -690,7 +688,7 @@ static function getPermitSignatoryDetails()
                 $serial_num_tracker->zone_id = $zone_id;
                 $serial_num_tracker->created_by = $user_id;
                 $serial_num_tracker->last_serial_no = $current_serial_id;
-				 $serial_num_tracker->reference_type_id = $reference_type_id;
+                $serial_num_tracker->reference_type_id = $reference_type_id;
                 $serial_num_tracker->save();
             } else {
                 $last_serial_id = $serial_track->last_serial_no;
@@ -701,14 +699,14 @@ static function getPermitSignatoryDetails()
                 );
                 $serial_num_tracker->where($where)->update($update_data);
             }
-			
+
             $serial_no = str_pad($current_serial_id, 4, 0, STR_PAD_LEFT);
             $reg_year = substr($year, -2);
             $codes_array['serial_no'] = $serial_no;
             $codes_array['reg_year'] = $reg_year;
 
             $certificate_no = self::generateRefNumber($codes_array, $ref_id);
-			
+
             $res = array(
                 'success' => true,
                 'certificate_no' => $certificate_no
@@ -724,14 +722,12 @@ static function getPermitSignatoryDetails()
                 'message' => $throwable->getMessage()
             );
         }
-		$rec = DB::table('tra_approval_recommendations')->where(array('certificate_no'=>$certificate_no))->count();
-		if($rec > 0 && $res['success']){
-			return  self::generateApplicationCertificateNumber($application_id, $table_name, $sub_module_id, $reference_type_id, $codes_array, $process_id, $zone_id, $user_id, $module_id, $section_id);
-		}
-		else{
-			 return $res;
-		}
-        
+        $rec = DB::table('tra_approval_recommendations')->where(array('certificate_no' => $certificate_no))->count();
+        if ($rec > 0 && $res['success']) {
+            return  self::generateApplicationCertificateNumber($application_id, $table_name, $sub_module_id, $reference_type_id, $codes_array, $process_id, $zone_id, $user_id, $module_id, $section_id);
+        } else {
+            return $res;
+        }
     }
 
     static function generateRefNumber($codes_array, $ref_id)
@@ -778,7 +774,7 @@ static function getPermitSignatoryDetails()
     static function generateInvoiceNo($user_id)
     {
         $registration_year = date("Y");
-		$prefix = 101;
+        $prefix = 101;
         $qry = DB::table('invoice_serials');
         $qry1 = $qry->where('registration_year', $registration_year);
         $last_serial = $qry->value('last_serial');
@@ -801,7 +797,7 @@ static function getPermitSignatoryDetails()
             $qry->insert($insert_params);
         }
         $serial_no = $serial_no = str_pad($serial_no, 4, 0, STR_PAD_LEFT);
-        $invoice_no = $prefix.$registration_year . $serial_no;
+        $invoice_no = $prefix . $registration_year . $serial_no;
         return $invoice_no;
     }
 
@@ -837,19 +833,29 @@ static function getPermitSignatoryDetails()
     static function getApplicationPaymentsRunningBalance($application_code, $invoice_id)
     {
         //get invoiced amount
+        // $qry1 = DB::table('tra_invoice_details as t1')
+        //     ->join('tra_application_invoices as t2', 't1.invoice_id', 't2.id')
+        //     ->select(DB::raw("SUM((t1.total_element_amount*t1.paying_exchange_rate)) as invoiced_amount, SUM(t1.total_element_amount) as total_element_amount,t1.paying_currency_id,t1.paying_exchange_rate"));
+
         $qry1 = DB::table('tra_invoice_details as t1')
             ->join('tra_application_invoices as t2', 't1.invoice_id', 't2.id')
-            ->select(DB::raw("SUM((t1.total_element_amount*t1.paying_exchange_rate)) as invoiced_amount, SUM(t1.total_element_amount) as total_element_amount,t1.paying_currency_id,t1.paying_exchange_rate"));
+            ->groupBy('t1.paying_currency_id', 't1.paying_exchange_rate') // Add non-aggregated columns to groupBy
+            ->select(DB::raw("SUM((t1.total_element_amount * t1.paying_exchange_rate)) as invoiced_amount, 
+                         SUM(t1.total_element_amount) as total_element_amount,
+                         t1.paying_currency_id,
+                         t1.paying_exchange_rate"));
 
-        if(validateIsNumeric($application_code)){
+
+        if (validateIsNumeric($application_code)) {
             $qry1->where('t2.application_code', $application_code)
                 ->groupBy('t2.application_code');
-        } if(validateIsNumeric($invoice_id)){
+        }
+        if (validateIsNumeric($invoice_id)) {
             $qry1->where('t2.id', $invoice_id)
                 ->groupBy('t2.id');
         }
-        
-           
+
+
         $results1 = $qry1->first();
         $invoiced_amount = 0;
         $paying_exchange_rate = 0;
@@ -863,20 +869,27 @@ static function getPermitSignatoryDetails()
             $paying_currency_id = $results1->paying_currency_id;
         }
         //get total payments
+        // $qry2 = DB::table('tra_payments as t2')
+        //     ->select(DB::raw("SUM((t2.amount_paid*t2.exchange_rate)) as paid_amount,exchange_rate,sum(amount_paid) as amount_paid, currency_id "));
         $qry2 = DB::table('tra_payments as t2')
-            ->select(DB::raw("SUM((t2.amount_paid*t2.exchange_rate)) as paid_amount,exchange_rate,sum(amount_paid) as amount_paid, currency_id "));
+            ->groupBy('t2.currency_id', 't2.exchange_rate') // Add non-aggregated columns to groupBy
+            ->select(DB::raw("SUM((t2.amount_paid * t2.exchange_rate)) as paid_amount,
+                     t2.exchange_rate,
+                     SUM(t2.amount_paid) as amount_paid,
+                     t2.currency_id"));
 
-        if(validateIsNumeric($application_code)){
+
+        if (validateIsNumeric($application_code)) {
             $qry2->where('t2.application_code', $application_code)
                 ->groupBy('t2.application_code');
         }
-         if(validateIsNumeric($invoice_id)){
+        if (validateIsNumeric($invoice_id)) {
             $qry2->where('t2.invoice_id', $invoice_id)
                 ->groupBy('t2.invoice_id');
         }
-			
+
         $results2 = $qry2->first();
-       
+
         $amount_paid = 0;
         $paid_amount = 0;
         $currency_id = 0;
@@ -886,28 +899,26 @@ static function getPermitSignatoryDetails()
             $amount_paid = $results2->amount_paid;
             $exchange_rate = $results2->exchange_rate;
             $currency_id = $results2->currency_id;
-			if($paying_exchange_rate > $exchange_rate){
-				$invoiced_amount = $total_element_amount*$exchange_rate;
-			}
+            if ($paying_exchange_rate > $exchange_rate) {
+                $invoiced_amount = $total_element_amount * $exchange_rate;
+            }
         }
 
-		if($paying_currency_id == $currency_id){
-			$running_balance =  $total_element_amount-$amount_paid;
-		}
-		else{
-			$running_balance =  $invoiced_amount-$paid_amount;
-		}
-		//currency 
-      
-	  
-		if(validateIsNumeric($currency_id)){
-			$currency_name = getSingleRecordColValue('par_currencies', array('id'=>$currency_id), 'name');
-        
-		}
-		$details = array(
-            'invoice_amount' => round($invoiced_amount,2),
-            'running_balance' => round($running_balance,2),
-            'amount_paid' => round($amount_paid,2),
+        if ($paying_currency_id == $currency_id) {
+            $running_balance =  $total_element_amount - $amount_paid;
+        } else {
+            $running_balance =  $invoiced_amount - $paid_amount;
+        }
+        //currency 
+
+
+        if (validateIsNumeric($currency_id)) {
+            $currency_name = getSingleRecordColValue('par_currencies', array('id' => $currency_id), 'name');
+        }
+        $details = array(
+            'invoice_amount' => round($invoiced_amount, 2),
+            'running_balance' => round($running_balance, 2),
+            'amount_paid' => round($amount_paid, 2),
             'currency_name' => $currency_name,
         );
         return $details;
@@ -939,7 +950,7 @@ static function getPermitSignatoryDetails()
         $prodtype_code = getSingleRecordColValue('par_product_types', array('id' => $product_type_id), 'code');
         $prodtype_code = $section_code . $prodtype_code;
         $registration_year = date('Y');
-		
+
         $reg_year = $registration_year;
         if ($ref_id == 10 || $ref_id == 13) {
             $reg_year = substr($registration_year, -2);
@@ -989,33 +1000,30 @@ static function getPermitSignatoryDetails()
         );
 
         $permit_no = self::generateRefNumber($codes_array, $ref_id);
-       $rec = DB::table('tra_approval_recommendations')->where(array('certificate_no'=>$permit_no))->count();
-		if($rec >0){
-			return  self::generateProductRegistrationNo($zone_id, $section_id, $classification_id, $product_type_id, $device_type_id, $table_name, $user_id, $ref_id);
-		}
-		else{
-			 return $permit_no;
-		}
+        $rec = DB::table('tra_approval_recommendations')->where(array('certificate_no' => $permit_no))->count();
+        if ($rec > 0) {
+            return  self::generateProductRegistrationNo($zone_id, $section_id, $classification_id, $product_type_id, $device_type_id, $table_name, $user_id, $ref_id);
+        } else {
+            return $permit_no;
+        }
     }
-	static function funcReportGenerationLog($table_data,$user_id){
-				
-		insertRecord('registration_certificate_logs', $table_data, $user_id);
-	}
-
-    static function generatePremisePermitNo($zone_id, $section_id, $table_name, $user_id, $ref_id,$sub_module_id)
+    static function funcReportGenerationLog($table_data, $user_id)
     {
-		if(!validateIsNumeric($zone_id)){
-			$zone_id = 2;
-		}
+
+        insertRecord('registration_certificate_logs', $table_data, $user_id);
+    }
+
+    static function generatePremisePermitNo($zone_id, $section_id, $table_name, $user_id, $ref_id, $sub_module_id)
+    {
+        if (!validateIsNumeric($zone_id)) {
+            $zone_id = 2;
+        }
         $zone_code = getSingleRecordColValue('par_zones', array('id' => $zone_id), 'zone_code');
-		if($sub_module_id == 10 || $sub_module_id == 11){
-			 $section_code = 'CT';
-       
-		}
-		else{
-			 $section_code = getSingleRecordColValue('par_sections', array('id' => $section_id), 'code');
-       
-		}
+        if ($sub_module_id == 10 || $sub_module_id == 11) {
+            $section_code = 'CT';
+        } else {
+            $section_code = getSingleRecordColValue('par_sections', array('id' => $section_id), 'code');
+        }
         $registration_year = date('y');
         $reg_year = $registration_year;
         if ($ref_id == 10 || $ref_id == 13) {
@@ -1061,26 +1069,24 @@ static function getPermitSignatoryDetails()
             'serial_no' => $serial_no
         );
         $permit_no = self::generateRefNumber($codes_array, $ref_id);
-		//check the permit number for existence
-		if($sub_module_id == 10 || $sub_module_id == 11){
-			$where =array('certificate_no'=>$permit_no);
-		}
-		else{
-			$where =array('permit_no'=>$permit_no);
-		}
-		$rec = DB::table('tra_approval_recommendations')->where($where)->count();
-		if($rec >0){
-			return  self::generatePremisePermitNo($zone_id, $section_id, $table_name, $user_id, $ref_id,$sub_module_id);
-		}
-		else{
-			 return $permit_no;
-		}
+        //check the permit number for existence
+        if ($sub_module_id == 10 || $sub_module_id == 11) {
+            $where = array('certificate_no' => $permit_no);
+        } else {
+            $where = array('permit_no' => $permit_no);
+        }
+        $rec = DB::table('tra_approval_recommendations')->where($where)->count();
+        if ($rec > 0) {
+            return  self::generatePremisePermitNo($zone_id, $section_id, $table_name, $user_id, $ref_id, $sub_module_id);
+        } else {
+            return $permit_no;
+        }
     }
 
     static function updateInTraySubmissions($application_id, $application_code, $from_stage, $user_id)
     {
         try {
-			
+
             $update = array(
                 'isRead' => 1,
                 'isDone' => 1,
@@ -1260,8 +1266,6 @@ static function getPermitSignatoryDetails()
         $queries = convertStdClassObjToArray($queries);
         DB::table('tra_queries_referencing')
             ->insert($queries);
-
-
     }
 
     //tra_queries_referencing
@@ -1448,11 +1452,10 @@ static function getPermitSignatoryDetails()
 
     static function getPortalApplicationsTable($module_id)
     {
-		$record = DB::table('modules')->where('id',$module_id)->first();
-		$portal_table = $record->portaltable_name;
-		
-		return $portal_table;
-		
+        $record = DB::table('modules')->where('id', $module_id)->first();
+        $portal_table = $record->portaltable_name;
+
+        return $portal_table;
     }
 
     static function validateIsNumeric($value)
@@ -1462,17 +1465,16 @@ static function getPermitSignatoryDetails()
         } else {
             return false;
         }
-
     }
 
     static function getPermitExpiryDate($approval_date, $duration, $duration_mode)
     {
-		
+
         $approval_date = Carbon::parse($approval_date);
         $expiry_date = Carbon::now();
-        if ($duration_mode == 1) {//month
+        if ($duration_mode == 1) { //month
             $expiry_date = $approval_date->addMonths($duration);
-        } else if ($duration_mode == 2) {//year
+        } else if ($duration_mode == 2) { //year
             $expiry_date = $approval_date->addYears($duration);
         }
         return $expiry_date;
@@ -1506,58 +1508,58 @@ static function getPermitSignatoryDetails()
             $prev_data = getPreviousRecords($table_name, $where_statement);
 
             $res = updateRecord($table_name, $prev_data['results'], $where_statement, $registration_data, $user_id);
-
         } else {
             //insert
             $res = insertRecord($table_name, $registration_data, $user_id);
-
         }
         return $res;
     }
 
-    
- static function getProductPrimaryReferenceNo($where_statement, $applications_table){
+
+    static function getProductPrimaryReferenceNo($where_statement, $applications_table)
+    {
         $sub_module_id = 7; //primary sub-module
-		//check on the registered products 
-		$primary_ref ='';
-		$reg_product_id = $where_statement['t1.reg_product_id'];
-		$record = DB::table('tra_registered_products as t1')
-                        ->where(array('id'=>$reg_product_id))
-						->first();
-		if($record){
-			$primary_ref = $record->registration_ref_no;
-		}
-		if($primary_ref =='' || $primary_ref == null){
-				 $primary_ref = DB::table($applications_table.' as t1')
-                        ->join('tra_product_information as t2', 't1.product_id','=','t2.id')
-                        ->where($where_statement)
-                        ->value('reference_no');
-		}
-       if($primary_ref =='' || $primary_ref == null){
-		   $primary_ref = DB::table($applications_table.' as t1')
-                        ->join('tra_product_information as t2', 't1.product_id','=','t2.id')
-                        ->where(array('reg_product_id'=>$reg_product_id))
-                        ->select('reference_no')
-						->orderBy('t1.sub_module_id','desc')->first();
-			$primary_ref = $primary_ref->reference_no;
-	   }
-        
+        //check on the registered products 
+        $primary_ref = '';
+        $reg_product_id = $where_statement['t1.reg_product_id'];
+        $record = DB::table('tra_registered_products as t1')
+            ->where(array('id' => $reg_product_id))
+            ->first();
+        if ($record) {
+            $primary_ref = $record->registration_ref_no;
+        }
+        if ($primary_ref == '' || $primary_ref == null) {
+            $primary_ref = DB::table($applications_table . ' as t1')
+                ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
+                ->where($where_statement)
+                ->value('reference_no');
+        }
+        if ($primary_ref == '' || $primary_ref == null) {
+            $primary_ref = DB::table($applications_table . ' as t1')
+                ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
+                ->where(array('reg_product_id' => $reg_product_id))
+                ->select('reference_no')
+                ->orderBy('t1.sub_module_id', 'desc')->first();
+            $primary_ref = $primary_ref->reference_no;
+        }
+
         return $primary_ref;
     }
-	  static function getTableName($module, $portal_db = 0){
+    static function getTableName($module, $portal_db = 0)
+    {
 
-          $qry=DB::table('modules')
-                ->where('id',$module)->first();
+        $qry = DB::table('modules')
+            ->where('id', $module)->first();
 
-        if($portal_db){
-          $table=$qry->portaltable_name;
-        }else{
-          $table=$qry->table_name;
+        if ($portal_db) {
+            $table = $qry->portaltable_name;
+        } else {
+            $table = $qry->table_name;
         }
 
         return $table;
-   }
-	
+    }
+
     static function getPreviousProductRegistrationDetails($where_statement, $applications_table)
     {
         $sub_module_id = 7; //primary sub-module //tra_registered_products t1.product_id
@@ -1569,49 +1571,46 @@ static function getPermitSignatoryDetails()
                     ->on("t3.id", "=", "t4.application_id");
             })
             ->where($where_statement)
-            ->select('t4.*','t1.active_application_code','t1.active_app_referenceno', 't1.status_id','t3.sub_module_id', 't1.validity_status_id', 't1.registration_status_id', 't1.prev_product_id as regprev_product_id', 't2.id as prev_product_id')
-			->orderBy('t4.expiry_date','desc')
+            ->select('t4.*', 't1.active_application_code', 't1.active_app_referenceno', 't1.status_id', 't3.sub_module_id', 't1.validity_status_id', 't1.registration_status_id', 't1.prev_product_id as regprev_product_id', 't2.id as prev_product_id')
+            ->orderBy('t4.expiry_date', 'desc')
             ->first();
 
         return $data;
     }
-	static function sendQueryNotification($application_code, $module_id){
-		$table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
-				
-				$record = DB::table($table_name.' as t1')
-							->join('wb_trader_account as t2', 't1.applicant_id','t2.id')
-							->select('t1.*','t2.name as applicant_name', 't2.email as applicant_email', 't2.identification_no')
-							->where(array('application_code'=>$application_code))
-							->first();
-				if($record){
-					$applicant_email = $record->applicant_email;
-					$reference_no = $record->reference_no;
-					$tracking_no = $record->tracking_no;
-                    $identification_no = $record->identification_no;
-                    $module_id = $record->module_id;
+    static function sendQueryNotification($application_code, $module_id)
+    {
+        $table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
 
-					if($reference_no != ''){
-						$tracking_no = $tracking_no.' Reference No: '.$reference_no;
-					}
-							
-                    if($module_id == 89){
-                         $message_details = "Reference to the Subject, find attached product Query Letter and further login to your portal to respond to the raised queries for the :".$tracking_no;
-                        $file_path = public_path('/resources/uploads/Query Letter.pdf');
-                        self::generateProductQueryletter($application_code,$file_path);
-                      sendMailNotification($record->applicant_name, $application_details->applicant_email,'Query Notification',$message,'','', $file_path,'Query Letter','', array());
-                    }
-                    else{
-                        $vars = array(
-                            '{tracking_no}' =>$tracking_no
-                        );
-                        onlineApplicationNotificationMail(3, $applicant_email, $vars,$identification_no);
-                    }
-							
-				}
-		
-		
-	}
-    
+        $record = DB::table($table_name . ' as t1')
+            ->join('wb_trader_account as t2', 't1.applicant_id', 't2.id')
+            ->select('t1.*', 't2.name as applicant_name', 't2.email as applicant_email', 't2.identification_no')
+            ->where(array('application_code' => $application_code))
+            ->first();
+        if ($record) {
+            $applicant_email = $record->applicant_email;
+            $reference_no = $record->reference_no;
+            $tracking_no = $record->tracking_no;
+            $identification_no = $record->identification_no;
+            $module_id = $record->module_id;
+
+            if ($reference_no != '') {
+                $tracking_no = $tracking_no . ' Reference No: ' . $reference_no;
+            }
+
+            if ($module_id == 89) {
+                $message_details = "Reference to the Subject, find attached product Query Letter and further login to your portal to respond to the raised queries for the :" . $tracking_no;
+                $file_path = public_path('/resources/uploads/Query Letter.pdf');
+                self::generateProductQueryletter($application_code, $file_path);
+                sendMailNotification($record->applicant_name, $application_details->applicant_email, 'Query Notification', $message, '', '', $file_path, 'Query Letter', '', array());
+            } else {
+                $vars = array(
+                    '{tracking_no}' => $tracking_no
+                );
+                onlineApplicationNotificationMail(3, $applicant_email, $vars, $identification_no);
+            }
+        }
+    }
+
     static function returnMessage($results)
     {
         return count(convertStdClassObjToArray($results)) . ' records fetched!!';
@@ -1624,7 +1623,8 @@ static function getPermitSignatoryDetails()
         });
         $data = array();
         foreach ($dataPrint as $rec) {
-            $data = array('name' => $rec['name'],
+            $data = array(
+                'name' => $rec['name'],
                 'id' => $rec['id']
             );
         }
@@ -1633,17 +1633,16 @@ static function getPermitSignatoryDetails()
         } else {
             return '';
         }
-
     }
 
     static function funcSaveOnlineImportExportOtherdetails($application_code, $user_id)
     {
-		$record = DB::table('tra_permits_products')->where(array('application_code' => $application_code))->count();
-		if($record >0){
-			DB::table('tra_permits_products')->where(array('application_code' => $application_code))
-            ->delete();
-		}
-        
+        $record = DB::table('tra_permits_products')->where(array('application_code' => $application_code))->count();
+        if ($record > 0) {
+            DB::table('tra_permits_products')->where(array('application_code' => $application_code))
+                ->delete();
+        }
+
         $portal_db = DB::connection('portal_db');
         $previous_permitdetails = $portal_db->table('wb_permits_products as t2')
             ->select(DB::raw("prodcertificate_no,country_oforigin_id, product_batch_no,product_expiry_date,product_manufacturing_date,regulated_prodpermit_id, permitbrand_name, permitcommon_name,is_regulated_product,laboratory_no,device_type_id,product_id,quantity,unit_price,currency_id,application_code,packaging_unit_id,product_packaging,total_weight,weights_units_id,product_category_id,id as portal_id, $user_id as created_by, now() as created_on"))
@@ -1653,7 +1652,6 @@ static function getPermitSignatoryDetails()
         $previous_permitdetails = convertStdClassObjToArray($previous_permitdetails);
         DB::table('tra_permits_products')
             ->insert($previous_permitdetails);
-
     }
 
     static function funcSaveOnlineDisposalOtherdetails($application_code, $user_id)
@@ -1670,7 +1668,6 @@ static function getPermitSignatoryDetails()
         $previous_permitdetails = convertStdClassObjToArray($previous_permitdetails);
         DB::table('tra_disposal_products')
             ->insert($previous_permitdetails);
-
     }
 
     static function funcSaveOnlineMedicalNotificationOtherdetails($portal_product_id, $product_id, $reg_product_id, $user_id)
@@ -1686,7 +1683,6 @@ static function getPermitSignatoryDetails()
 
         DB::table('tra_product_manufacturers')
             ->insert($previous_prodmanufacturers);
-
     }
 
     //save details
@@ -1722,8 +1718,6 @@ static function getPermitSignatoryDetails()
 
             DB::table('tra_product_nutrients')
                 ->insert($previous_prodnutrients);
-
-
         }
         $previous_prodingredients = $portal_db->table('wb_product_ingredients as t2')
             ->select(DB::raw("$product_id as product_id,t2.id, ingredient_type_id,ingredient_id,specification_type_id,strength,proportion,ingredientssi_unit_id,inclusion_reason_id,acceptance_id, $user_id as created_by, now() as created_on"))
@@ -1736,7 +1730,8 @@ static function getPermitSignatoryDetails()
         foreach ($previous_prodingredients as $rec) {
             $prevactive_ingredient_id = $rec->id;
 
-            $data = array('product_id' => $product_id,
+            $data = array(
+                'product_id' => $product_id,
                 'ingredient_type_id' => $rec->ingredient_type_id,
                 'ingredient_id' => $rec->ingredient_id,
                 'specification_type_id' => $rec->specification_type_id,
@@ -1745,7 +1740,8 @@ static function getPermitSignatoryDetails()
                 'ingredientssi_unit_id' => $rec->ingredientssi_unit_id,
                 'acceptance_id' => $rec->acceptance_id,
                 'created_by' => $user_id,
-                'created_on' => Carbon::now());
+                'created_on' => Carbon::now()
+            );
 
             $active_ingredient_id = DB::table('tra_product_ingredients')
                 ->insertGetId($data);
@@ -1758,7 +1754,6 @@ static function getPermitSignatoryDetails()
 
             DB::table('tra_product_manufacturers')
                 ->insert($previous_prodmanufacturers);
-
         }
 
         $previous_prodmanufacturers = $portal_db->table('wb_product_manufacturers as t2')
@@ -1787,7 +1782,6 @@ static function getPermitSignatoryDetails()
         DB::table('tra_uploadedproduct_images')
             ->where(array('portal_product_id' => $portal_product_id))
             ->update($data);
-
     }
 
     static function generateApplicationViewID()
@@ -1811,20 +1805,21 @@ static function getPermitSignatoryDetails()
         return $financial_year;
     }
 
-    static function genLaboratoryReference_number($section_id, $zone_id, $sample_category_id, $laboratory_id, $device_type_id, $user_id,$analysis_type_id)
+    static function genLaboratoryReference_number($section_id, $zone_id, $sample_category_id, $laboratory_id, $device_type_id, $user_id, $analysis_type_id)
     {
         $financial_year = self::getFinancial_year();
-        $where = array('section_id' => $section_id,
+        $where = array(
+            'section_id' => $section_id,
             'sample_category_id' => $sample_category_id,
             'financial_year' => $financial_year,
-            'laboratory_id' => $laboratory_id);
-	$text = '';
-		if($analysis_type_id == 4){
-			$text = '-CF';
-		}
-		else{
-			$text = '-SC';
-		}
+            'laboratory_id' => $laboratory_id
+        );
+        $text = '';
+        if ($analysis_type_id == 4) {
+            $text = '-CF';
+        } else {
+            $text = '-SC';
+        }
         $serial_no = getSingleRecordColValue('reference_serial_nos', $where, 'serial_number', 'lims_db');
 
 
@@ -1832,15 +1827,12 @@ static function getPermitSignatoryDetails()
 
             $serial_no = $serial_no + 1;
             DB::connection('lims_db')->table('reference_serial_nos')->where($where)->update(array('serial_number' => $serial_no));
-
-
         } else {
             //insert a new record
             $serial_no = 1;
             $where['serial_number'] = $serial_no;
 
             DB::connection('lims_db')->table('reference_serial_nos')->insert($where);
-
         }
 
         $serial_no = sprintf("%04d", $serial_no);
@@ -1853,20 +1845,15 @@ static function getPermitSignatoryDetails()
         if ($section_id == 4) {
             $device_code = getSingleRecordColValue('medicaldevices_types', array('id' => $device_type_id), 'acronym', 'lims_db');
 
-            $reference_no = "TMDA" . $zone_code . "/" . "L/" . $device_code . $laboratory_code . $category_code.$text. "/" . $financial_year . "/" . $serial_no;
-
+            $reference_no = "TMDA" . $zone_code . "/" . "L/" . $device_code . $laboratory_code . $category_code . $text . "/" . $financial_year . "/" . $serial_no;
         } else {
             if ($sample_category_id == 18) {
 
-                $reference_no = "TMDA" . $zone_code . "/" . "L/" . $laboratory_code . $category_code.$text . "/R/" . $financial_year . "/" . $serial_no;
-
+                $reference_no = "TMDA" . $zone_code . "/" . "L/" . $laboratory_code . $category_code . $text . "/R/" . $financial_year . "/" . $serial_no;
             } else {
 
-                $reference_no = "TMDA" . $zone_code . "/" . "L/" . $section_code . "/" . $laboratory_code . $category_code.$text . "/" . $financial_year . "/" . $serial_no;
-
+                $reference_no = "TMDA" . $zone_code . "/" . "L/" . $section_code . "/" . $laboratory_code . $category_code . $text . "/" . $financial_year . "/" . $serial_no;
             }
-
-
         }
 
 
@@ -1875,10 +1862,7 @@ static function getPermitSignatoryDetails()
             return genReference_number($section_id, $zone_id, $sample_category_id, $laboratory_id = null, $device_type_id, $user_id);
         } else {
             return $reference_no;
-
         }
-
-
     }
 
     static function getLIMSApplicantRecord($trader_id, $user_id)
@@ -1896,7 +1880,8 @@ static function getPermitSignatoryDetails()
                 ->where(array('id' => $trader_id))
                 ->first();
             if ($record) {
-                $data = array('name' => $record->name,
+                $data = array(
+                    'name' => $record->name,
                     'email' => $record->email,
                     'telephone' => $record->telephone_no,
                     'region_id' => $record->region_id,
@@ -1905,36 +1890,37 @@ static function getPermitSignatoryDetails()
                     'country_id' => $record->country_id,
                     'mis_applicant_id' => $trader_id,
                     'created_by' => $user_id,
-                    'created_on' => Carbon::now());
+                    'created_on' => Carbon::now()
+                );
                 $res = insertRecord('companies', $data, $user_id, 'lims_db');
                 $applicant_id = $res['record_id'];
             }
         }
         return $applicant_id;
     }
-    static function funcSaveProvisionalRejectionDetails($request,$permit_id,$decision_id,$application_id, $application_code,$user_id){
-                //check if exists 
-                $where = array('application_code'=>$application_code,'permit_id'=>$permit_id);
-               $rec = DB::table('tra_apprejprovisional_recommendation')->where($where)->first();
-               $data = array('application_id'=>$application_id,
-                            'permit_id'=>$permit_id,
-                            'decision_id'=>$decision_id,
-                            'reason_for_conditionalapproval'=>$request->reason_for_conditionalapproval,
-                            'reason_for_rejection'=>$request->reason_for_rejection,
-                            'application_code'=>$application_code
-                            );
-               if($rec){
-                    $data['altered_by'] =  $user_id;
-                    $data['dola'] =  Carbon::now();;
-                    $prev_data = getPreviousRecords('tra_apprejprovisional_recommendation', $where);
-                    $res= updateRecord('tra_apprejprovisional_recommendation', $prev_data['results'], $where, $data, $user_id);
-               }
-               else{
-                    $data['created_by'] =  $user_id;
-                    $data['created_on'] =  Carbon::now();
-                   $res = insertRecord('tra_apprejprovisional_recommendation', $data, $user_id);
-               }
-               
+    static function funcSaveProvisionalRejectionDetails($request, $permit_id, $decision_id, $application_id, $application_code, $user_id)
+    {
+        //check if exists 
+        $where = array('application_code' => $application_code, 'permit_id' => $permit_id);
+        $rec = DB::table('tra_apprejprovisional_recommendation')->where($where)->first();
+        $data = array(
+            'application_id' => $application_id,
+            'permit_id' => $permit_id,
+            'decision_id' => $decision_id,
+            'reason_for_conditionalapproval' => $request->reason_for_conditionalapproval,
+            'reason_for_rejection' => $request->reason_for_rejection,
+            'application_code' => $application_code
+        );
+        if ($rec) {
+            $data['altered_by'] =  $user_id;
+            $data['dola'] =  Carbon::now();;
+            $prev_data = getPreviousRecords('tra_apprejprovisional_recommendation', $where);
+            $res = updateRecord('tra_apprejprovisional_recommendation', $prev_data['results'], $where, $data, $user_id);
+        } else {
+            $data['created_by'] =  $user_id;
+            $data['created_on'] =  Carbon::now();
+            $res = insertRecord('tra_apprejprovisional_recommendation', $data, $user_id);
+        }
     }
     public function getSubmissionWorkflowStages(Request $request)
     {
@@ -1964,302 +1950,305 @@ static function getPermitSignatoryDetails()
         }
         return response()->json($res);
     }
-    static function getUserScheduledtcmeetingCounter($user_id){
+    static function getUserScheduledtcmeetingCounter($user_id)
+    {
         //add status_id from the meeting statuses
-DB::enableQueryLog();
+        DB::enableQueryLog();
         $data_today = formatDate(Carbon::now());
-        $user_id=$user_id==""?0:$user_id;
-          $counter =  DB::table('tc_meeting_details as t1')
-                    ->join('tc_meeting_participants as t2', 't1.id', 't2.meeting_id')
-                    ->where(array('user_id'=>$user_id=""?0:$user_id))
-                   ->whereRaw("TO_CHAR(date_requested,'yyyy-mm-dd') >= '".$data_today."'")->distinct()
-                    ->count('t1.id');
+        $user_id = $user_id == "" ? 0 : $user_id;
+        $counter =  DB::table('tc_meeting_details as t1')
+            ->join('tc_meeting_participants as t2', 't1.id', 't2.meeting_id')
+            ->where(array('user_id' => $user_id = "" ? 0 : $user_id))
+            ->whereRaw("TO_CHAR(date_requested,'yyyy-mm-dd') >= '" . $data_today . "'")->distinct()
+            ->count('t1.id');
 
         return $counter;
     }
-	static function getDefaultDirectorateDirector($section_id){
-		$director_id = '';
-		$record = DB::table('tra_directorate_directors as t1')
-						->join('par_directorates as t2','t1.directorate_id','t2.id')
-						->join('par_sections as t3','t3.directorate_id','t2.id')
-						->select('t1.director_id')
-						->where(array('t3.id'=>$section_id))
-						->first();
-		if($record){
-			$director_id = $record->director_id;
-			
-		}
-		return $director_id;
-		
-	}
-	 static function getPenaltyCosts($section_id){
+    static function getDefaultDirectorateDirector($section_id)
+    {
+        $director_id = '';
+        $record = DB::table('tra_directorate_directors as t1')
+            ->join('par_directorates as t2', 't1.directorate_id', 't2.id')
+            ->join('par_sections as t3', 't3.directorate_id', 't2.id')
+            ->select('t1.director_id')
+            ->where(array('t3.id' => $section_id))
+            ->first();
+        if ($record) {
+            $director_id = $record->director_id;
+        }
+        return $director_id;
+    }
+    static function getPenaltyCosts($section_id)
+    {
 
         $data = '';
         $record = DB::table('element_costs as t1')
-                        ->join('par_cost_sub_categories as t2', 't1.sub_cat_id','t2.id')
-                        ->join('par_cost_categories as t3', 't2.cost_category_id','t3.id')
-                        ->select(DB::raw("t1.cost,t1.currency_id,t1.id,t3.section_id"))
-                        ->where(array('t1.feetype_id'=>3,'t1.formula'=>1))
-                        ->first();
+            ->join('par_cost_sub_categories as t2', 't1.sub_cat_id', 't2.id')
+            ->join('par_cost_categories as t3', 't2.cost_category_id', 't3.id')
+            ->select(DB::raw("t1.cost,t1.currency_id,t1.id,t3.section_id"))
+            ->where(array('t1.feetype_id' => 3, 't1.formula' => 1))
+            ->first();
 
-        if($record){
+        if ($record) {
             $data = $record;
-            
         }
         return $data;
-
     }
-    static function save_renewalsInvoicePenalty($application_code,$invoice_id,$paying_currency_id,$paying_exchange_rate,$user_id){
-                $row = DB::table('tra_product_applications')
-                                ->select("*")
-                                ->where(array('application_code'=>$application_code))
-                                ->first();
+    static function save_renewalsInvoicePenalty($application_code, $invoice_id, $paying_currency_id, $paying_exchange_rate, $user_id)
+    {
+        $row = DB::table('tra_product_applications')
+            ->select("*")
+            ->where(array('application_code' => $application_code))
+            ->first();
 
-                if($row){
-                    
-                        $product_id = $row->product_id;
-                        $section_id = $row->section_id;
-                        $reg_product_id = $row->reg_product_id;
-                        
-                        $sub_module_id = $row->sub_module_id;
-                        //check if expired 
-                        $active_record = DB::table('tra_registered_products')
-                                        ->where(array('id'=>$reg_product_id))
-                                        ->whereRaw("date_format(expiry_date,'%Y-%m-%d') <  date_format(DATE_SUB(now(), INTERVAL 3 MONTH),'%Y-%m-%d')")
-                                        ->first();
-                                        if($row){
-                        if($active_record  && $sub_module_id == 8){
-                                    //get the costs formula
-                                    $data = self::getPenaltyCosts($section_id);
-                                    if($data){
-                                            $cost = $data->cost;
-                                            $element_cost_id = $data->id;
-                                            $inv_record = DB::table('tra_application_invoices as t1')
-                                                        ->join('tra_invoice_details as t2', 't1.id', 't2.invoice_id')
-                                                        ->select(DB::raw("SUM(t2.total_element_amount) AS  invoice_amount,t1.paying_exchange_rate as exchange_rate,t1.paying_currency_id as currency_id"))
-                                                        ->where(array('t1.id'=>$invoice_id, 't1.application_code'=>$application_code))
-                                                        ->first();
-                                            if($inv_record){
-                                                        //dtaa 
-                                                        $invoice_amount = $inv_record->invoice_amount * $cost/100;
-                                                        $params = array(
-                                                            'invoice_id' => $invoice_id,
-                                                            'element_costs_id' => $element_cost_id,
-                                                            'element_amount' => $invoice_amount,
-                                                            'quantity' => 1,
-                                                            'paying_currency_id'=>$inv_record->currency_id,
-                                                            'total_element_amount'=>round($invoice_amount, 2),
-                                                            'paying_exchange_rate'=>$inv_record->exchange_rate,
-                                                            'currency_id' => $inv_record->currency_id,
-                                                            'exchange_rate' => $inv_record->exchange_rate,
-                                                            'created_by'=>$user_id,
-                                                            'created_on'=>Carbon::now()
-                                                        );
-                                        
-                                                        $res = insertRecord('tra_invoice_details', $params, $user_id);
-                                            }
-                                        
-                                            
-                                    }
-                            
+        if ($row) {
+
+            $product_id = $row->product_id;
+            $section_id = $row->section_id;
+            $reg_product_id = $row->reg_product_id;
+
+            $sub_module_id = $row->sub_module_id;
+            //check if expired 
+            $active_record = DB::table('tra_registered_products')
+                ->where(array('id' => $reg_product_id))
+                ->whereRaw("date_format(expiry_date,'%Y-%m-%d') <  date_format(DATE_SUB(now(), INTERVAL 3 MONTH),'%Y-%m-%d')")
+                ->first();
+            if ($row) {
+                if ($active_record  && $sub_module_id == 8) {
+                    //get the costs formula
+                    $data = self::getPenaltyCosts($section_id);
+                    if ($data) {
+                        $cost = $data->cost;
+                        $element_cost_id = $data->id;
+                        $inv_record = DB::table('tra_application_invoices as t1')
+                            ->join('tra_invoice_details as t2', 't1.id', 't2.invoice_id')
+                            ->select(DB::raw("SUM(t2.total_element_amount) AS  invoice_amount,t1.paying_exchange_rate as exchange_rate,t1.paying_currency_id as currency_id"))
+                            ->where(array('t1.id' => $invoice_id, 't1.application_code' => $application_code))
+                            ->first();
+                        if ($inv_record) {
+                            //dtaa 
+                            $invoice_amount = $inv_record->invoice_amount * $cost / 100;
+                            $params = array(
+                                'invoice_id' => $invoice_id,
+                                'element_costs_id' => $element_cost_id,
+                                'element_amount' => $invoice_amount,
+                                'quantity' => 1,
+                                'paying_currency_id' => $inv_record->currency_id,
+                                'total_element_amount' => round($invoice_amount, 2),
+                                'paying_exchange_rate' => $inv_record->exchange_rate,
+                                'currency_id' => $inv_record->currency_id,
+                                'exchange_rate' => $inv_record->exchange_rate,
+                                'created_by' => $user_id,
+                                'created_on' => Carbon::now()
+                            );
+
+                            $res = insertRecord('tra_invoice_details', $params, $user_id);
                         }
                     }
-                    
                 }
-                
-            
-}
-	static function saveSingleInvoiceDetailstoIntergration($invoice_id,$application_code,$paying_currency_id,$paying_exchange_rate,$user_id,$zone_id){
-            $res = array('success'=>false,'message'=>'Error Occurred');
-			//generate the penalty 
-			
-            
-			$where_statement = array('t1.id'=>$invoice_id);
-			if(validateIsNumeric($application_code)){
-				$where_statement = array('t1.id'=>$invoice_id, 't1.application_code'=>$application_code);
-			}
-			$invoice_no = getSingleRecordColValue('tra_application_invoices',array('id'=>$invoice_id, 'application_code'=>$application_code), 'invoice_no');
-			$check_records = DB::connection('financial_db')
-                                    ->table('sys_application_invoices')
-									->where(array('invoice_no'=>$invoice_no))
-									->get();
-				if(!$check_records){
-					  self::save_renewalsInvoicePenalty($application_code,$invoice_id,$paying_currency_id,$paying_exchange_rate,$user_id);
-				}
-            $record = DB::table('tra_application_invoices as t1')
+            }
+        }
+    }
+    static function saveSingleInvoiceDetailstoIntergration($invoice_id, $application_code, $paying_currency_id, $paying_exchange_rate, $user_id, $zone_id)
+    {
+        $res = array('success' => false, 'message' => 'Error Occurred');
+        //generate the penalty 
+
+
+        $where_statement = array('t1.id' => $invoice_id);
+        if (validateIsNumeric($application_code)) {
+            $where_statement = array('t1.id' => $invoice_id, 't1.application_code' => $application_code);
+        }
+        $invoice_no = getSingleRecordColValue('tra_application_invoices', array('id' => $invoice_id, 'application_code' => $application_code), 'invoice_no');
+        $check_records = DB::connection('financial_db')
+            ->table('sys_application_invoices')
+            ->where(array('invoice_no' => $invoice_no))
+            ->get();
+        if (!$check_records) {
+            self::save_renewalsInvoicePenalty($application_code, $invoice_id, $paying_currency_id, $paying_exchange_rate, $user_id);
+        }
+        $record = DB::table('tra_application_invoices as t1')
             ->select(DB::raw("t1.invoice_no,t1.tracking_no,t1.reference_no, t1.invoice_amount AS inv_amount,t1.date_of_invoicing, 'System Invoice' as created_by,SUM(t2.total_element_amount) AS  invoice_amount,PayCntrNum,t1.paying_exchange_rate as exchange_rate,t1.paying_currency_id as currency_id,t1.applicant_id,t3.name AS  applicant_name,t1.gepg_submission_status,t3.email as email_address ,t3.telephone_no"))
-            ->join('tra_invoice_details as t2', 't1.id','=','t2.invoice_id')
-            ->leftJoin('wb_trader_account as t3', 't1.applicant_id','=','t3.id')
-            ->where($where_statement)//,'application_code'=>$application_code
+            ->join('tra_invoice_details as t2', 't1.id', '=', 't2.invoice_id')
+            ->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
+            ->where($where_statement) //,'application_code'=>$application_code
             ->groupBy('t1.id')
             ->first();
-            if($record){
-                    $data = array();
-					$reference_no = $record->tracking_no;
-					if($reference_no == '' || $reference_no == 0){
-						
-						$reference_no = $record->reference_no;
-					}
-                    $table_data = array('invoice_no'=>$record->invoice_no,
-                            'invoice_amount'=>$record->invoice_amount,
-                            'reference_no'=>$reference_no,
-                            'currency_id'=>$record->currency_id,
-                            'zone_id'=>$zone_id,
-                            'exchange_rate'=>$record->exchange_rate,
-                            'applicant_id'=>$record->applicant_id,
-                            'applicant_name'=>$record->applicant_name,
-                            'gepg_submission_status'=>2,
-                            'created_by'=>$user_id,
-                            'created_on'=>Carbon::NOW()
-                        );
-                        DB::connection('financial_db')
-                                    ->table('sys_application_invoices')
-                                    ->insert($data);
-                        
-                       $res =  insertRecord('sys_application_invoices', $table_data, $user_id, 'financial_db');
-					 
+        if ($record) {
+            $data = array();
+            $reference_no = $record->tracking_no;
+            if ($reference_no == '' || $reference_no == 0) {
+
+                $reference_no = $record->reference_no;
             }
-			
-            return $res;
-   }
-   static function validateEmail($email_address){
-		$email_address = preg_replace('/\s+/', '', $email_address);
-		// Check the formatting is correct
-		if(filter_var($email_address, FILTER_VALIDATE_EMAIL) === false){
-			$email_address = '';
-		}
-		return $email_address;
-		
+            $table_data = array(
+                'invoice_no' => $record->invoice_no,
+                'invoice_amount' => $record->invoice_amount,
+                'reference_no' => $reference_no,
+                'currency_id' => $record->currency_id,
+                'zone_id' => $zone_id,
+                'exchange_rate' => $record->exchange_rate,
+                'applicant_id' => $record->applicant_id,
+                'applicant_name' => $record->applicant_name,
+                'gepg_submission_status' => 2,
+                'created_by' => $user_id,
+                'created_on' => Carbon::NOW()
+            );
+            DB::connection('financial_db')
+                ->table('sys_application_invoices')
+                ->insert($data);
+
+            $res =  insertRecord('sys_application_invoices', $table_data, $user_id, 'financial_db');
+        }
+
+        return $res;
+    }
+    static function validateEmail($email_address)
+    {
+        $email_address = preg_replace('/\s+/', '', $email_address);
+        // Check the formatting is correct
+        if (filter_var($email_address, FILTER_VALIDATE_EMAIL) === false) {
+            $email_address = '';
+        }
+        return $email_address;
     }
 
-    static function generateReportsHeader($title, $createTitle = true){
+    static function generateReportsHeader($title, $createTitle = true)
+    {
         $org_info = DB::table('tra_organisation_information')->first();
-                PDF::setPrintHeader(false);
-           
-               $logo = getcwd() . '/resources/images/tfda-logo.jpg';
-               PDF::SetFont('bookantiqua', 'B', 12);
-               PDF::Cell(0,6,strtoupper($org_info->ministry),0,1,'C');
-               PDF::Cell(0, 6, strtoupper($org_info->name), 0, 1, 'C');
-               PDF::SetFont('bookantiqua', 'B', 9);
-               PDF::Cell(0, 6, $org_info->postal_address.' '.$org_info->region_name, 0, 1, 'C');
-               PDF::Cell(0, 6, 'Tel:       '.$org_info->telephone_nos.' Fax: '.$org_info->fax, 0, 1, 'C');
-               PDF::Cell(0, 6, 'Website: '.$org_info->website.', Email: '.$org_info->email_address, 0, 1, 'C');
-               PDF::Cell(0, 5, '', 0, 2);
-               PDF::Image($logo, 86, 40, 35, 14);
-               PDF::Cell(0, 10, '', 0, 2);
-               PDF::SetFont('bookantiqua', 'B', 11);
-               
-               
-               if($createTitle){
-                   PDF::Cell(0, 5, $title, 0, 1, 'C');
-                   PDF::SetFont('bookantiqua', 'B', 11);
-               }        
-        
+        PDF::setPrintHeader(false);
+
+        // $logo = getcwd() . '/resources/images/tfda-logo.jpg';
+        //PDF::SetFont('bookantiqua', 'B', 12);
+        PDF::Cell(0, 6, strtoupper($org_info->ministry), 0, 1, 'C');
+        PDF::Cell(0, 6, strtoupper($org_info->name), 0, 1, 'C');
+        // PDF::SetFont('bookantiqua', 'B', 9);
+        PDF::Cell(0, 6, $org_info->postal_address . ' ' . $org_info->region_name, 0, 1, 'C');
+        PDF::Cell(0, 6, 'Tel:       ' . $org_info->telephone_nos . ' Fax: ' . $org_info->fax, 0, 1, 'C');
+        PDF::Cell(0, 6, 'Website: ' . $org_info->website . ', Email: ' . $org_info->email_address, 0, 1, 'C');
+        PDF::Cell(0, 5, '', 0, 2);
+        //PDF::Image($logo, 86, 40, 35, 14);
+        PDF::Cell(0, 10, '', 0, 2);
+        //PDF::SetFont('bookantiqua', 'B', 11);
+
+
+        if ($createTitle) {
+            PDF::Cell(0, 5, $title, 0, 1, 'C');
+            // PDF::SetFont('bookantiqua', 'B', 11);
+        }
     }
-    static function generateProductQueryletter($application_code,$file_path = null){
+    static function generateProductQueryletter($application_code, $file_path = null)
+    {
         print_r($application_code);
         $qry = DB::table('tra_product_applications as t1')
-                ->leftJoin('tra_product_information as t2','t1.product_id','=','t2.id')
-                ->leftJoin('tra_product_ingredients as t2a','t2.id','=','t2a.product_id')
-                ->leftJoin('par_ingredients_details as t2b','t2a.ingredient_id','=','t2b.id')
-                ->leftJoin('si_units as t2d','t2a.ingredientssi_unit_id','=','t2d.id')
-                ->leftJoin('par_dosage_forms as t2c','t2.dosage_form_id','=','t2c.id') //dosage_form_id par_dosage_forms
-                ->leftJoin('wb_trader_account as t3', 't1.applicant_id','t3.id')
-                ->leftJoin('par_countries as t3a', 't3.country_id','t3a.id')
-                ->leftJoin('tra_approval_recommendations as t4', 't1.application_code','t4.application_code')
-                ->select('t1.application_code','t1.sub_module_id', 't1.reference_no' , 
-                            DB::raw("GROUP_CONCAT(CONCAT(t2b.name,' ' ,t2a.strength, ' ', t2d.name) SEPARATOR ' + ') as common_name"),
-                            't2.brand_name','t3.name as applicant_name', 't3.physical_address', 't3a.name as country', 't3.email as applicant_email', 't4.certificate_no',
-                            't4.approval_date','t2c.name as dosage_form')
-                ->where('t1.application_code', $application_code)
-                ->groupBy('t2.id');
-              
-         $app_details = $qry->first();
-         
-         if (is_null($app_details)) {
-              $res = 'The Reference provided does not match any record or Not yet approved!!';
-              return $res;
-          }
-       
-          $sub_module_id = $app_details->sub_module_id;
-          $sub_module = getSingleRecordColValue('sub_modules',array('id'=>$sub_module_id), 'title');
-			
-          $title = "QUERIES ON APPLICATION FOR ".strtoupper($sub_module)." OF REGISTRATION OF ".$app_details->brand_name." (".$app_details->common_name.") ".$app_details->dosage_form;
-         PDF::Reset();
-          PDF::SetTitle( $title);
+            ->leftJoin('tra_product_information as t2', 't1.product_id', '=', 't2.id')
+            ->leftJoin('tra_product_ingredients as t2a', 't2.id', '=', 't2a.product_id')
+            ->leftJoin('par_ingredients_details as t2b', 't2a.ingredient_id', '=', 't2b.id')
+            ->leftJoin('si_units as t2d', 't2a.ingredientssi_unit_id', '=', 't2d.id')
+            ->leftJoin('par_dosage_forms as t2c', 't2.dosage_form_id', '=', 't2c.id') //dosage_form_id par_dosage_forms
+            ->leftJoin('wb_trader_account as t3', 't1.applicant_id', 't3.id')
+            ->leftJoin('par_countries as t3a', 't3.country_id', 't3a.id')
+            ->leftJoin('tra_approval_recommendations as t4', 't1.application_code', 't4.application_code')
+            ->select(
+                't1.application_code',
+                't1.sub_module_id',
+                't1.reference_no',
+                DB::raw("GROUP_CONCAT(CONCAT(t2b.name,' ' ,t2a.strength, ' ', t2d.name) SEPARATOR ' + ') as common_name"),
+                't2.brand_name',
+                't3.name as applicant_name',
+                't3.physical_address',
+                't3a.name as country',
+                't3.email as applicant_email',
+                't4.certificate_no',
+                't4.approval_date',
+                't2c.name as dosage_form'
+            )
+            ->where('t1.application_code', $application_code)
+            ->groupBy('t2.id');
 
-            PDF::SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+        $app_details = $qry->first();
 
-            // set image scale factor
-            PDF::setImageScale(PDF_IMAGE_SCALE_RATIO);
-
-          PDF::AddPage();
-          self::generateReportsHeader($title, false);
-          PDF::setFont('','',11);
-
-            $template = "<div style='width:100%;position:relative;'>";
-
-            $template .= "<div style='width:49%;margin-bottom:1em;position:relative;'>".$app_details->applicant_name.",<br/> ".$app_details->physical_address.",<br/><br/><strong>".$app_details->country.".</strong></div>";
-
-            $template .= "<div style='width:40%;margin-bottom:1em;position:relative;text-align:right;'>".date('d F, Y')."</strong></div>";
-
-            $template .= "</div>";
-
-            $template .= "<h3 style='text-align:justify' align='justify'><span style='text-align:justify'>".strtoupper($title)."</span></h3>";
-
-            $template .= "<p style='text-align:justify' align='justify'>This is in reference to your application for ".$sub_module." of registration with Reference Number: : (".$app_details->reference_no.").</p>";
-            $template .= "<p style='text-align:justify' align='justify'> Evaluation of the data/information submitted has revealed a number of deficiencies which need to be addressed by submitting additional data/information as required by regulation 11 (2) of the Tanzania Medicines and Medical Devices Authority (Registration of Medicinal Products) Regulations, 2015.";
-            $template .= "<p style='text-align:justify' align='justify'> The required information/data that will assist us to make informed decision regarding ".strtoupper($title)." of registration of the product is as follows: -</p>";
-            
-            $structuredQueries = convertStdClassObjToArray(self::getAllApplicationStructuredQueries($application_code,$module_id));
-            $unStructuredQueries = convertStdClassObjToArray(self::getAllApplicationUnstructuredQueries($application_code,$module_id));
-            $record = array_merge($structuredQueries, $unStructuredQueries);
-            
-            
-            if($record ){
-				$template .= "<ol type='1'>";
-              foreach($record  as $rows){
-                $template .= "<li>".$rows->query."</li>";
-              }
-			   $template .= "</ol></p>";
-            }
-            
-         
-          $template .= "<p style='text-align:justify' align='justify'>Please note that, the required information should be submitted as a query reply to ".strtoupper($title)." of registration application through TMDA’s online submission portal. </p>";
-          $template .= "<p  align='justify'> Please note that processing of the application will be kept on hold until responses to the above queries are received and if no written responses are received within six (6) months from the date of this letter, it will be deemed that you have withdrawn the application as prescribed in regulation 11 (4) of the Tanzania Medicines and Medical Devices Authority (Registration of Medicinal Products) Regulations, 2015.</p>";
-          $template .= "<p  align='justify'>Thank you for your co-operation.</p>";
-            
-          PDF::WriteHTML($template, true, 0, true, true);
-          //PDF::MultiCell(0,0,PDF::WriteHTML($template));
-          PDF::Ln();
-
-          $dmc_signature = getcwd() . '/resources/images/signatures/dmc.png';
-            PDF::Cell(0, 5, '', 0, 2);
-            PDF::Image($dmc_signature, '', '', 25, 12 );
-            PDF::Cell(0, 10, '', 0, 2);
-            PDF::SetFont('bookantiqua', '', 11);
-            PDF::Cell(0, 10, 'Akida M. Khea', 0, 1, 'L');
-            PDF::SetFont('bookantiqua', '', 11);
-            PDF::Cell(0, 5, 'FOR: DIRECTOR GENERAL', 0, 1, 'L');
-
-
-        if($is_notification){
-            PDF::Output($file_path,'F');
-        }else{
-            PDF::Output('Query Letter.pdf','I');
+        if (is_null($app_details)) {
+            $res = 'The Reference provided does not match any record or Not yet approved!!';
+            return $res;
         }
-		PDF::Reset();
-		
+
+        $sub_module_id = $app_details->sub_module_id;
+        $sub_module = getSingleRecordColValue('sub_modules', array('id' => $sub_module_id), 'title');
+
+        $title = "QUERIES ON APPLICATION FOR " . strtoupper($sub_module) . " OF REGISTRATION OF " . $app_details->brand_name . " (" . $app_details->common_name . ") " . $app_details->dosage_form;
+        PDF::Reset();
+        PDF::SetTitle($title);
+
+        PDF::SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+        // set image scale factor
+        PDF::setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+        PDF::AddPage();
+        self::generateReportsHeader($title, false);
+        PDF::setFont('', '', 11);
+
+        $template = "<div style='width:100%;position:relative;'>";
+
+        $template .= "<div style='width:49%;margin-bottom:1em;position:relative;'>" . $app_details->applicant_name . ",<br/> " . $app_details->physical_address . ",<br/><br/><strong>" . $app_details->country . ".</strong></div>";
+
+        $template .= "<div style='width:40%;margin-bottom:1em;position:relative;text-align:right;'>" . date('d F, Y') . "</strong></div>";
+
+        $template .= "</div>";
+
+        $template .= "<h3 style='text-align:justify' align='justify'><span style='text-align:justify'>" . strtoupper($title) . "</span></h3>";
+
+        $template .= "<p style='text-align:justify' align='justify'>This is in reference to your application for " . $sub_module . " of registration with Reference Number: : (" . $app_details->reference_no . ").</p>";
+        $template .= "<p style='text-align:justify' align='justify'> Evaluation of the data/information submitted has revealed a number of deficiencies which need to be addressed by submitting additional data/information as required by regulation 11 (2) of the Tanzania Medicines and Medical Devices Authority (Registration of Medicinal Products) Regulations, 2015.";
+        $template .= "<p style='text-align:justify' align='justify'> The required information/data that will assist us to make informed decision regarding " . strtoupper($title) . " of registration of the product is as follows: -</p>";
+
+        $structuredQueries = convertStdClassObjToArray(self::getAllApplicationStructuredQueries($application_code, $module_id));
+        $unStructuredQueries = convertStdClassObjToArray(self::getAllApplicationUnstructuredQueries($application_code, $module_id));
+        $record = array_merge($structuredQueries, $unStructuredQueries);
+
+
+        if ($record) {
+            $template .= "<ol type='1'>";
+            foreach ($record  as $rows) {
+                $template .= "<li>" . $rows->query . "</li>";
+            }
+            $template .= "</ol></p>";
+        }
+
+
+        $template .= "<p style='text-align:justify' align='justify'>Please note that, the required information should be submitted as a query reply to " . strtoupper($title) . " of registration application through TMDA’s online submission portal. </p>";
+        $template .= "<p  align='justify'> Please note that processing of the application will be kept on hold until responses to the above queries are received and if no written responses are received within six (6) months from the date of this letter, it will be deemed that you have withdrawn the application as prescribed in regulation 11 (4) of the Tanzania Medicines and Medical Devices Authority (Registration of Medicinal Products) Regulations, 2015.</p>";
+        $template .= "<p  align='justify'>Thank you for your co-operation.</p>";
+
+        PDF::WriteHTML($template, true, 0, true, true);
+        //PDF::MultiCell(0,0,PDF::WriteHTML($template));
+        PDF::Ln();
+
+        $dmc_signature = getcwd() . '/resources/images/signatures/dmc.png';
+        PDF::Cell(0, 5, '', 0, 2);
+        PDF::Image($dmc_signature, '', '', 25, 12);
+        PDF::Cell(0, 10, '', 0, 2);
+        PDF::SetFont('bookantiqua', '', 11);
+        PDF::Cell(0, 10, 'Akida M. Khea', 0, 1, 'L');
+        PDF::SetFont('bookantiqua', '', 11);
+        PDF::Cell(0, 5, 'FOR: DIRECTOR GENERAL', 0, 1, 'L');
+
+
+        if ($is_notification) {
+            PDF::Output($file_path, 'F');
+        } else {
+            PDF::Output('Query Letter.pdf', 'I');
+        }
+        PDF::Reset();
     }
-    function getApplicationOpenQueryDetails($application_code){
-
-
-
+    function getApplicationOpenQueryDetails($application_code)
+    {
     }
-    static function getAllApplicationStructuredQueries($application_code,$module_id)
+    static function getAllApplicationStructuredQueries($application_code, $module_id)
     {
         $application_code = $request->input('application_code');
-       
+
         $where = array(
             't1.application_code' => $application_code,
         );
@@ -2274,25 +2263,25 @@ DB::enableQueryLog();
             })
             ->join('par_checklist_items as t5', 't1.checklist_item_id', '=', 't5.id')
             ->join('par_checklist_types as t6', 't5.checklist_type_id', '=', 't6.id')
-             ->leftJoin('users as t7', 't2.created_by', '=', 't7.id')
+            ->leftJoin('users as t7', 't2.created_by', '=', 't7.id')
             ->leftJoin('par_query_guidelines_references as t8', 't2.reference_id', '=', 't8.id')
             ->join('par_query_statuses as t9', 't2.status', '=', 't9.id')
             ->select(DB::raw("t2.*,t5.id as checklist_item_id,t6.checklist_category_id,t2.query,t5.name as checklist_item_name,t4.response as last_response,t6.name as checklist_type,
                                 CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as queried_by,t2.created_on as queried_on,t8.name as reference_details,t9.name as query_status,t2.status"))
             ->where($where)
             ->where('t2.status', '<>', 4);
-            
+
         $results = $qry->get();
         return $results;
     }
-    public function getAllApplicationUnstructuredQueries($application_code,$module_id)
+    public function getAllApplicationUnstructuredQueries($application_code, $module_id)
     {
         $application_code = $request->input('application_code');
-     
+
         $where = array(
             't2.application_code' => $application_code,
         );
-       
+
         $qry = DB::table('checklistitems_queries as t2')
             ->leftJoin('checklistitems_queryresponses as t4', function ($query) {
                 $query->on('t2.id', '=', 't4.query_id')
@@ -2307,110 +2296,120 @@ DB::enableQueryLog();
                                 CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as queried_by,t2.created_on as queried_on,t8.name as reference_details,t9.name as query_status,t2.status"))
             ->where($where)
             ->where('t2.status', '<>', 4);
-        
+
         $results = $qry->get();
         return $results;
     }
 
-    static function generateAmmendementApprovalletter($reference_no, $is_notification = false, $file_path = null){
+    static function generateAmmendementApprovalletter($reference_no, $is_notification = false, $file_path = null)
+    {
         $qry = DB::table('tra_product_applications as t1')
-                ->join('tra_product_information as t2','t1.product_id','=','t2.id')
-                ->leftJoin('tra_product_ingredients as t2a','t2.id','=','t2a.product_id')
-                ->leftJoin('par_ingredients_details as t2b','t2a.ingredient_id','=','t2b.id')
-                ->leftJoin('si_units as t2d','t2a.ingredientssi_unit_id','=','t2d.id')
-                ->leftJoin('par_dosage_forms as t2c','t2.dosage_form_id','=','t2c.id') //dosage_form_id par_dosage_forms
-                ->leftJoin('wb_trader_account as t3', 't1.applicant_id','t3.id')
-                ->leftJoin('par_countries as t3a', 't3.country_id','t3a.id')
-                ->join('tra_approval_recommendations as t4', 't1.application_code','t4.application_code')
-                ->select('t1.application_code', 't1.reference_no' , 
-                            DB::raw("GROUP_CONCAT(CONCAT(t2b.name,' ' ,t2a.strength, ' ', t2d.name) SEPARATOR ' + ') as common_name"),
-                            't2.brand_name','t3.name as applicant_name', 't3.physical_address', 't3a.name as country', 't3.email as applicant_email', 't4.certificate_no',
-                            't4.approval_date','t2c.name as dosage_form')
-                ->where('t1.reference_no', $reference_no)
-                ->orWhere('t1.tracking_no', $reference_no)
-                ->groupBy('t2.id');
-         $app_details = $qry->first();
-         if (is_null($app_details)) {
-              $res = 'The Reference provided does not match any record or Not yet approved!!';
-              return $res;
-          }
-          $title = "NOTIFICATION OF APPROVAL OF CHANGE(S) TO ".$app_details->brand_name." (".$app_details->common_name.") ".$app_details->dosage_form;
-    PDF::Reset();
-          PDF::SetTitle( $title);
-
-          /**
-           * added features for document alignment
-           */
-          // set margins
-          //PDF::SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-          //PDF::SetHeaderMargin(PDF_MARGIN_HEADER);
-          //PDF::SetFooterMargin(PDF_MARGIN_FOOTER);
-
-            // set auto page breaks
-            PDF::SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-
-            // set image scale factor
-            PDF::setImageScale(PDF_IMAGE_SCALE_RATIO);
-
-          PDF::AddPage();
-          self::generateReportsHeader($title, false);
-          PDF::setFont('','',11);
-
-            $template = "<div style='width:100%;position:relative;'>";
-
-            $template .= "<div style='width:49%;margin-bottom:1em;position:relative;'>".$app_details->applicant_name.",<br/> ".$app_details->physical_address.",<br/><br/><strong>".$app_details->country.".</strong></div>";
-
-            $template .= "<div style='width:40%;margin-bottom:1em;position:relative;text-align:right;'>".date('d F, Y',strtotime($app_details->approval_date))."</strong></div>";
-
-            $template .= "</div>";
-
-            $template .= "<h3 style='text-align:justify' align='justify'><span style='text-align:justify'>".strtoupper($title)."</span></h3>";
-
-            $template .= "<p style='text-align:justify' align='justify'>This is in reference to your application with Reference Number: (".$app_details->reference_no.") to implement a change to the above named registered medicinal product.</p>";
-            $template .= "<p style='text-align:justify' align='justify'> With this notification, we are pleased to inform you that the following change(s) has been approved:";
-            
-            $record = DB::table('tra_application_variationsdata as t1')
-            ->select('t1.*')
-            ->where(array('application_code'=>$app_details->application_code))
-            ->get();
-            if($record ){
-				$template .= "<ol type='1'>";
-              foreach($record  as $rows){
-                $template .= "<li>".$rows->proposed_variation."</li>";
-              }
-			   $template .= "</ol></p>";
-            }
-            
-         
-          $template .= "<p style='text-align:justify' align='justify'>Please note that, if the approved changes require issuance of a new registration certificate, you are requested to submit the current original registration certificate physically to TMDA as an attachment of a copy of this notification with a cover letter addressed to the Director General so that a new certificate reflecting the approved changes can be issued. </p>";
-          $template .= "<p  align='justify'>Thank you for your co-operation.</p>";
-
-
-          PDF::WriteHTML($template, true, 0, true, true);
-          //PDF::MultiCell(0,0,PDF::WriteHTML($template));
-          PDF::Ln();
-
-          $dmc_signature = getcwd() . '/resources/images/signatures/dmc.png';
-            PDF::Cell(0, 5, '', 0, 2);
-
-            //$pdf->Image('images/image_demo.jpg', $x, $y, $w, $h, 'JPG', '', '', false, 300, '', false, false, 0, $fitbox, false, false);
-            //PDF::Image($logo, 86, 40, 35, 14);
-            PDF::Image($dmc_signature, '', '', 25, 12 );
-            PDF::Cell(0, 10, '', 0, 2);
-            PDF::SetFont('bookantiqua', '', 11);
-            PDF::Cell(0, 10, 'Akida M. Khea', 0, 1, 'L');
-            PDF::SetFont('bookantiqua', '', 11);
-            PDF::Cell(0, 5, 'FOR: DIRECTOR GENERAL', 0, 1, 'L');
-
-
-        if($is_notification){
-            PDF::Output($file_path,'F');
-        }else{
-            PDF::Output('Ammendment Letter.pdf','I');
+            ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
+            ->leftJoin('tra_product_ingredients as t2a', 't2.id', '=', 't2a.product_id')
+            ->leftJoin('par_ingredients_details as t2b', 't2a.ingredient_id', '=', 't2b.id')
+            ->leftJoin('si_units as t2d', 't2a.ingredientssi_unit_id', '=', 't2d.id')
+            ->leftJoin('par_dosage_forms as t2c', 't2.dosage_form_id', '=', 't2c.id') //dosage_form_id par_dosage_forms
+            ->leftJoin('wb_trader_account as t3', 't1.applicant_id', 't3.id')
+            ->leftJoin('par_countries as t3a', 't3.country_id', 't3a.id')
+            ->join('tra_approval_recommendations as t4', 't1.application_code', 't4.application_code')
+            ->select(
+                't1.application_code',
+                't1.reference_no',
+                DB::raw("GROUP_CONCAT(CONCAT(t2b.name,' ' ,t2a.strength, ' ', t2d.name) SEPARATOR ' + ') as common_name"),
+                't2.brand_name',
+                't3.name as applicant_name',
+                't3.physical_address',
+                't3a.name as country',
+                't3.email as applicant_email',
+                't4.certificate_no',
+                't4.approval_date',
+                't2c.name as dosage_form'
+            )
+            ->where('t1.reference_no', $reference_no)
+            ->orWhere('t1.tracking_no', $reference_no)
+            ->groupBy('t2.id');
+        $app_details = $qry->first();
+        if (is_null($app_details)) {
+            $res = 'The Reference provided does not match any record or Not yet approved!!';
+            return $res;
         }
-		PDF::Reset();
-		//app()->forgetInstance('tcpdf');
-		//Facade::clearResolvedInstance('tcpdf');
-		
+        $title = "NOTIFICATION OF APPROVAL OF CHANGE(S) TO " . $app_details->brand_name . " (" . $app_details->common_name . ") " . $app_details->dosage_form;
+        PDF::Reset();
+        PDF::SetTitle($title);
+
+        /**
+         * added features for document alignment
+         */
+        // set margins
+        //PDF::SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+        //PDF::SetHeaderMargin(PDF_MARGIN_HEADER);
+        //PDF::SetFooterMargin(PDF_MARGIN_FOOTER);
+
+        // set auto page breaks
+        PDF::SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+        // set image scale factor
+        PDF::setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+        PDF::AddPage();
+        self::generateReportsHeader($title, false);
+        PDF::setFont('', '', 11);
+
+        $template = "<div style='width:100%;position:relative;'>";
+
+        $template .= "<div style='width:49%;margin-bottom:1em;position:relative;'>" . $app_details->applicant_name . ",<br/> " . $app_details->physical_address . ",<br/><br/><strong>" . $app_details->country . ".</strong></div>";
+
+        $template .= "<div style='width:40%;margin-bottom:1em;position:relative;text-align:right;'>" . date('d F, Y', strtotime($app_details->approval_date)) . "</strong></div>";
+
+        $template .= "</div>";
+
+        $template .= "<h3 style='text-align:justify' align='justify'><span style='text-align:justify'>" . strtoupper($title) . "</span></h3>";
+
+        $template .= "<p style='text-align:justify' align='justify'>This is in reference to your application with Reference Number: (" . $app_details->reference_no . ") to implement a change to the above named registered medicinal product.</p>";
+        $template .= "<p style='text-align:justify' align='justify'> With this notification, we are pleased to inform you that the following change(s) has been approved:";
+
+        $record = DB::table('tra_application_variationsdata as t1')
+            ->select('t1.*')
+            ->where(array('application_code' => $app_details->application_code))
+            ->get();
+        if ($record) {
+            $template .= "<ol type='1'>";
+            foreach ($record  as $rows) {
+                $template .= "<li>" . $rows->proposed_variation . "</li>";
+            }
+            $template .= "</ol></p>";
+        }
+
+
+        $template .= "<p style='text-align:justify' align='justify'>Please note that, if the approved changes require issuance of a new registration certificate, you are requested to submit the current original registration certificate physically to TMDA as an attachment of a copy of this notification with a cover letter addressed to the Director General so that a new certificate reflecting the approved changes can be issued. </p>";
+        $template .= "<p  align='justify'>Thank you for your co-operation.</p>";
+
+
+        PDF::WriteHTML($template, true, 0, true, true);
+        //PDF::MultiCell(0,0,PDF::WriteHTML($template));
+        PDF::Ln();
+
+        $dmc_signature = getcwd() . '/resources/images/signatures/dmc.png';
+        PDF::Cell(0, 5, '', 0, 2);
+
+        //$pdf->Image('images/image_demo.jpg', $x, $y, $w, $h, 'JPG', '', '', false, 300, '', false, false, 0, $fitbox, false, false);
+        //PDF::Image($logo, 86, 40, 35, 14);
+        PDF::Image($dmc_signature, '', '', 25, 12);
+        PDF::Cell(0, 10, '', 0, 2);
+        PDF::SetFont('bookantiqua', '', 11);
+        PDF::Cell(0, 10, 'Akida M. Khea', 0, 1, 'L');
+        PDF::SetFont('bookantiqua', '', 11);
+        PDF::Cell(0, 5, 'FOR: DIRECTOR GENERAL', 0, 1, 'L');
+
+
+        if ($is_notification) {
+            PDF::Output($file_path, 'F');
+        } else {
+            PDF::Output('Ammendment Letter.pdf', 'I');
+        }
+        PDF::Reset();
+        //app()->forgetInstance('tcpdf');
+        //Facade::clearResolvedInstance('tcpdf');
+
     }
 }

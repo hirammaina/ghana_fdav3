@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+
 class ProductRegistrationController extends Controller
 {
     protected $user_id;
@@ -38,7 +39,7 @@ class ProductRegistrationController extends Controller
     }
     public function getProductApplicationReferenceCodes($application_details)
     {
-         
+
         $zone_code = getSingleRecordColValue('par_zones', array('id' => $application_details->zone_id), 'zone_code');
         $section_code = getSingleRecordColValue('par_sections', array('id' => $application_details->section_id), 'code');
         $class_code = getSingleRecordColValue('par_classifications', array('id' => $application_details->classification_id), 'code');
@@ -50,10 +51,10 @@ class ProductRegistrationController extends Controller
             'section_code' => $section_code,
             'zone_code' => $zone_code,
             'class_code' => $class_code,
-            'assessment_code' => $assessment_code, 
-            'device_typecode'=>$device_typecode
-        );  
-              
+            'assessment_code' => $assessment_code,
+            'device_typecode' => $device_typecode
+        );
+
         return $codes_array;
     }
     public function getProductApplications(Request $request)
@@ -68,6 +69,7 @@ class ProductRegistrationController extends Controller
         try {
             $assigned_stages = getAssignedProcessStages($user_id, $module_id);
 
+
             $qry = DB::table('tra_product_applications as t1')
                 ->join('tra_submissions as t7', function ($join) {
                     $join->on('t1.application_code', '=', 't7.application_code')
@@ -79,12 +81,12 @@ class ProductRegistrationController extends Controller
                 ->leftJoin('wf_workflow_stages as t5', 't7.current_stage', '=', 't5.id')
                 ->leftJoin('par_system_statuses as t6', 't1.application_status_id', '=', 't6.id')
                 ->leftJoin('users as t8', 't7.usr_from', '=', 't8.id')
-                ->join('users as t9', 't7.usr_to', '=', 't9.id')
-                ->select(DB::raw("t7.date_received, CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as from_user,CONCAT_WS(' ',decrypt(t9.first_name),decrypt(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id, t2.brand_name as product_name,
-                    t6.name as application_status, t3.name as applicant_name, t4.name as process_name, t5.name as workflow_stage, t5.is_general, t3.contact_person,
-                    t3.tin_no, t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t3.physical_address as app_physical_address,
-                    t3.postal_address as app_postal_address, t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email as app_email, t3.website as app_website,
-                    t2.*, t1.*"));
+                ->leftjoin('users as t9', 't7.usr_to', '=', 't9.id')
+                ->select(DB::raw("t7.date_received, CONCAT_WS(' ',decryptval(t8.first_name),decryptval(t8.last_name)) as from_user,CONCAT_WS(' ',decryptval(t9.first_name),decryptval(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id, t2.brand_name as product_name,
+                t6.name as application_status, t3.name as applicant_name, t4.name as process_name, t5.name as workflow_stage, t5.is_general, t3.contact_person,
+                t3.tin_no, t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t3.physical_address as app_physical_address,
+                t3.postal_address as app_postal_address, t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email as app_email, t3.website as app_website,
+                t2.*, t1.*"));
             $is_super ? $qry->whereRaw('1=1') : $qry->whereIn('t1.workflow_stage_id', $assigned_stages);
             if (validateIsNumeric($section_id)) {
                 $qry->where('t1.section_id', $section_id);
@@ -119,7 +121,6 @@ class ProductRegistrationController extends Controller
             );
         }
         return \response()->json($res);
-
     }
 
     public function closeApplicationQuery(Request $request)
@@ -145,10 +146,12 @@ class ProductRegistrationController extends Controller
             if ($prev_data['success'] == true) {
                 $previous_data = $prev_data['results'];
                 $res = updateRecord($table_name, $previous_data, $where, $table_data, $user_id);
-                if (DB::table('checklistitems_queries')
-                        ->where('item_resp_id', $item_resp_id)
-                        ->where('status', '<>', 4)
-                        ->count() == 0) {
+                if (
+                    DB::table('checklistitems_queries')
+                    ->where('item_resp_id', $item_resp_id)
+                    ->where('status', '<>', 4)
+                    ->count() == 0
+                ) {
                     DB::table('checklistitems_responses')
                         ->where('id', $item_resp_id)
                         ->update(array('pass_status' => 1));
@@ -194,11 +197,11 @@ class ProductRegistrationController extends Controller
             $assessment_procedure_id = $request->input('assessment_procedure_id');
 
             $appeal_type_id = $request->input('appeal_type_id');
-             $withdrawal_type_id = $request->input('withdrawal_type_id');
+            $withdrawal_type_id = $request->input('withdrawal_type_id');
 
-             $prod_data = $this->returnProductDataSets($request);
-            
-            
+            $prod_data = $this->returnProductDataSets($request);
+
+
             $applications_table = 'tra_product_applications';
 
             $products_table = 'tra_product_information';
@@ -228,8 +231,8 @@ class ProductRegistrationController extends Controller
                     updateRecord($applications_table, $app_details, $where_app, $application_params, $user_id);
                 }
 
-                $application_code = $app_details[0]['application_code'];//$app_details->application_code;
-                $ref_number = $app_details[0]['reference_no'];//$app_details->reference_no;
+                $application_code = $app_details[0]['application_code']; //$app_details->application_code;
+                $ref_number = $app_details[0]['reference_no']; //$app_details->reference_no;
 
                 $where_product = array(
                     'id' => $product_id
@@ -242,18 +245,17 @@ class ProductRegistrationController extends Controller
                     return $previous_data;
                 }
                 $previous_data = $previous_data['results'];
-			
+
                 $res = updateRecord($products_table, $app_details, $where_product, $prod_data, $user_id);
                 $res['active_application_id'] = $active_application_id;
                 $res['application_code'] = $application_code;
                 $res['active_application_code'] = $application_code;
                 $res['product_id'] = $product_id;
                 $res['ref_no'] = $ref_number;
-				$doc_record = DB::table('tra_application_documentsdefination')->where('application_code',$application_code)->first();
-				if(!$doc_record){
-					initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number.rand(10,100), $user_id);
-				}
-
+                $doc_record = DB::table('tra_application_documentsdefination')->where('application_code', $application_code)->first();
+                if (!$doc_record) {
+                    initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number . rand(10, 100), $user_id);
+                }
             } else {
                 //check for previous applicaitons 
                 //expiry dates check span
@@ -266,114 +268,112 @@ class ProductRegistrationController extends Controller
                     return \response()->json($res);
                 }
 
-               // $dms_node_details = getApplicationSubModuleNodeDetails($section_id, $module_id, $sub_module_id, $user_id);
+                // $dms_node_details = getApplicationSubModuleNodeDetails($section_id, $module_id, $sub_module_id, $user_id);
 
-               // if ($dms_node_details != '') {
-                    $prod_data['created_by'] = \Auth::user()->id;
-                    $prod_data['created_on'] = Carbon::now();
+                // if ($dms_node_details != '') {
+                $prod_data['created_by'] = \Auth::user()->id;
+                $prod_data['created_on'] = Carbon::now();
 
-                    $res = insertRecord('tra_product_information', $prod_data, $user_id);
+                $res = insertRecord('tra_product_information', $prod_data, $user_id);
 
-                    $record_id = $res['record_id'];
-                    $product_id = $res['record_id'];
-                    $applications_table = 'tra_product_applications';
-                    //get the primary reference no
-                    $application_code = generateApplicationCode($sub_module_id, $applications_table);
-                    $application_status = getApplicationInitialStatus($module_id, $sub_module_id);
+                $record_id = $res['record_id'];
+                $product_id = $res['record_id'];
+                $applications_table = 'tra_product_applications';
+                //get the primary reference no
+                $application_code = generateApplicationCode($sub_module_id, $applications_table);
+                $application_status = getApplicationInitialStatus($module_id, $sub_module_id);
 
-                    $ref_id = getSingleRecordColValue('tra_submodule_referenceformats', array('sub_module_id' => $sub_module_id, 'module_id' => $module_id, 'reference_type_id' => 1), 'reference_format_id');
-                     $where_statement = array('sub_module_id' => 7, 't1.reg_product_id' => $reg_product_id);
-                    $primary_reference_no = getProductPrimaryReferenceNo($where_statement, 'tra_product_applications');
-                    $codes_array = array(
-                        'ref_no' => $primary_reference_no
-                    );
-                    $ref_number = generateProductsSubRefNumber($reg_product_id, $applications_table, $ref_id, $codes_array, $sub_module_id, $user_id);
-                                      
-                    if (!validateIsNumeric($ref_id )) {
-                        return \response()->json(array('success'=>false, 'message'=>'Reference No Format has not been set, contact the system administrator'));
-                    }
-                    else if( $ref_number == ''){
-                        return \response()->json(array('success'=>false,'tracking_no'=>$tracking_no, 'message'=>$tracking_no));
-                    }
+                $ref_id = getSingleRecordColValue('tra_submodule_referenceformats', array('sub_module_id' => $sub_module_id, 'module_id' => $module_id, 'reference_type_id' => 1), 'reference_format_id');
+                $where_statement = array('sub_module_id' => 7, 't1.reg_product_id' => $reg_product_id);
+                $primary_reference_no = getProductPrimaryReferenceNo($where_statement, 'tra_product_applications');
+                $codes_array = array(
+                    'ref_no' => $primary_reference_no
+                );
+                $ref_number = generateProductsSubRefNumber($reg_product_id, $applications_table, $ref_id, $codes_array, $sub_module_id, $user_id);
+
+                if (!validateIsNumeric($ref_id)) {
+                    return \response()->json(array('success' => false, 'message' => 'Reference No Format has not been set, contact the system administrator'));
+                } else if ($ref_number == '') {
+                    return \response()->json(array('success' => false, 'tracking_no' => $tracking_no, 'message' => $tracking_no));
+                }
 
 
-                    $where_statement = array('tra_product_id' => $product_id);
-                    //save other applications details 
-                    $view_id = generateApplicationViewID();
-                    //  'view_id'=>$view_id,
-                    $app_data = array(
-                        "process_id" => $request->input('process_id'),
-                        'view_id' => $view_id,
-                        "workflow_stage_id" => $request->input('workflow_stage_id'),
-                        "application_status_id" => $application_status->status_id,
-                        "application_code" => $application_code,
-                        "reference_no" => $ref_number,
-                        "tracking_no" => $ref_number,
-                        "applicant_id" => $request->input('applicant_id'),
-                        "sub_module_id" => $request->input('sub_module_id'),
-                        "module_id" => $request->input('module_id'),
-                        "section_id" => $request->input('section_id'),
-                        "product_id" => $product_id,
-                        "local_agent_id" => $request->input('local_applicant_id'),
-                        "assessment_procedure_id" => $request->input('assessment_procedure_id'),
-                        "date_added" => Carbon::now(),
-                        'appeal_type_id' => $appeal_type_id,
-                        'withdrawal_type_id' => $withdrawal_type_id,
-                        'reg_product_id' => $reg_product_id,
-                        "created_by" => \Auth::user()->id,
-                        "created_on" => Carbon::now());
+                $where_statement = array('tra_product_id' => $product_id);
+                //save other applications details 
+                $view_id = generateApplicationViewID();
+                //  'view_id'=>$view_id,
+                $app_data = array(
+                    "process_id" => $request->input('process_id'),
+                    'view_id' => $view_id,
+                    "workflow_stage_id" => $request->input('workflow_stage_id'),
+                    "application_status_id" => $application_status->status_id,
+                    "application_code" => $application_code,
+                    "reference_no" => $ref_number,
+                    "tracking_no" => $ref_number,
+                    "applicant_id" => $request->input('applicant_id'),
+                    "sub_module_id" => $request->input('sub_module_id'),
+                    "module_id" => $request->input('module_id'),
+                    "section_id" => $request->input('section_id'),
+                    "product_id" => $product_id,
+                    "local_agent_id" => $request->input('local_applicant_id'),
+                    "assessment_procedure_id" => $request->input('assessment_procedure_id'),
+                    "date_added" => Carbon::now(),
+                    'appeal_type_id' => $appeal_type_id,
+                    'withdrawal_type_id' => $withdrawal_type_id,
+                    'reg_product_id' => $reg_product_id,
+                    "created_by" => \Auth::user()->id,
+                    "created_on" => Carbon::now()
+                );
 
-                    $res = insertRecord('tra_product_applications', $app_data, $user_id);
-                    $active_application_id = $res['record_id'];
+                $res = insertRecord('tra_product_applications', $app_data, $user_id);
+                $active_application_id = $res['record_id'];
 
-                    //add to submissions table
-                    $submission_params = array(
-                        'application_id' => $active_application_id,
-                        'process_id' => $process_id,
-                        'application_code' => $application_code,
-                        'reference_no' => $ref_number,
-                        'usr_from' => $user_id,
-                        'usr_to' => $user_id,
-                        'previous_stage' => $workflow_stage_id,
-                        'current_stage' => $workflow_stage_id,
-                        'module_id' => $module_id,
-                        'sub_module_id' => $sub_module_id,
-                        'section_id' => $section_id,
-                        'application_status_id' => $application_status->status_id,
-                        'urgency' => 1,
-                        'applicant_id' => $applicant_id,
-                        'zone_id' => $zone_id,
-                        'remarks' => 'Initial save of the application',
-                        'date_received' => Carbon::now(),
-                        'created_on' => Carbon::now(),
-                        'created_by' => $user_id
-                    );
+                //add to submissions table
+                $submission_params = array(
+                    'application_id' => $active_application_id,
+                    'process_id' => $process_id,
+                    'application_code' => $application_code,
+                    'reference_no' => $ref_number,
+                    'usr_from' => $user_id,
+                    'usr_to' => $user_id,
+                    'previous_stage' => $workflow_stage_id,
+                    'current_stage' => $workflow_stage_id,
+                    'module_id' => $module_id,
+                    'sub_module_id' => $sub_module_id,
+                    'section_id' => $section_id,
+                    'application_status_id' => $application_status->status_id,
+                    'urgency' => 1,
+                    'applicant_id' => $applicant_id,
+                    'zone_id' => $zone_id,
+                    'remarks' => 'Initial save of the application',
+                    'date_received' => Carbon::now(),
+                    'created_on' => Carbon::now(),
+                    'created_by' => $user_id
+                );
 
-                    insertRecord('tra_submissions', $submission_params, $user_id);
-                    $res['active_application_id'] = $active_application_id;
-                    $res['application_code'] = $application_code;
-                    $res['active_application_code'] = $application_code;
-                    $res['product_id'] = $product_id;
-                    $res['ref_no'] = $ref_number;
-                    //dms function
+                insertRecord('tra_submissions', $submission_params, $user_id);
+                $res['active_application_id'] = $active_application_id;
+                $res['application_code'] = $application_code;
+                $res['active_application_code'] = $application_code;
+                $res['product_id'] = $product_id;
+                $res['ref_no'] = $ref_number;
+                //dms function
 
-                    //dms function
-                    initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number.rand(10,100), $user_id);
-/*
+                //dms function
+                initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number . rand(10, 100), $user_id);
+                /*
                 } else {
                     $res = array(
                         'success' => false,
                         'message' => 'DMS Repository for the selected Application hasn\'t been configured, contact the system administration.');
                 }
 */
-
             }
-			
-            $this->saveProductMultiREcords($product_id, $request);
 
+            $this->saveProductMultiREcords($product_id, $request);
         } catch (\Exception $exception) {
             $res = array(
-                'success' => false,'data'=>$res,
+                'success' => false, 'data' => $res,
                 'message' => $exception->getMessage()
             );
         } catch (\Throwable $throwable) {
@@ -383,91 +383,91 @@ class ProductRegistrationController extends Controller
             );
         }
         return \response()->json($res);
-
-
     }
-    function returnProductDataSets($request){
-        $prod_data = array("dosage_form_id" => $request->input('dosage_form_id'),
-                    "classification_id" => $request->input('classification_id'),
-                    "brand_name" => $request->input('brand_name'),
-                    "common_name_id" => $request->input('common_name_id'),
-                    "product_strength" => $request->input('product_strength'),
-                    "physical_description" => utf8_encode($request->input('physical_description')),
-                    "si_unit_id" => $request->input('si_unit_id'),
-                    "atc_code_id" => $request->input('atc_code_id'),
-                    "product_form_id" => $request->input('product_form_id'),
-                    "storage_condition" => $request->input('storage_condition'),
-                    "product_category_id" => $request->input('product_category_id'),
-                    "distribution_category_id" => $request->input('distribution_category_id'),
-                    "product_origin_id" => $request->input('product_origin_id'),
-                    "indication" => $request->input('indication'),
-                    "special_category_id" => $request->input('special_category_id'),
-                    "product_subcategory_id" => $request->input('product_subcategory_id'),
-                    "intended_enduser_id" => $request->input('intended_enduser_id'),
-                    "intended_use_id" => $request->input('intended_use_id'),
-                 //   "route_of_administration_id" => $request->input('route_of_administration_id'),
-                    "method_ofuse_id" => $request->input('method_ofuse_id'),
-                    "instructions_of_use" => $request->input('instructions_of_use'),
-                    'prodclass_category_id'=>$request->prodclass_category_id,
-                    "warnings" => $request->input('warnings'),
-                    "gmdn_code" => $request->input('gmdn_code'),
-                    "gmdn_term" => $request->input('gmdn_term'),
-                    "gmdn_category" => $request->input('gmdn_category'),
-                    "manufacturing_date" => $request->input('manufacturing_date'),
-                    "expiry_date" => $request->input('expiry_date'),
-                    "device_type_id" => $request->input('device_type_id'),
-                    "contraindication" => $request->input('contraindication'),
-                    "obtaining_appropriate_mrls" => $request->input('obtaining_appropriate_mrls'),
-                    "has_maximum_residue_limits" => $request->input('has_maximum_residue_limits'),
-                  //  "target_species_id" => $request->input('target_species_id'),
+    function returnProductDataSets($request)
+    {
+        $prod_data = array(
+            "dosage_form_id" => $request->input('dosage_form_id'),
+            "classification_id" => $request->input('classification_id'),
+            "brand_name" => $request->input('brand_name'),
+            "common_name_id" => $request->input('common_name_id'),
+            "product_strength" => $request->input('product_strength'),
+            "physical_description" => utf8_encode($request->input('physical_description')),
+            "si_unit_id" => $request->input('si_unit_id'),
+            "atc_code_id" => $request->input('atc_code_id'),
+            "product_form_id" => $request->input('product_form_id'),
+            "storage_condition" => $request->input('storage_condition'),
+            "product_category_id" => $request->input('product_category_id'),
+            "distribution_category_id" => $request->input('distribution_category_id'),
+            "product_origin_id" => $request->input('product_origin_id'),
+            "indication" => $request->input('indication'),
+            "special_category_id" => $request->input('special_category_id'),
+            "product_subcategory_id" => $request->input('product_subcategory_id'),
+            "intended_enduser_id" => $request->input('intended_enduser_id'),
+            "intended_use_id" => $request->input('intended_use_id'),
+            //   "route_of_administration_id" => $request->input('route_of_administration_id'),
+            "method_ofuse_id" => $request->input('method_ofuse_id'),
+            "instructions_of_use" => $request->input('instructions_of_use'),
+            'prodclass_category_id' => $request->prodclass_category_id,
+            "warnings" => $request->input('warnings'),
+            "gmdn_code" => $request->input('gmdn_code'),
+            "gmdn_term" => $request->input('gmdn_term'),
+            "gmdn_category" => $request->input('gmdn_category'),
+            "manufacturing_date" => $request->input('manufacturing_date'),
+            "expiry_date" => $request->input('expiry_date'),
+            "device_type_id" => $request->input('device_type_id'),
+            "contraindication" => $request->input('contraindication'),
+            "obtaining_appropriate_mrls" => $request->input('obtaining_appropriate_mrls'),
+            "has_maximum_residue_limits" => $request->input('has_maximum_residue_limits'),
+            //  "target_species_id" => $request->input('target_species_id'),
 
-                    "therapeutic_group" => $request->input('therapeutic_group'),
-                    "therapeutic_code" => $request->input('therapeutic_code'),
-            'productrisk_category_id'=>$request->productrisk_category_id,
-            'application_method'=>$request->application_method,
+            "therapeutic_group" => $request->input('therapeutic_group'),
+            "therapeutic_code" => $request->input('therapeutic_code'),
+            'productrisk_category_id' => $request->productrisk_category_id,
+            'application_method' => $request->application_method,
 
-                                    
-                                    'reagents_accessories'=>$request->reagents_accessories,
-                                    'has_medical_family'=>$request->has_medical_family,
-                                    'has_medical_systemmodel_series'=>$request->has_medical_systemmodel_series,
-                                    'has_reagents_accessories'=>$request->has_reagents_accessories,
 
-                    "shelf_lifeafter_opening" => $request->input('shelf_lifeafter_opening'),
-                    "shelf_life" => $request->input('shelf_life'),
+            'reagents_accessories' => $request->reagents_accessories,
+            'has_medical_family' => $request->has_medical_family,
+            'has_medical_systemmodel_series' => $request->has_medical_systemmodel_series,
+            'has_reagents_accessories' => $request->has_reagents_accessories,
 
-                    "section_id" => $request->input('section_id'),
-                    "specific_gravity" => $request->input('specific_gravity'),
-                    "flashpoint_flame_extension" => $request->input('flashpoint_flame_extension'),
-                    "has_childresistant_packaging" => $request->input('has_childresistant_packaging'),
-                    "formulation_type_id" => $request->input('formulation_type_id'),
-                    "product_applicationarea_id" => $request->input('product_applicationarea_id'),
-                    "pesticide_type_id" => $request->input('pesticide_type_id'),
-                    "who_hazard_class_id" => $request->input('who_hazard_class_id'),
-                    "specific_density" => $request->input('specific_density'),
-                
-                    
-                                    'tar_content'=>$request->tar_content,
-                                    'referencemaximum_residue_limit'=>$request->referencemaximum_residue_limit,
-                                    'nicotine_content'=>$request->nicotine_content,
-                                    'tobacco_flavour_id'=>$request->tobacco_flavour_id,
-                                    'gtin_number'=>$request->gtin_number,
-                                    'glocation_number'=>$request->glocation_number,
-                                    'has_maximum_residue_limit'=>$request->has_maximum_residue_limit,
-                                    'maximum_residue_limit'=>$request->maximum_residue_limit,
-                                    'who_class_id'=>$request->who_class_id,
-                                    'pestcide_id'=>$request->pestcide_id,
-                                    'applied_product_id'=>$request->applied_product_id,
-                                    'formulation_id'=>$request->formulation_id,
-                                    'flash_flame_form'=>$request->flash_flame_form,
-                                    'require_child_resistant'=>$request->require_child_resistant,
-                                    'solid_product_density'=>$request->solid_product_density,
-                                    'liquid_gravity'=>$request->liquid_gravity,
-                                    'product_usecategory_id'=>$request->product_usecategory_id
-                    );
+            "shelf_lifeafter_opening" => $request->input('shelf_lifeafter_opening'),
+            "shelf_life" => $request->input('shelf_life'),
 
-                    return $prod_data;
+            "section_id" => $request->input('section_id'),
+            "specific_gravity" => $request->input('specific_gravity'),
+            "flashpoint_flame_extension" => $request->input('flashpoint_flame_extension'),
+            "has_childresistant_packaging" => $request->input('has_childresistant_packaging'),
+            "formulation_type_id" => $request->input('formulation_type_id'),
+            "product_applicationarea_id" => $request->input('product_applicationarea_id'),
+            "pesticide_type_id" => $request->input('pesticide_type_id'),
+            "who_hazard_class_id" => $request->input('who_hazard_class_id'),
+            "specific_density" => $request->input('specific_density'),
+
+
+            'tar_content' => $request->tar_content,
+            'referencemaximum_residue_limit' => $request->referencemaximum_residue_limit,
+            'nicotine_content' => $request->nicotine_content,
+            'tobacco_flavour_id' => $request->tobacco_flavour_id,
+            'gtin_number' => $request->gtin_number,
+            'glocation_number' => $request->glocation_number,
+            'has_maximum_residue_limit' => $request->has_maximum_residue_limit,
+            'maximum_residue_limit' => $request->maximum_residue_limit,
+            'who_class_id' => $request->who_class_id,
+            'pestcide_id' => $request->pestcide_id,
+            'applied_product_id' => $request->applied_product_id,
+            'formulation_id' => $request->formulation_id,
+            'flash_flame_form' => $request->flash_flame_form,
+            'require_child_resistant' => $request->require_child_resistant,
+            'solid_product_density' => $request->solid_product_density,
+            'liquid_gravity' => $request->liquid_gravity,
+            'product_usecategory_id' => $request->product_usecategory_id
+        );
+
+        return $prod_data;
     }
-    
+
     public function saveNewProductReceivingBaseDetails(Request $request)
     {
         try {
@@ -487,14 +487,17 @@ class ProductRegistrationController extends Controller
             $route_of_administrations = json_decode($request->input('route_of_administration_id'));
             $target_species = json_decode($request->input('target_species_id'));
             $assessment_procedure_id = $request->input('assessment_procedure_id');
-$res = 'save'; 
+            $assessment_procedure_id = 3;
+            $res = 'save';
 
 
-			if(!validateIsNumeric($process_id)){
-				   
-			   $process_id = getSingleRecordColValue('wf_processes', array('sub_module_id' => $sub_module_id,'section_id' => $section_id,'prodclass_category_id' => $prodclass_category_id), 'id');
-			}
+            if (!validateIsNumeric($process_id)) {
+
+                $process_id = getSingleRecordColValue('wf_processes', array('sub_module_id' => $sub_module_id, 'section_id' => $section_id, 'prodclass_category_id' => $prodclass_category_id), 'id');
+            }
+
             $prod_data = $this->returnProductDataSets($request);
+
             if (validateIsNumeric($active_application_id)) {
                 //update
                 $applications_table = 'tra_product_applications';
@@ -512,22 +515,23 @@ $res = 'save';
                 $where_app = array(
                     'id' => $active_application_id
                 );
-                $app_details = array('process_id'=>$process_id);
+                $app_details = array('process_id' => $process_id);
                 if (recordExists($applications_table, $where_app)) {
+
                     //$app_details = getTableData($applications_table, $where_app);
                     $app_details = getPreviousRecords($applications_table, $where_app);
                     if ($app_details['success'] == false) {
                         return $app_details;
                     }
                     $app_details = $app_details['results'];
-					$app_details['process_id'] = $process_id;
+                    $app_details['process_id'] = $process_id;
 
                     updateRecord($applications_table, $app_details, $where_app, $application_params, $user_id);
-
                 }
 
-                $application_code = $app_details[0]['application_code'];//$app_details->application_code;
-                $ref_number = $app_details[0]['reference_no'];//$app_details->reference_no;
+
+                $application_code = $app_details[0]['application_code']; //$app_details->application_code;
+                $ref_number = $app_details[0]['reference_no']; //$app_details->reference_no;
 
                 $where_product = array(
                     'id' => $product_id
@@ -547,112 +551,112 @@ $res = 'save';
                 $res['active_application_code'] = $application_code;
                 $res['product_id'] = $product_id;
                 $res['ref_no'] = $ref_number;
-
             } else {
 
-               
-                    $prod_data['created_by'] = \Auth::user()->id;
-                    $prod_data['created_on'] = Carbon::now();
 
-                    $res = insertRecord('tra_product_information', $prod_data, $user_id);
-                    $record_id = $res['record_id'];
-                    $product_id = $res['record_id'];
-                    $applications_table = 'tra_product_applications';
+                $prod_data['created_by'] = \Auth::user()->id;
+                $prod_data['created_on'] = Carbon::now();
+
+                $res = insertRecord('tra_product_information', $prod_data, $user_id);
+                $record_id = $res['record_id'];
+                $product_id = $res['record_id'];
+                $applications_table = 'tra_product_applications';
 
 
-                    $application_code = generateApplicationCode($sub_module_id, $applications_table);
-                    $application_details = DB::table('tra_product_information as t1')->leftJoin('tra_product_applications as t2', 't1.id', 't2.product_id')->where('t1.id', $record_id)->first();
-                    $application_status = getApplicationInitialStatus($module_id, $sub_module_id);
-                    $codes_array = $this->getProductApplicationReferenceCodes($request);
-                   
-                   $tracking_details = generateApplicationTrackingNumber($sub_module_id, 1, $codes_array, $process_id, $zone_id, $user_id);
-                    if ($tracking_details['success'] == false) {
-                        return \response()->json($tracking_details);
-                    }
-                    $tracking_no = $tracking_details['tracking_no'];
-                    $registration_data = array('tra_product_id' => $product_id,
-                        'status_id' => $application_status,
-                        'validity_status_id' => 1,
-                        'registration_status_id' => 1
-                    );
-                    $where_statement = array('tra_product_id' => $product_id);
-                    saveApplicationRegistrationDetails('tra_registered_products', $registration_data, $where_statement, $user_id);
+                $application_code = generateApplicationCode($sub_module_id, $applications_table);
+                $application_details = DB::table('tra_product_information as t1')->leftJoin('tra_product_applications as t2', 't1.id', 't2.product_id')->where('t1.id', $record_id)->first();
+                $application_status = getApplicationInitialStatus($module_id, $sub_module_id);
+                $codes_array = $this->getProductApplicationReferenceCodes($request);
 
-                    $view_id = generateApplicationViewID();
-                    //  'view_id'=>$view_id,
-                    $app_data = array(
-                        "process_id" => $process_id,
-                        "workflow_stage_id" => $request->input('workflow_stage_id'),
-                        "application_status_id" => $application_status->status_id,
-                        "application_code" => $application_code,
-                        "tracking_no" => $tracking_no,
-                        'view_id' => $view_id,
-                        "applicant_id" => $request->input('applicant_id'),
-                        "sub_module_id" => $request->input('sub_module_id'),
-                        "module_id" => $request->input('module_id'),
-                        "section_id" => $request->input('section_id'),
-                        "product_id" => $product_id,
-                        "local_agent_id" => $request->input('local_agent_id'),
-                        "assessment_procedure_id" => $request->input('assessment_procedure_id'),
-                        "date_added" => Carbon::now(),
-                        "created_by" => \Auth::user()->id,
-                        "created_on" => Carbon::now());
+                $tracking_details = generateApplicationTrackingNumber($sub_module_id, 1, $codes_array, $process_id, $zone_id, $user_id);
+                if ($tracking_details['success'] == false) {
+                    return \response()->json($tracking_details);
+                }
+                $tracking_no = $tracking_details['tracking_no'];
+                $registration_data = array(
+                    'tra_product_id' => $product_id,
+                    'status_id' => $application_status,
+                    'validity_status_id' => 1,
+                    'registration_status_id' => 1
+                );
+                $where_statement = array('tra_product_id' => $product_id);
+                saveApplicationRegistrationDetails('tra_registered_products', $registration_data, $where_statement, $user_id);
 
-                    $res = insertRecord('tra_product_applications', $app_data, $user_id);
-                    $active_application_id = $res['record_id'];
+                $view_id = generateApplicationViewID();
+                //  'view_id'=>$view_id,
+                $app_data = array(
+                    "process_id" => $process_id,
+                    "workflow_stage_id" => $request->input('workflow_stage_id'),
+                    "application_status_id" => $application_status->status_id,
+                    "application_code" => $application_code,
+                    "tracking_no" => $tracking_no,
+                    'view_id' => $view_id,
+                    "applicant_id" => $request->input('applicant_id'),
+                    "sub_module_id" => $request->input('sub_module_id'),
+                    "module_id" => $request->input('module_id'),
+                    "section_id" => $request->input('section_id'),
+                    "product_id" => $product_id,
+                    "local_agent_id" => $request->input('local_agent_id'),
+                    "assessment_procedure_id" => $assessment_procedure_id, // $request->input('assessment_procedure_id'),
+                    "date_added" => Carbon::now(),
+                    "created_by" => \Auth::user()->id,
+                    "created_on" => Carbon::now()
+                );
 
-                    //add to submissions table
-                    $submission_params = array(
-                        'application_id' => $active_application_id,
-                        'process_id' => $process_id,
-                        'application_code' => $application_code,
-                        "tracking_no" => $tracking_no,"reference_no" => $tracking_no,
-                        'usr_from' => $user_id,
-                        'usr_to' => $user_id,
-                        'previous_stage' => $workflow_stage_id,
-                        'current_stage' => $workflow_stage_id,
-                        'module_id' => $module_id,
-                        'sub_module_id' => $sub_module_id,
-                        'section_id' => $section_id,
-                        'application_status_id' => $application_status->status_id,
-                        'urgency' => 1,
-                        'applicant_id' => $applicant_id,
-                        'zone_id' => $zone_id,
-                        'remarks' => 'Initial save of the application',
-                        'date_received' => Carbon::now(),
-                        'created_on' => Carbon::now(),
-                        'created_by' => $user_id
-                    );
- 
-                    $res_data = insertRecord('tra_submissions', $submission_params, $user_id);
-                    $res['active_application_id'] = $active_application_id;
-                    $res['application_code'] = $application_code;
-                    $res['active_application_code'] = $application_code;
-                    $res['product_id'] = $product_id;
-                    $res['ref_no'] = $tracking_no;
-                    //dms function 
-                    $nodetracking = str_replace("/", "-", $tracking_no);
-                    
-                     DB::commit();
+                $res = insertRecord('tra_product_applications', $app_data, $user_id);
+                $active_application_id = $res['record_id'];
 
-                    // //dms function 
-                     $nodetracking = str_replace("/", "-", $tracking_no);
-                     
-                     $node_details = array(
-                         'name' => $nodetracking,
-                         'nodeType' => 'cm:folder');
+                //add to submissions table
+                $submission_params = array(
+                    'application_id' => $active_application_id,
+                    'process_id' => $process_id,
+                    'application_code' => $application_code,
+                    "tracking_no" => $tracking_no, "reference_no" => $tracking_no,
+                    'usr_from' => $user_id,
+                    'usr_to' => $user_id,
+                    'previous_stage' => $workflow_stage_id,
+                    'current_stage' => $workflow_stage_id,
+                    'module_id' => $module_id,
+                    'sub_module_id' => $sub_module_id,
+                    'section_id' => $section_id,
+                    'application_status_id' => $application_status->status_id,
+                    'urgency' => 1,
+                    'applicant_id' => $applicant_id,
+                    'zone_id' => $zone_id,
+                    'remarks' => 'Initial save of the application',
+                    'date_received' => Carbon::now(),
+                    'created_on' => Carbon::now(),
+                    'created_by' => $user_id
+                );
 
-                    //initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no.rand(10,100), $user_id);
+                $res_data = insertRecord('tra_submissions', $submission_params, $user_id);
+                $res['active_application_id'] = $active_application_id;
+                $res['application_code'] = $application_code;
+                $res['active_application_code'] = $application_code;
+                $res['product_id'] = $product_id;
+                $res['ref_no'] = $tracking_no;
+                //dms function 
+                $nodetracking = str_replace("/", "-", $tracking_no);
+
+                DB::commit();
+
+                // //dms function 
+                $nodetracking = str_replace("/", "-", $tracking_no);
+
+                $node_details = array(
+                    'name' => $nodetracking,
+                    'nodeType' => 'cm:folder'
+                );
+
+                //initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no.rand(10,100), $user_id);
 
             }
-			//save the othe details 
-			//on save routes 
-			$this->saveProductMultiREcords($product_id, $request);
-                         
-
+            //save the othe details 
+            //on save routes 
+            $this->saveProductMultiREcords($product_id, $request);
         } catch (\Exception $exception) {
             $res = array(
-                'success' => false,'res'=>$res,
+                'success' => false, 'res' => $res,
                 'message' => $exception->getMessage()
             );
         } catch (\Throwable $throwable) {
@@ -739,8 +743,17 @@ $res = 'save';
                 ->join('par_cost_sub_categories as t5', 't1.sub_cat_id', 't5.id')
                 ->join('par_cost_categories as t6', 't5.cost_category_id', 't6.id')
                 ->join('par_exchange_rates as t7', 't4.id', 't7.currency_id')
-                ->select('t1.*', 't1.id as element_costs_id', 't4.id as currency_id', 't2.name as element', 't3.name as sub_element',
-                    't4.name as currency', 't5.name as sub_category', 't6.name as category', 't7.exchange_rate')
+                ->select(
+                    't1.*',
+                    't1.id as element_costs_id',
+                    't4.id as currency_id',
+                    't2.name as element',
+                    't3.name as sub_element',
+                    't4.name as currency',
+                    't5.name as sub_category',
+                    't6.name as category',
+                    't7.exchange_rate'
+                )
                 ->where($where);
             $results = $qry->get();
             $res = array(
@@ -797,9 +810,11 @@ $res = 'save';
                     'invoice_id' => $invoice_id,
                     'element_costs_id' => $element_costs_id
                 );
-                if (DB::table('tra_invoice_details')
-                        ->where($where_check)
-                        ->count() < 1) {
+                if (
+                    DB::table('tra_invoice_details')
+                    ->where($where_check)
+                    ->count() < 1
+                ) {
                     $params[] = array(
                         'invoice_id' => $invoice_id,
                         'element_costs_id' => $element_costs_id,
@@ -830,14 +845,14 @@ $res = 'save';
         return \response()->json($res);
     }
 
-     public function getManagerEvaluationApplications(Request $request)
+    public function getManagerEvaluationApplications(Request $request)
     {
 
         $table_name = $request->input('table_name');
-		
+
         $workflow_stage = $request->input('workflow_stage_id');
         $section_id = $request->input('section_id');
-		
+
         try {
             $qry = DB::table($table_name . ' as t1')
                 ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
@@ -849,17 +864,30 @@ $res = 'save';
                 ->leftJoin('par_classifications as t7', 't2.classification_id', '=', 't7.id')
                 ->leftJoin('par_common_names as t8', 't2.common_name_id', '=', 't8.id')
                 ->leftJoin('par_approval_decisions as t6', 't5.decision_id', '=', 't6.id')
-				 ->leftJoin('tra_submissions as t9', 't1.application_code', '=', 't9.application_code')
+                ->leftJoin('tra_submissions as t9', 't1.application_code', '=', 't9.application_code')
                 ->leftJoin('users as t10', 't9.usr_from', '=', 't10.id')
                 ->leftJoin('par_device_types as t11', 't2.device_type_id', '=', 't11.id')
                 ->leftJoin('par_product_categories as t12', 't2.product_category_id', '=', 't12.id')
-                ->select('t1.*', 't11.name as device_type','t7.name as classification_name', 't10.username as submitted_by', 't9.date_received as submitted_on', 't8.name as common_name', 't2.brand_name as product_name', 't3.name as applicant_name', 't4.name as application_status',
-                    't6.name as approval_status', 't5.decision_id', 't1.id as active_application_id', DB::raw("CONCAT_WS(': ',t7.name,t12.name) as product_category"))
-					
-                ->where(array('t9.current_stage'=>$workflow_stage,'isDone'=>0));
-				if(validateIsNumeric($section_id)){
-					$qry->where('t1.section_id',$section_id);
-				}
+                ->select(
+                    't1.*',
+                    't11.name as device_type',
+                    't7.name as classification_name',
+                    't10.username as submitted_by',
+                    't9.date_received as submitted_on',
+                    't8.name as common_name',
+                    't2.brand_name as product_name',
+                    't3.name as applicant_name',
+                    't4.name as application_status',
+                    't6.name as approval_status',
+                    't5.decision_id',
+                    't1.id as active_application_id',
+                    DB::raw("CONCAT_WS(': ',t7.name,t12.name) as product_category")
+                )
+
+                ->where(array('t9.current_stage' => $workflow_stage, 'isDone' => 0));
+            if (validateIsNumeric($section_id)) {
+                $qry->where('t1.section_id', $section_id);
+            }
             $results = $qry->get();
             $res = array(
                 'success' => true,
@@ -878,8 +906,6 @@ $res = 'save';
             );
         }
         return \response()->json($res);
-
-
     }
     public function getManagerProductDataAmmendApps(Request $request)
     {
@@ -899,13 +925,23 @@ $res = 'save';
                 ->leftJoin('tra_submissions as t9', 't1.application_code', '=', 't9.application_code')
                 ->leftJoin('users as t10', 't9.usr_from', '=', 't10.id')
                 ->leftJoin('par_device_types as t11', 't2.device_type_id', '=', 't11.id')
-                ->select('t1.*', 't11.name as device_type', 't7.name as classification_name', 't10.username as submitted_by', 't9.date_received as submitted_on', 't8.name as common_name', 't2.brand_name as product_name', 't3.name as applicant_name', 't4.name as application_status',
-                  't1.id as active_application_id')
-				  
+                ->select(
+                    't1.*',
+                    't11.name as device_type',
+                    't7.name as classification_name',
+                    't10.username as submitted_by',
+                    't9.date_received as submitted_on',
+                    't8.name as common_name',
+                    't2.brand_name as product_name',
+                    't3.name as applicant_name',
+                    't4.name as application_status',
+                    't1.id as active_application_id'
+                )
+
                 ->where('t9.current_stage', $workflow_stage);
-			if(validateIsNumeric($section_id)){
-				$qry->where('t1.section_id',$section_id);
-			}
+            if (validateIsNumeric($section_id)) {
+                $qry->where('t1.section_id', $section_id);
+            }
             $results = $qry->get();
             $res = array(
                 'success' => true,
@@ -924,11 +960,9 @@ $res = 'save';
             );
         }
         return \response()->json($res);
-
-
     }
-    
-    
+
+
 
     public function getTcMeetingParticipants(Request $request)
     {
@@ -968,11 +1002,11 @@ $res = 'save';
                 ->leftJoin('par_system_statuses as t4', function ($join) {
                     $join->on('t1.application_status_id', '=', 't4.id');
                 })
-                
+
                 ->leftJoin('tra_approval_recommendations as t5', 't5.application_code', '=', 't1.application_code')
                 ->leftJoin('par_classifications as t7', 't2.classification_id', '=', 't7.id')
                 ->leftJoin('par_common_names as t8', 't2.common_name_id', '=', 't8.id')
-				
+
                 ->leftJoin('tra_submissions as t9', 't9.application_code', '=', 't1.application_code')
                 ->leftJoin('users as t10', 't9.usr_from', '=', 't10.id')
                 ->leftJoin('tra_applications_comments as t11', function ($join) {
@@ -985,12 +1019,26 @@ $res = 'save';
                         ->where('t13.comment_type_id', 3);
                 })
                 ->leftJoin('par_evaluation_recommendations as t14', 't13.recommendation_id', '=', 't14.id')
-               
-                ->select('t1.*', 't12.name as evaluator_recommendation', 't14.name as auditor_recommendation', 't2.brand_name as product_name', 't7.name as classification_name', 't10.username as submitted_by', 't9.date_received as submitted_on', 't8.name as common_name', 't3.name as applicant_name', 't4.name as application_status','t2.classification_id','t2.prodclass_category_id',
-                    't5.decision_id', 't1.id as active_application_id')
-                ->where(array('t9.current_stage'=>$workflow_stage,'isDone'=>0) );
 
-            $results = $qry->orderBy('t9.id','desc')->get();
+                ->select(
+                    't1.*',
+                    't12.name as evaluator_recommendation',
+                    't14.name as auditor_recommendation',
+                    't2.brand_name as product_name',
+                    't7.name as classification_name',
+                    't10.username as submitted_by',
+                    't9.date_received as submitted_on',
+                    't8.name as common_name',
+                    't3.name as applicant_name',
+                    't4.name as application_status',
+                    't2.classification_id',
+                    't2.prodclass_category_id',
+                    't5.decision_id',
+                    't1.id as active_application_id'
+                )
+                ->where(array('t9.current_stage' => $workflow_stage, 'isDone' => 0));
+
+            $results = $qry->orderBy('t9.id', 'desc')->get();
             $res = array(
                 'success' => true,
                 'results' => $results,
@@ -1013,7 +1061,7 @@ $res = 'save';
     public function getGrantingDecisionApplications(Request $request)
     {
         $table_name = $request->input('table_name');
-//        $workflow_stage = $request->input('workflow_stage_id');
+        //        $workflow_stage = $request->input('workflow_stage_id');
         $wf = DB::table("wf_workflow_stages")->where('name', '=', 'Granting Decision')->first();
         try {
             $qry = DB::table($table_name . ' as t1')
@@ -1049,25 +1097,29 @@ $res = 'save';
     {
         try {
             $meetingId = DB::transaction(function () use ($request) {
-                $meetingId = insertRecordNoTransaction('tra_product_application_meetings',
+                $meetingId = insertRecordNoTransaction(
+                    'tra_product_application_meetings',
                     [
                         "title" => $request->input('title'),
                         "description" => $request->input('dezcription'),
                         "date_requested" => Carbon::parse($request->input('date_requested')),
                         "physical_address" => $request->input('physical_address')
-                    ], \Auth::user()->id);
+                    ],
+                    \Auth::user()->id
+                );
                 $members = $request->input('members');
                 foreach ($members as $member) {
-                    insertRecordNoTransaction('tra_product_application_meeting_members',
+                    insertRecordNoTransaction(
+                        'tra_product_application_meeting_members',
                         [
                             "product_application_meeting_id" => $meetingId,
                             "member_name" => $member
-                        ]
-                        , \Auth::user()->id);
+                        ],
+                        \Auth::user()->id
+                    );
                 }
 
                 return $meetingId;
-
             });
 
             $res = array(
@@ -1165,19 +1217,46 @@ $res = 'save';
 
             $qry1 = clone $main_qry;
             $qry1->join('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
-                ->select('t1.*', 't2.brand_name as brand_name', 't1.product_id as tra_product_id',
-                    't3.name as applicant_name', 't3.contact_person','t1.id as active_application_id','t1.application_code as active_application_code',
-                    't3.tin_no', 't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id', 't3.physical_address as app_physical_address',
-                    't3.postal_address as app_postal_address', 't3.telephone_no as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website',
-                    't2.*');
+                ->select(
+                    't1.*',
+                    't2.brand_name as brand_name',
+                    't1.product_id as tra_product_id',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't1.id as active_application_id',
+                    't1.application_code as active_application_code',
+                    't3.tin_no',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't3.telephone_no as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website',
+                    't2.*'
+                );
 
             $results = $qry1->first();
             $results->product_id = '';
             $qry2 = clone $main_qry;
             $qry2->join('tra_premises as t3', 't1.local_agent_id', '=', 't3.id')
-                ->select('t3.id as applicant_id', 't3.name as applicant_name', 't3.contact_person',
-                    't3.tin_no', 't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id', 't3.physical_address as app_physical_address',
-                    't3.postal_address as app_postal_address', 't3.telephone as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website');
+                ->select(
+                    't3.id as applicant_id',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't3.tin_no',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't3.telephone as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website'
+                );
             $ltrDetails = $qry2->first();
 
             $res = array(
@@ -1186,7 +1265,6 @@ $res = 'save';
                 'ltrDetails' => $ltrDetails,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -1199,10 +1277,9 @@ $res = 'save';
             );
         }
         return \response()->json($res);
-
     }
 
-    
+
 
     public function prepareOnlineProductReceivingStage(Request $req)
     {
@@ -1210,67 +1287,94 @@ $res = 'save';
         $application_id = $req->input('application_id');
         $application_code = $req->input('application_code');
         $table_name = $req->input('table_name');
-		 $mis_db = DB::connection('mysql')->getDatabaseName();
+        //$mis_db = DB::connection('mysql')->getDatabaseName();
+        $mis_db = "mis_db";
         try {
             $main_qry = DB::connection('portal_db')->table('wb_product_applications as t1')
                 ->join('wb_product_information as t2', 't1.product_id', '=', 't2.id')
                 ->leftJoin('wb_statuses as q', 't1.application_status_id', '=', 'q.id')
                 ->where('t1.id', $application_id);
 
+
             $qry1 = clone $main_qry;
-            $qry1->join('wb_trader_account as t3', 't1.trader_id', '=', 't3.id')
-                ->select('t1.*', 'q.status_type_id','q.name as application_status', 't1.id as active_application_id', 't2.brand_name as brand_name',
-                    't3.name as applicant_name', 't3.contact_person',
-                    't3.tin_no', 't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id', 't3.physical_address as app_physical_address',
-                    't3.postal_address as app_postal_address', 't3.telephone_no as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website',
-                    't2.*');
+            $qry1->leftjoin('wb_trader_account as t3', 't1.trader_id', '=', 't3.id') //to change to join, not left join just for demo 24.01.2024,Jm
+                ->select(
+                    't1.*',
+                    'q.status_type_id',
+                    'q.name as application_status',
+                    't1.id as active_application_id',
+                    't2.brand_name as brand_name',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't3.tin_no',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't3.telephone_no as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website',
+                    't2.*'
+                );
 
             $results = $qry1->first();
-$product_id = $results->product_id;
-			$qry = DB::table('wb_prod_routeofadministrations')
+
+            $product_id = $results->product_id;
+            $qry = DB::table('wb_prod_routeofadministrations')
                 ->where('product_id', $product_id)
                 ->select('route_of_administration_id');
             $routeofadministrations = $qry->get();
-			if($routeofadministrations->count() >0){
-				$routeofadministrations = convertStdClassObjToArray($routeofadministrations);
-				$route_of_administration_id = convertAssArrayToSimpleArray($routeofadministrations, 'route_of_administration_id');
-				$results->route_of_administration_id = $route_of_administration_id;
-				
-			}
+            if ($routeofadministrations->count() > 0) {
+                $routeofadministrations = convertStdClassObjToArray($routeofadministrations);
+                $route_of_administration_id = convertAssArrayToSimpleArray($routeofadministrations, 'route_of_administration_id');
+                $results->route_of_administration_id = $route_of_administration_id;
+            }
             $qry = DB::table('wb_prod_targetspecies')
                 ->where('product_id', $product_id)
                 ->select('target_species_id');
             $prod_targetspecies = $qry->get();
-			if($prod_targetspecies->count() >0){
-				$prod_targetspecies = convertStdClassObjToArray($prod_targetspecies);
-				$target_species_id = convertAssArrayToSimpleArray($prod_targetspecies, 'target_species_id');
-				$results->target_species_id = $target_species_id;
-				
-			}
+            if ($prod_targetspecies->count() > 0) {
+                $prod_targetspecies = convertStdClassObjToArray($prod_targetspecies);
+                $target_species_id = convertAssArrayToSimpleArray($prod_targetspecies, 'target_species_id');
+                $results->target_species_id = $target_species_id;
+            }
             $qry2 = clone $main_qry;
-            $qry2->join($mis_db.'.tra_premises as t3', 't1.local_agent_id', '=', 't3.id')
-                ->select('t3.id as trader_id', 't3.name as applicant_name', 't3.contact_person',
-                    't3.tin_no', 't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id', 't3.physical_address as app_physical_address',
-                    't3.postal_address as app_postal_address', 't3.telephone as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website');
+            $qry2->join($mis_db . '.tra_premises as t3', 't1.local_agent_id', '=', 't3.id')
+                ->select(
+                    't3.id as trader_id',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't3.tin_no',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't3.telephone as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website'
+                );
             $ltrDetails = $qry2->first();
             $where = array(
                 'module_id' => $results->module_id,
                 'sub_module_id' => $results->sub_module_id,
                 'section_id' => $results->section_id
             );
-			    $results->process_name = getSingleRecordColValue('wf_tfdaprocesses', $where, 'name');
-		$atc_codedetails = getSingleRecord('par_atc_codes',array('id'=>$results->atc_code_id));
-		if($atc_codedetails){
-			$results->atc_code = $atc_codedetails->name;
-			$results->atc_code_description = $atc_codedetails->description;
-		}
+            $results->process_name = getSingleRecordColValue('wf_tfdaprocesses', $where, 'name');
+            $atc_codedetails = getSingleRecord('par_atc_codes', array('id' => $results->atc_code_id));
+            if ($atc_codedetails) {
+                $results->atc_code = $atc_codedetails->name;
+                $results->atc_code_description = $atc_codedetails->description;
+            }
             $res = array(
                 'success' => true,
                 'results' => $results,
                 'ltrDetails' => $ltrDetails,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -1297,16 +1401,16 @@ $product_id = $results->product_id;
                     $join->on('t1.id', '=', 't3.application_id')
                         ->on('t3.application_code', '=', DB::raw($application_code));
                 })
-                ->join('tra_product_information as t4', 't1.product_id', '=', 't4.id')
-                ->select(DB::raw("t1.applicant_id,t1.product_id,CONCAT_WS(',',t2.name,t2.postal_address) as applicant_details, t3.id as invoice_id, t3.invoice_no,t3.isLocked,t3.paying_currency_id,t1.is_fast_track,t1.paying_currency_id as apppaying_currency_id, t3.isLocked,
-                t1.section_id,t1.module_id,CONCAT_WS(',',t4.brand_name,t4.physical_description) as product_details"))
-                ->where('t1.id', $application_id);
+                ->join('tra_product_information as t4', 't1.product_id', '=', 't4.id') //job 26.01.24,islocked
+                ->select(DB::raw('t1.applicant_id, t1.product_id, CONCAT_WS(\',\', t2.name, t2.postal_address) as applicant_details, t3.id as invoice_id, t3.invoice_no, t3.paying_currency_id, t1.is_fast_track, t1.paying_currency_id as apppaying_currency_id, "t3"."isLocked", t1.section_id, t1.module_id, CONCAT_WS(\',\', t4.brand_name, t4.physical_description) as product_details'))
+                ->where('t1.id', $application_id)
+                ->limit(1)
+                ->get();
 
             $results = $qry->first();
             if (!$results->invoice_id) {
 
                 $results->paying_currency_id = $results->apppaying_currency_id;
-
             }
             $res = array(
                 'success' => true,
@@ -1326,7 +1430,7 @@ $product_id = $results->product_id;
         }
         return \response()->json($res);
     }
-	
+
     public function prepareNewProductReceivingStage(Request $req)
     {
 
@@ -1346,22 +1450,51 @@ $product_id = $results->product_id;
                         ->on('t4.application_code', '=', 't4.application_code');
                 })
                 ->leftJoin('par_countries as t8', 't3.country_id', 't8.id')
-                ->select('t1.*', 't5.name as atc_code', 't5.description as atc_code_description', 't1.id as active_application_id', 't2.brand_name as brand_name',
-                    't3.name as applicant_name', 't3.contact_person','t8.is_local',
-                    't3.tin_no', 't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id', 't3.physical_address as app_physical_address',
-                    't3.postal_address as app_postal_address', 't3.telephone_no as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website',
-                    't2.*');
+                ->select(
+                    't1.*',
+                    't5.name as atc_code',
+                    't5.description as atc_code_description',
+                    't1.id as active_application_id',
+                    't2.brand_name as brand_name',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't8.is_local',
+                    't3.tin_no',
+                    't3.tin_no as tin',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't3.telephone_no as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website',
+                    't2.*'
+                );
 
             $results = $qry1->first();
-			$product_id = $results->product_id;
-			$results = $this->returnMultProducSelections($product_id,$results);
-			
-			//add the route_of_administration_id and target_species_id
+            $product_id = $results->product_id;
+            $results = $this->returnMultProducSelections($product_id, $results);
+
+            //add the route_of_administration_id and target_species_id
             $qry2 = clone $main_qry;
             $qry2->join('tra_premises as t3', 't1.local_agent_id', '=', 't3.id')
-                ->select('t3.id as applicant_id', 't3.name as applicant_name', 't3.contact_person',
-                    't3.tin_no', 't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id', 't3.physical_address as app_physical_address',
-                    't3.postal_address as app_postal_address', 't3.telephone as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website');
+                ->select(
+                    't3.id as applicant_id',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't3.tin_no',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't3.telephone as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website'
+                );
             $ltrDetails = $qry2->first();
 
             $res = array(
@@ -1370,7 +1503,6 @@ $product_id = $results->product_id;
                 'ltrDetails' => $ltrDetails,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -1384,61 +1516,55 @@ $product_id = $results->product_id;
         }
         return \response()->json($res);
     }
-	function returnMultProducSelections($product_id,$results){
-		$qry = DB::table('tra_prod_routeofadministrations')
-                ->where('product_id', $product_id)
-                ->select('route_of_administration_id');
-            $routeofadministrations = $qry->get();
-			if($routeofadministrations->count() >0){
-				$routeofadministrations = convertStdClassObjToArray($routeofadministrations);
-				$route_of_administration_id = convertAssArrayToSimpleArray($routeofadministrations, 'route_of_administration_id');
-				$results->route_of_administration_id = $route_of_administration_id;
-				
-			}
-            $qry = DB::table('tra_prod_targetspecies')
-                ->where('product_id', $product_id)
-                ->select('target_species_id');
-            $prod_targetspecies = $qry->get();
-			if($prod_targetspecies->count() >0){
-				$prod_targetspecies = convertStdClassObjToArray($prod_targetspecies);
-				$target_species_id = convertAssArrayToSimpleArray($prod_targetspecies, 'target_species_id');
-				$results->target_species_id = $target_species_id;
-				
-			}
-			 $qry = DB::table('tra_prod_intendeduses')
-                ->where('product_id', $product_id)
-                ->select('intended_use_id');
-            $prod_data = $qry->get();
-			if($prod_data->count() >0){
-				$prod_data = convertStdClassObjToArray($prod_data);
-				$intended_use_id = convertAssArrayToSimpleArray($prod_data, 'intended_use_id');
-				$results->intended_use_id = $intended_use_id;
-				
-			}
-			 $qry = DB::table('tra_prod_product_forms')
-                ->where('product_id', $product_id)
-                ->select('product_form_id');
-            $prod_data = $qry->get();
-			if($prod_data->count() >0){
-				$prod_data = convertStdClassObjToArray($prod_data);
-				$product_form_id = convertAssArrayToSimpleArray($prod_data, 'product_form_id');
-				$results->product_form_id = $product_form_id;
-				
-			}
-			 $qry = DB::table('tra_prod_method_ofuses')
-                ->where('product_id', $product_id)
-                ->select('method_ofuse_id');
-            $prod_data = $qry->get();
-			if($prod_data->count() >0){
-				$prod_data = convertStdClassObjToArray($prod_data);
-				$method_ofuse_id = convertAssArrayToSimpleArray($prod_data, 'method_ofuse_id');
-				$results->method_ofuse_id = $method_ofuse_id;
-				
-			}
-			return $results;
-		
-		
-	}
+    function returnMultProducSelections($product_id, $results)
+    {
+        $qry = DB::table('tra_prod_routeofadministrations')
+            ->where('product_id', $product_id)
+            ->select('route_of_administration_id');
+        $routeofadministrations = $qry->get();
+        if ($routeofadministrations->count() > 0) {
+            $routeofadministrations = convertStdClassObjToArray($routeofadministrations);
+            $route_of_administration_id = convertAssArrayToSimpleArray($routeofadministrations, 'route_of_administration_id');
+            $results->route_of_administration_id = $route_of_administration_id;
+        }
+        $qry = DB::table('tra_prod_targetspecies')
+            ->where('product_id', $product_id)
+            ->select('target_species_id');
+        $prod_targetspecies = $qry->get();
+        if ($prod_targetspecies->count() > 0) {
+            $prod_targetspecies = convertStdClassObjToArray($prod_targetspecies);
+            $target_species_id = convertAssArrayToSimpleArray($prod_targetspecies, 'target_species_id');
+            $results->target_species_id = $target_species_id;
+        }
+        $qry = DB::table('tra_prod_intendeduses')
+            ->where('product_id', $product_id)
+            ->select('intended_use_id');
+        $prod_data = $qry->get();
+        if ($prod_data->count() > 0) {
+            $prod_data = convertStdClassObjToArray($prod_data);
+            $intended_use_id = convertAssArrayToSimpleArray($prod_data, 'intended_use_id');
+            $results->intended_use_id = $intended_use_id;
+        }
+        $qry = DB::table('tra_prod_product_forms')
+            ->where('product_id', $product_id)
+            ->select('product_form_id');
+        $prod_data = $qry->get();
+        if ($prod_data->count() > 0) {
+            $prod_data = convertStdClassObjToArray($prod_data);
+            $product_form_id = convertAssArrayToSimpleArray($prod_data, 'product_form_id');
+            $results->product_form_id = $product_form_id;
+        }
+        $qry = DB::table('tra_prod_method_ofuses')
+            ->where('product_id', $product_id)
+            ->select('method_ofuse_id');
+        $prod_data = $qry->get();
+        if ($prod_data->count() > 0) {
+            $prod_data = convertStdClassObjToArray($prod_data);
+            $method_ofuse_id = convertAssArrayToSimpleArray($prod_data, 'method_ofuse_id');
+            $results->method_ofuse_id = $method_ofuse_id;
+        }
+        return $results;
+    }
     public function prepareNewProductAmmendMentReceivingStage(Request $req)
     {
 
@@ -1450,7 +1576,7 @@ $product_id = $results->product_id;
                 ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
 
                 ->leftJoin('par_atc_codes as t5', 't2.atc_code_id', '=', 't5.id')
-                ->join('tra_appdata_ammendementrequests as t6', 't1.application_code','t6.application_code')
+                ->join('tra_appdata_ammendementrequests as t6', 't1.application_code', 't6.application_code')
                 ->where('t1.id', $application_id);
 
             $qry1 = clone $main_qry;
@@ -1459,19 +1585,49 @@ $product_id = $results->product_id;
                     $join->on('t1.id', '=', 't4.application_id')
                         ->on('t4.application_code', '=', 't4.application_code');
                 })
-                ->select('t1.*','t6.id as appdata_ammendementrequest_id', 't5.name as atc_code', 't5.description as atc_code_description', 't1.id as active_application_id', 't2.brand_name as brand_name',
-                    't3.name as applicant_name', 't3.contact_person',
-                    't3.tin_no', 't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id', 't3.physical_address as app_physical_address',
-                    't3.postal_address as app_postal_address', 't3.telephone_no as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website',
-                    't2.*', 't4.id as invoice_id', 't4.invoice_no');
+                ->select(
+                    't1.*',
+                    't6.id as appdata_ammendementrequest_id',
+                    't5.name as atc_code',
+                    't5.description as atc_code_description',
+                    't1.id as active_application_id',
+                    't2.brand_name as brand_name',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't3.tin_no',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't3.telephone_no as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website',
+                    't2.*',
+                    't4.id as invoice_id',
+                    't4.invoice_no'
+                );
 
             $results = $qry1->first();
 
             $qry2 = clone $main_qry;
             $qry2->join('tra_premises as t3', 't1.local_agent_id', '=', 't3.id')
-                ->select('t3.id as applicant_id', 't3.name as applicant_name', 't3.contact_person',
-                    't3.tin_no', 't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id', 't3.physical_address as app_physical_address',
-                    't3.postal_address as app_postal_address', 't3.telephone as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website');
+                ->select(
+                    't3.id as applicant_id',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't3.tin_no',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't3.telephone as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website'
+                );
             $ltrDetails = $qry2->first();
 
             $res = array(
@@ -1480,7 +1636,6 @@ $product_id = $results->product_id;
                 'ltrDetails' => $ltrDetails,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -1494,7 +1649,7 @@ $product_id = $results->product_id;
         }
         return \response()->json($res);
     }
-    
+
     public function prepareProductsUniformStage(Request $request)
     {
         $application_id = $request->input('application_id');
@@ -1502,7 +1657,7 @@ $product_id = $results->product_id;
         $table_name = $request->input('table_name');
 
         try {
-           
+
             $main_qry = DB::table('tra_product_applications as t1')
                 ->leftjoin('tra_product_information as t2', 't1.product_id', '=', 't2.id')
                 ->leftJoin('par_atc_codes as t5', 't2.atc_code_id', '=', 't5.id')
@@ -1510,22 +1665,50 @@ $product_id = $results->product_id;
 
             $qry1 = clone $main_qry;
             $qry1->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
-                ->select('t1.*', 't5.name as atc_code', 't5.description as atc_code_description', 't1.id as active_application_id', 't2.brand_name as brand_name',
-                    't3.name as applicant_name', 't3.contact_person',
-                    't3.tin_no', 't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id', 't3.physical_address as app_physical_address',
-                    't3.postal_address as app_postal_address', 't3.telephone_no as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website',
-                    't2.*',DB::raw("CONCAT_WS(',',t3.name,t3.postal_address) as applicant_details,
-                    t1.section_id,t1.module_id,CONCAT_WS(',',t2.brand_name,t2.physical_description) as product_details"));
+                ->select(
+                    't1.*',
+                    't5.name as atc_code',
+                    't5.description as atc_code_description',
+                    't1.id as active_application_id',
+                    't2.brand_name as brand_name',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't3.tin_no',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't3.telephone_no as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website',
+                    't2.*',
+                    DB::raw("CONCAT_WS(',',t3.name,t3.postal_address) as applicant_details,
+                    t1.section_id,t1.module_id,CONCAT_WS(',',t2.brand_name,t2.physical_description) as product_details")
+                );
 
             $results = $qry1->first();
-$product_id = $results->product_id;
-			$results = $this->returnMultProducSelections($product_id,$results);
-			
+            $product_id = $results->product_id;
+            $results = $this->returnMultProducSelections($product_id, $results);
+
             $qry2 = clone $main_qry;
             $qry2->leftJoin('tra_premises as t3', 't1.local_agent_id', '=', 't3.id')
-                ->select('t3.id as applicant_id', 't3.name as applicant_name', 't3.contact_person',
-                    't3.tin_no', 't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id', 't3.physical_address as app_physical_address',
-                    't3.postal_address as app_postal_address', 't3.telephone as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website');
+                ->select(
+                    't3.id as applicant_id',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't3.tin_no',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't3.telephone as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website'
+                );
             $ltrDetails = $qry2->first();
 
             $res = array(
@@ -1534,7 +1717,6 @@ $product_id = $results->product_id;
                 'ltrDetails' => $ltrDetails,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -1585,7 +1767,8 @@ $product_id = $results->product_id;
         }
         return \response()->json($res);
     }
-    public function savedocumentssubmissionrecommendation(Request $req){
+    public function savedocumentssubmissionrecommendation(Request $req)
+    {
         try {
             $resp = "";
             $user_id = $this->user_id;
@@ -1593,51 +1776,55 @@ $product_id = $results->product_id;
             $application_code = $req->application_code;
             $document_status_id = $req->document_status_id;
             $remarks = $req->remarks;
-            if(isset($remarks) && $remarks != null){
-            $table_name = 'tra_documentsubmission_recommendations';
+            if (isset($remarks) && $remarks != null) {
+                $table_name = 'tra_documentsubmission_recommendations';
 
-            $record_id = $req->id;
-            $data = array('application_code'=>$application_code,
-                        'application_id'=>$application_id,
-                        'document_status_id'=>$document_status_id,
-                        'remarks'=>$remarks);
+                $record_id = $req->id;
+                $data = array(
+                    'application_code' => $application_code,
+                    'application_id' => $application_id,
+                    'document_status_id' => $document_status_id,
+                    'remarks' => $remarks
+                );
 
-            if (validateIsNumeric($record_id)) {
-                $where = array('id' => $record_id);
-                if (recordExists($table_name, $where)) {
-                    $data['dola'] = Carbon::now();
-                    $data['altered_by'] = $user_id;
-                    $previous_data = getPreviousRecords($table_name, $where);
-                    $resp = updateRecord($table_name, $previous_data['results'], $where, $data, $user_id);
+                if (validateIsNumeric($record_id)) {
+                    $where = array('id' => $record_id);
+                    if (recordExists($table_name, $where)) {
+                        $data['dola'] = Carbon::now();
+                        $data['altered_by'] = $user_id;
+                        $previous_data = getPreviousRecords($table_name, $where);
+                        $resp = updateRecord($table_name, $previous_data['results'], $where, $data, $user_id);
+                    }
+                } else {
+                    //insert
+                    $data['created_by'] = $user_id;
+                    $data['created_on'] = Carbon::now();
+                    $data['submission_date'] = Carbon::now();
 
+                    $resp = insertRecord($table_name, $data, $user_id);
+                    $app_data = array('submission_date' => Carbon::now(), 'dola' => Carbon::now());
+
+                    DB::table('tra_product_applications')
+                        ->where(array('application_code' => $application_code))
+                        ->update($app_data);
+                }
+                if ($resp['success']) {
+                    $res = array(
+                        'success' => true,
+                        'message' => 'Saved Successfully'
+                    );
+                } else {
+                    $res = array(
+                        'success' => false,
+                        'message' => $resp['message']
+                    );
                 }
             } else {
-                //insert
-                $data['created_by'] = $user_id;
-                $data['created_on'] = Carbon::now();
-                $data['submission_date'] = Carbon::now();
-
-                $resp = insertRecord($table_name, $data, $user_id);
-                $app_data = array('submission_date'=>Carbon::now(), 'dola'=>Carbon::now());
-                
-                DB::table('tra_product_applications')
-                        ->where(array('application_code'=>$application_code))
-                        ->update($app_data);
-
+                $res = array(
+                    'success' => false,
+                    'message' => 'remarks is required'
+                );
             }
-            if ($resp['success']) {
-                $res = array('success' => true,
-                    'message' => 'Saved Successfully');
-
-            } else {
-                $res = array('success' => false,
-                    'message' => $resp['message']);
-
-            }
-			}else{
-				 $res = array('success' => false,
-                    'message' =>'remarks is required');
-			}
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -1652,18 +1839,18 @@ $product_id = $results->product_id;
 
         return response()->json($res);
     }
-    public function getdocumentssubmissionrecommendation(Request $req){
+    public function getdocumentssubmissionrecommendation(Request $req)
+    {
         try {
-           
+
             $application_id = $req->application_id;
             $application_code = $req->application_code;
             $table_name = 'tra_documentsubmission_recommendations';
             $record = DB::table('tra_documentsubmission_recommendations')
-                        ->where('application_code',$application_code)
-                        ->first();
+                ->where('application_code', $application_code)
+                ->first();
 
-            $res = array('results'=>$record, 'success'=>true);
-                
+            $res = array('results' => $record, 'success' => true);
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -1692,7 +1879,7 @@ $product_id = $results->product_id;
             unset($data['manufacturer_name']);
             unset($data['manufacturing_site']);
             unset($data['id']);
-			unset($data['inspected_site_name']);
+            unset($data['inspected_site_name']);
             if (validateIsNumeric($record_id)) {
                 $where = array('id' => $record_id);
                 if (recordExists($table_name, $where)) {
@@ -1703,7 +1890,6 @@ $product_id = $results->product_id;
                     $previous_data = getPreviousRecords($table_name, $where);
 
                     $resp = updateRecord($table_name, $previous_data['results'], $where, $data, $user_id);
-
                 }
             } else {
                 //insert
@@ -1711,16 +1897,17 @@ $product_id = $results->product_id;
                 $data['created_on'] = Carbon::now();
 
                 $resp = insertRecord($table_name, $data, $user_id);
-
             }
             if ($resp['success']) {
-                $res = array('success' => true,
-                    'message' => 'Saved Successfully');
-
+                $res = array(
+                    'success' => true,
+                    'message' => 'Saved Successfully'
+                );
             } else {
-                $res = array('success' => false,
-                    'message' => $resp['message']);
-
+                $res = array(
+                    'success' => false,
+                    'message' => $resp['message']
+                );
             }
         } catch (\Exception $exception) {
             $res = array(
@@ -1735,7 +1922,6 @@ $product_id = $results->product_id;
         }
 
         return response()->json($res);
-
     }
 
     public function onSaveProductinformation(Request $req)
@@ -1757,7 +1943,7 @@ $product_id = $results->product_id;
             unset($data['rule_description']);
             unset($data['reg_product_id']);
             //unset($data['atc_code']);
-           // unset($data['atc_code_description']);
+            // unset($data['atc_code_description']);
             if (validateIsNumeric($record_id)) {
                 $where = array('id' => $record_id);
                 if (recordExists($table_name, $where)) {
@@ -1768,19 +1954,20 @@ $product_id = $results->product_id;
                     $previous_data = getPreviousRecords($table_name, $where);
 
                     $resp = updateRecord($table_name, $previous_data['results'], $where, $data, $user_id);
-
                 }
             }
-			$this->saveProductMultiREcords($record_id, $req);
+            $this->saveProductMultiREcords($record_id, $req);
 
             if ($resp['success']) {
-                $res = array('success' => true,
-                    'message' => 'Saved Successfully');
-
+                $res = array(
+                    'success' => true,
+                    'message' => 'Saved Successfully'
+                );
             } else {
-                $res = array('success' => false,
-                    'message' => $resp['message']);
-
+                $res = array(
+                    'success' => false,
+                    'message' => $resp['message']
+                );
             }
         } catch (\Exception $exception) {
             $res = array(
@@ -1795,119 +1982,114 @@ $product_id = $results->product_id;
         }
 
         return response()->json($res);
-
     }
-	function saveProductMultiREcords($product_id, $req){
-		$route_of_administrations =$req->route_of_administration_id;
-			$target_species =$req->target_species_id;
-			
-			
-            $intended_uses =json_decode($req->intended_use_id);
-            $product_forms =json_decode($req->product_form_id);
-            $method_ofuses =json_decode($req->method_ofuse_id);
+    function saveProductMultiREcords($product_id, $req)
+    {
+        $route_of_administrations = $req->route_of_administration_id;
+        $target_species = $req->target_species_id;
 
-		$routesadmin = array();
-						if(is_array($route_of_administrations)){
-							foreach($route_of_administrations as $route_of_administration){
-                                            
-                                    $routesadmin[] = array('product_id'=>$product_id, 
-                                                    'route_of_administration_id'=>$route_of_administration, 
-                                                    'created_on'=>Carbon::now());
 
-                            }
-							if(count($routesadmin)){
-								 DB::table('tra_prod_routeofadministrations')->where('product_id',$product_id)->delete();
-								  DB::table('tra_prod_routeofadministrations')->insert($routesadmin);
-							}
-							
-							
-						}
-						  if(is_array($target_species)){
-							  
-							$targetspecies = array();
-						  foreach($target_species as $target_species_id){
-                                            
-                                    $targetspecies[] = array('product_id'=>$product_id, 
-                                                    'target_species_id'=>$target_species_id, 
-                                                    'created_on'=>Carbon::now());
+        $intended_uses = json_decode($req->intended_use_id);
+        $product_forms = json_decode($req->product_form_id);
+        $method_ofuses = json_decode($req->method_ofuse_id);
 
-                            }
-							if(count($targetspecies) >0){
-								 DB::table('tra_prod_targetspecies')->where('product_id',$product_id)->delete();
-								  DB::table('tra_prod_targetspecies')->insert($targetspecies);
-							}
-                             
-							  
-						  }
-                             
-                             if(is_array($target_species)){
-							  
-							$targetspecies = array();
-						  foreach($target_species as $target_species_id){
-                                            
-                                    $targetspecies[] = array('product_id'=>$product_id, 
-                                                    'target_species_id'=>$target_species_id,  
-                                                    'created_on'=>Carbon::now());
+        $routesadmin = array();
+        if (is_array($route_of_administrations)) {
+            foreach ($route_of_administrations as $route_of_administration) {
 
-                            }
-							if(count($targetspecies) >0){
-								 DB::table('tra_prod_targetspecies')->where('product_id',$product_id)->delete();
-								  DB::table('tra_prod_targetspecies')->insert($targetspecies);
-							}
-                             
-							  
-						  }
+                $routesadmin[] = array(
+                    'product_id' => $product_id,
+                    'route_of_administration_id' => $route_of_administration,
+                    'created_on' => Carbon::now()
+                );
+            }
+            if (count($routesadmin)) {
+                DB::table('tra_prod_routeofadministrations')->where('product_id', $product_id)->delete();
+                DB::table('tra_prod_routeofadministrations')->insert($routesadmin);
+            }
+        }
+        if (is_array($target_species)) {
 
-                          if(is_array($intended_uses)){
-							  
-                                $data = array();
-                                foreach($intended_uses as $intended_use_id){
-                                                
-                                        $data[] = array('product_id'=>$product_id, 
-                                                        'intended_use_id'=>$intended_use_id, 
-                                                        'created_on'=>Carbon::now());
+            $targetspecies = array();
+            foreach ($target_species as $target_species_id) {
 
-                                }
-                                if(count($data) >0){
-                                    DB::table('tra_prod_intendeduses')->where('product_id',$product_id)->delete();
-                                    DB::table('tra_prod_intendeduses')->insert($data);
-                                }
-                                
-							  
-						  }
-                          if(is_array($product_forms)){
-                                
-                                $data = array();
-                            foreach($product_forms as $product_form_id){
-                                                
-                                        $data[] = array('product_id'=>$product_id, 
-                                                        'product_form_id'=>$product_form_id,  
-                                                        'created_on'=>Carbon::now());
+                $targetspecies[] = array(
+                    'product_id' => $product_id,
+                    'target_species_id' => $target_species_id,
+                    'created_on' => Carbon::now()
+                );
+            }
+            if (count($targetspecies) > 0) {
+                DB::table('tra_prod_targetspecies')->where('product_id', $product_id)->delete();
+                DB::table('tra_prod_targetspecies')->insert($targetspecies);
+            }
+        }
 
-                                }
-                                if(count($data) >0){
-                                    DB::table('tra_prod_product_forms')->where('product_id',$product_id)->delete();
-                                    DB::table('tra_prod_product_forms')->insert($data);
-                                }
-                        }  
-                        if(is_array($method_ofuses)){
-                                $data = array();
-                            foreach($method_ofuses as $method_ofuse_id){
-                                                
-                                        $data[] = array('product_id'=>$product_id, 
-                                                        'method_ofuse_id'=>$method_ofuse_id, 
-                                                        'created_on'=>Carbon::now());
+        if (is_array($target_species)) {
 
-                                }
-                                if(count($data) >0){
-                                    DB::table('tra_prod_method_ofuses')->where('product_id',$product_id)->delete();
-                                    DB::table('tra_prod_method_ofuses')->insert($data);
-                                }
-                        }
-                           
-		
-		
-	}
+            $targetspecies = array();
+            foreach ($target_species as $target_species_id) {
+
+                $targetspecies[] = array(
+                    'product_id' => $product_id,
+                    'target_species_id' => $target_species_id,
+                    'created_on' => Carbon::now()
+                );
+            }
+            if (count($targetspecies) > 0) {
+                DB::table('tra_prod_targetspecies')->where('product_id', $product_id)->delete();
+                DB::table('tra_prod_targetspecies')->insert($targetspecies);
+            }
+        }
+
+        if (is_array($intended_uses)) {
+
+            $data = array();
+            foreach ($intended_uses as $intended_use_id) {
+
+                $data[] = array(
+                    'product_id' => $product_id,
+                    'intended_use_id' => $intended_use_id,
+                    'created_on' => Carbon::now()
+                );
+            }
+            if (count($data) > 0) {
+                DB::table('tra_prod_intendeduses')->where('product_id', $product_id)->delete();
+                DB::table('tra_prod_intendeduses')->insert($data);
+            }
+        }
+        if (is_array($product_forms)) {
+
+            $data = array();
+            foreach ($product_forms as $product_form_id) {
+
+                $data[] = array(
+                    'product_id' => $product_id,
+                    'product_form_id' => $product_form_id,
+                    'created_on' => Carbon::now()
+                );
+            }
+            if (count($data) > 0) {
+                DB::table('tra_prod_product_forms')->where('product_id', $product_id)->delete();
+                DB::table('tra_prod_product_forms')->insert($data);
+            }
+        }
+        if (is_array($method_ofuses)) {
+            $data = array();
+            foreach ($method_ofuses as $method_ofuse_id) {
+
+                $data[] = array(
+                    'product_id' => $product_id,
+                    'method_ofuse_id' => $method_ofuse_id,
+                    'created_on' => Carbon::now()
+                );
+            }
+            if (count($data) > 0) {
+                DB::table('tra_prod_method_ofuses')->where('product_id', $product_id)->delete();
+                DB::table('tra_prod_method_ofuses')->insert($data);
+            }
+        }
+    }
     public function onLoadOnlineproductIngredients(Request $req)
     {
         try {
@@ -1928,7 +2110,8 @@ $product_id = $results->product_id;
             foreach ($records as $rec) {
                 //get the array
 
-                $data[] = array('product_id' => $rec->product_id,
+                $data[] = array(
+                    'product_id' => $rec->product_id,
                     'id' => $rec->id,
                     'ingredient_type_id' => $rec->ingredient_type_id,
                     'ingredient_id' => $rec->ingredient_id,
@@ -1943,7 +2126,6 @@ $product_id = $results->product_id;
                     'si_unit' => returnParamFromArray($si_unitData, $rec->ingredientssi_unit_id),
                     'reason_for_inclusion' => returnParamFromArray($inclusion_reasonData, $rec->inclusion_reason_id),
                 );
-
             }
             $res = array('success' => true, 'results' => $data);
         } catch (\Exception $e) {
@@ -1958,8 +2140,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
-
     }
 
     public function onLoadOnlineproductPackagingDetails(Request $req)
@@ -1969,8 +2149,8 @@ $product_id = $results->product_id;
             $data = array();
             //get the records 
             $records = DB::connection('portal_db')->table('wb_product_packaging as t1')
-            ->select(DB::raw("t1.*, CONCAT_WS('X',retail_packaging_size,retail_packaging_size1,retail_packaging_size2,retail_packaging_size3,retail_packaging_size4) as retail_packaging"))
-                   
+                ->select(DB::raw("t1.*, CONCAT_WS('X',retail_packaging_size,retail_packaging_size1,retail_packaging_size2,retail_packaging_size3,retail_packaging_size4) as retail_packaging"))
+
                 ->where(array('t1.product_id' => $product_id))
                 ->get();
             //loop container_id
@@ -1985,7 +2165,8 @@ $product_id = $results->product_id;
             foreach ($records as $rec) {
                 //get the array
 
-                $data[] = array('product_id' => $rec->product_id,
+                $data[] = array(
+                    'product_id' => $rec->product_id,
                     'id' => $rec->id,
                     'container_id' => $rec->container_id,
                     'container_material_id' => $rec->container_material_id,
@@ -2003,7 +2184,6 @@ $product_id = $results->product_id;
                     'seal_type' => returnParamFromArray($containersSealData, $rec->seal_type_id),
                     'packaging_units' => returnParamFromArray($packagingUnitsData, $rec->packaging_units_id)
                 );
-
             }
             $res = array('success' => true, 'results' => $data);
         } catch (\Exception $e) {
@@ -2018,23 +2198,22 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
-
     }
-    function getManufacturerRoles($product_manufacturer_id,$manufacturer_roleData){
-            $man_roles = '';
-                $records = DB::connection('portal_db')->table('wb_product_manufacturers_roles')
-                        ->where(array('product_manufacturer_id'=>$product_manufacturer_id))
-                        ->get();
-                    foreach($records as $rec){
-                        $manufacturer_role_id = $rec->manufacturer_role_id;
-                                    
-                        $manufacturing_role = returnParamFromArray($manufacturer_roleData,$manufacturer_role_id);
-                                    
-                        $man_roles .= $manufacturing_role.';';
-                    }
-    return $man_roles;
+    function getManufacturerRoles($product_manufacturer_id, $manufacturer_roleData)
+    {
+        $man_roles = '';
+        $records = DB::connection('portal_db')->table('wb_product_manufacturers_roles')
+            ->where(array('product_manufacturer_id' => $product_manufacturer_id))
+            ->get();
+        foreach ($records as $rec) {
+            $manufacturer_role_id = $rec->manufacturer_role_id;
+
+            $manufacturing_role = returnParamFromArray($manufacturer_roleData, $manufacturer_role_id);
+
+            $man_roles .= $manufacturing_role . ';';
         }
+        return $man_roles;
+    }
     public function onLoadOnlineproductManufacturer(Request $req)
     {
 
@@ -2051,7 +2230,7 @@ $product_id = $results->product_id;
                 $man_site_id = $rec->man_site_id;
                 $manufacturer_role_id = $rec->manufacturer_role_id;
                 $manufacturer_roleData = getParameterItems('par_manufacturing_roles', '', '');
-                $manufacturing_role = $this->getManufacturerRoles($product_manufacturer_id,$manufacturer_roleData);
+                $manufacturing_role = $this->getManufacturerRoles($product_manufacturer_id, $manufacturer_roleData);
 
                 $man_data = DB::table('par_man_sites as t1')
                     ->select('t1.*', 't1.id as manufacturer_id', 't1.name as manufacturing_site', 't5.name as manufacturer_name', 't2.name as country', 't3.name as region', 't4.name as district')
@@ -2062,7 +2241,8 @@ $product_id = $results->product_id;
                     ->where(array('t5.id' => $manufacturer_id, 't1.id' => $man_site_id))
                     ->first();
                 if ($man_data) {
-                    $data[] = array('id' => $rec->id,
+                    $data[] = array(
+                        'id' => $rec->id,
                         'manufacturer_name' => $man_data->manufacturer_name,
                         'manufacturing_site' => $man_data->manufacturing_site,
                         'country_name' => $man_data->country,
@@ -2074,7 +2254,6 @@ $product_id = $results->product_id;
                         'email_address' => $man_data->email_address
                     );
                 }
-
             }
             $res = array(
                 'success' => true,
@@ -2092,7 +2271,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
     }
 
 
@@ -2127,22 +2305,21 @@ $product_id = $results->product_id;
                     ->leftJoin('par_districts as t4', 't1.district_id', '=', 't4.id')
                     ->where(array('t1.id' => $manufacturer_id))
                     ->first();
-                if($records){
-                  
-                    $data[] = array('id' => $rec->id,
-                            'manufacturer_name' => $records->manufacturer_name,
-                            'country_name' => $records->country,
-                            'region_name' => $records->region,
-                            'product_id' => $rec->product_id,
-                            'physical_address' => $records->physical_address,
-                            'postal_address' => $records->postal_address,
-                            'manufacturing_role' => $manufacturing_role,
-                            'ingredient_name' => $active_ingredient,
-                            'email_address' => $records->email_address
-                        );
+                if ($records) {
 
+                    $data[] = array(
+                        'id' => $rec->id,
+                        'manufacturer_name' => $records->manufacturer_name,
+                        'country_name' => $records->country,
+                        'region_name' => $records->region,
+                        'product_id' => $rec->product_id,
+                        'physical_address' => $records->physical_address,
+                        'postal_address' => $records->postal_address,
+                        'manufacturing_role' => $manufacturing_role,
+                        'ingredient_name' => $active_ingredient,
+                        'email_address' => $records->email_address
+                    );
                 }
-               
             }
             $res = array(
                 'success' => true,
@@ -2160,7 +2337,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
     }
 
     public function onLoadOnlinegmpInspectionApplicationsDetails(Request $req)
@@ -2192,7 +2368,8 @@ $product_id = $results->product_id;
                     ->where(array('t5.id' => $reg_site_id))
                     ->first();
 
-                $data[] = array('id' => $rec->id,
+                $data[] = array(
+                    'id' => $rec->id,
                     'product_id' => $rec->product_id,
                     'reg_site_id' => $reg_site_id,
                     'gmp_certificate_no' => $records->gmp_certificate_no,
@@ -2207,7 +2384,6 @@ $product_id = $results->product_id;
                     'district' => $records->district,
                     'product_linedetails' => $product_linedetails
                 );
-
             }
             $res = array(
                 'success' => true,
@@ -2225,7 +2401,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
     }
 
     function getGMPProductLineDetails($product_line_id)
@@ -2239,9 +2414,7 @@ $product_id = $results->product_id;
             ->first();
         if ($records) {
             return $records->product_line . ' ' . $records->product_category;
-
         }
-
     }
 
     public function onLoadproductIngredients(Request $req)
@@ -2273,8 +2446,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
-
     }
 
     public function onLoadproductNutrients(Request $req)
@@ -2303,8 +2474,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
-
     }
 
     public function getProductActiveIngredients(Request $req)
@@ -2326,7 +2495,6 @@ $product_id = $results->product_id;
             } else {
                 $res = array('success' => false, 'message' => 'Active Pharmaceutical Ingredient not captured.');
             }
-
         } catch (\Exception $e) {
             $res = array(
                 'success' => false,
@@ -2339,8 +2507,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
-
     }
 
     public function getGMPproductLinesDetails(Request $req)
@@ -2356,14 +2522,13 @@ $product_id = $results->product_id;
                 ->select('t1.id as gmp_productline_id', 't2.name as gmpproduct_line')
                 ->join('gmp_product_lines as t2', 't1.product_line_id', '=', 't2.id')
                 ->where(array('manufacturing_site_id' => $manufacturing_site_id))
-			//	->whereIn('prodline_inspectionstatus_id',[8,10])
+                //	->whereIn('prodline_inspectionstatus_id',[8,10])
                 ->get();
             if (count($data) > 0) {
                 $res = array('success' => true, 'results' => $data);
             } else {
                 $res = array('success' => false, 'message' => 'GMP Product Line Details Not Found.');
             }
-
         } catch (\Exception $e) {
             $res = array(
                 'success' => false,
@@ -2376,11 +2541,9 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
-
     }
-	
-	public function onLoaddrugsMaximumResidueLimitsGrid(Request $req)
+
+    public function onLoaddrugsMaximumResidueLimitsGrid(Request $req)
     {
 
         try {
@@ -2391,12 +2554,11 @@ $product_id = $results->product_id;
             $data = DB::table('tra_drugs_maximum_residuelimits as t1')
                 ->select(DB::raw("t1.*, t2.name as target_species"))
                 ->leftJoin('par_target_species as t2', 't1.target_species_id', '=', 't2.id')
-                
+
                 ->where(array('t1.product_id' => $product_id))
                 ->get();
 
             $res = array('success' => true, 'results' => $data);
-
         } catch (\Exception $e) {
             $res = array(
                 'success' => false,
@@ -2409,7 +2571,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
     }
     public function onLoadproductPackagingDetails(Request $req)
     {
@@ -2431,7 +2592,6 @@ $product_id = $results->product_id;
                 ->get();
 
             $res = array('success' => true, 'results' => $data);
-
         } catch (\Exception $e) {
             $res = array(
                 'success' => false,
@@ -2444,7 +2604,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
     }
 
     public function onLoadproductManufacturer(Request $req)
@@ -2466,7 +2625,6 @@ $product_id = $results->product_id;
                 ->get();
 
             $res = array('success' => true, 'results' => $records);
-
         } catch (\Exception $e) {
             $res = array(
                 'success' => false,
@@ -2479,8 +2637,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
-
     }
 
     public function onLoadproductApiManufacturer(Request $req)
@@ -2514,8 +2670,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
-
     }
 
     public function getEValuationComments(Request $req)
@@ -2524,8 +2678,6 @@ $product_id = $results->product_id;
         $table_name = 'tra_evaluations_overralcomments';
         $res = $this->getEvalAuditComments($table_name, $application_code);
         return \response()->json($res);
-
-
     }
 
     public function getAuditingComments(Request $req)
@@ -2534,7 +2686,6 @@ $product_id = $results->product_id;
         $table_name = 'tra_auditing_overralcomments';
         $res = $this->getEvalAuditComments($table_name, $application_code);
         return \response()->json($res);
-
     }
 
     function getEvalAuditComments($table_name, $application_code)
@@ -2564,8 +2715,6 @@ $product_id = $results->product_id;
             );
         }
         return $res;
-
-
     }
 
     public function getProductApplicationMoreDetails(Request $request)
@@ -2574,14 +2723,11 @@ $product_id = $results->product_id;
         $applicant_id = $request->input('applicant_id');
         $product_id = $request->input('product_id');
         try {
-		if(validateIsNumeric($application_id)){
-			$where = array('t1.id'=>$application_id);
-			
-		}
-		else if(validateIsNumeric($product_id)){
-			$where = array('t1.product_id'=>$product_id);
-			
-		}
+            if (validateIsNumeric($application_id)) {
+                $where = array('t1.id' => $application_id);
+            } else if (validateIsNumeric($product_id)) {
+                $where = array('t1.product_id' => $product_id);
+            }
             $app_details = DB::table('tra_product_applications as t1')
                 ->where($where)
                 ->select('zone_id', 'product_id')->first();
@@ -2644,8 +2790,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
-
     }
 
     public function onLoadManufacturersDetails(Request $request)
@@ -2658,25 +2802,25 @@ $product_id = $results->product_id;
             if ($filters != NULL) {
                 foreach ($filters as $filter) {
                     switch ($filter->property) {
-                        case 'manufacturer_name' :
+                        case 'manufacturer_name':
                             $whereClauses[] = "t1.name like '%" . ($filter->value) . "%'";
                             break;
-                        case 'contact_person' :
+                        case 'contact_person':
                             $whereClauses[] = "t1.contact_person like '%" . ($filter->value) . "%'";
                             break;
-                        case 'email_address' :
+                        case 'email_address':
                             $whereClauses[] = "t1.email_address like '%" . ($filter->value) . "%'";
                             break;
-                        case 'physical_address' :
+                        case 'physical_address':
                             $whereClauses[] = "t1.physical_address like '%" . ($filter->value) . "%'";
                             break;
-                        case 'country_name' :
+                        case 'country_name':
                             $whereClauses[] = "t2.name like '%" . ($filter->value) . "%'";
                             break;
-                        case 'region_name' :
+                        case 'region_name':
                             $whereClauses[] = "t3.name like '%" . ($filter->value) . "%'";
                             break;
-                        case 'website' :
+                        case 'website':
                             $whereClauses[] = "t1.website like '%" . ($filter->value) . "%'";
                             break;
                     }
@@ -2715,7 +2859,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
     }
 
     public function onLoadManufacturingSitesDetails(Request $request)
@@ -2724,7 +2867,7 @@ $product_id = $results->product_id;
         $whereClauses = array();
 
         try {
-			
+
             $qry = DB::table('par_man_sites as t5')
                 ->join('tra_manufacturers_information as t1', 't5.manufacturer_id', '=', 't1.id')
                 ->join('par_countries as t2', 't1.country_id', '=', 't2.id')
@@ -2793,7 +2936,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
     }
 
     public function onLoadgmpInspectionApplicationsDetails(Request $req)
@@ -2803,9 +2945,9 @@ $product_id = $results->product_id;
             //get the manufatcuring sites details 
             $section_id = getSingleRecordColValue('tra_product_applications', array('product_id' => $product_id), 'section_id');
             //manufatcuring sites 
-			
+
             $man_sites_ids = getRecordValFromWhere('tra_product_manufacturers', array('product_id' => $product_id), 'man_site_id');
-			
+
             // tra_product_manufacturers
 
             $records = DB::table('tra_manufacturing_sites as t1')
@@ -2823,11 +2965,12 @@ $product_id = $results->product_id;
 
             if (is_array($man_sites_ids)) {
 
-               // $records = $records->whereIn('man_site_id', $man_sites_ids);
+                // $records = $records->whereIn('man_site_id', $man_sites_ids);
 
             }
             $records = $records->groupBy('t6.application_code')->get();
-            $res = array('success' => true,
+            $res = array(
+                'success' => true,
                 'results' => $records
             );
         } catch (\Exception $e) {
@@ -2850,15 +2993,15 @@ $product_id = $results->product_id;
             $product_id = $req->product_id;
             $data = array();
             $records = DB::table('tra_sample_information as t1')
-                ->select('t1.*','t1.batch_no as batchno', 't6.brand_name', 't1.expiry_date as expirydate', 't1.manufacturing_date as manufacturedate', 't1.pack_unit_id', 't1.pack_size', 't1.quantity_unit_id', 't1.quantity')
+                ->select('t1.*', 't1.batch_no as batchno', 't6.brand_name', 't1.expiry_date as expirydate', 't1.manufacturing_date as manufacturedate', 't1.pack_unit_id', 't1.pack_size', 't1.quantity_unit_id', 't1.quantity')
                 ->join('tra_product_information as t6', 't1.product_id', '=', 't6.id')
                 ->where(array('product_id' => $product_id))
                 ->first();
 
-            $res = array('success' => true,
+            $res = array(
+                'success' => true,
                 'results' => $records
             );
-
         } catch (\Exception $e) {
             $res = array(
                 'success' => false,
@@ -2871,8 +3014,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
-
     }
 
     public function onLoadProductsSampledetails(Request $req)
@@ -2891,7 +3032,8 @@ $product_id = $results->product_id;
                 $sample_storage = getSingleRecordColValue('storage_conditions', array('id' => $rec->storage_id), 'name', 'mysql');
                 $sample_status = getSingleRecordColValue('sample_status', array('id' => $rec->sample_status_id), 'name', 'mysql');
 
-                $data[] = array('product_id' => $rec->product_id,
+                $data[] = array(
+                    'product_id' => $rec->product_id,
                     'section_id' => $rec->section_id,
                     'batch_no' => $rec->batch_no,
                     'brand_name' => $rec->brand_name,
@@ -2911,13 +3053,12 @@ $product_id = $results->product_id;
                     'sample_status' => $sample_status,
                     'sample_storage' => $sample_storage
                 );
-
             }
 
-            $res = array('success' => true,
+            $res = array(
+                'success' => true,
                 'results' => $data
             );
-
         } catch (\Exception $e) {
             $res = array(
                 'success' => false,
@@ -2930,8 +3071,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
-
     }
 
     public function saveProductGmpApplicationDetails(Request $req)
@@ -2943,33 +3082,38 @@ $product_id = $results->product_id;
             $reg_site_id = $req->reg_site_id;
             $table_name = 'tra_product_gmpinspectiondetails';
             $tra_site_id = $req->tra_site_id;
-            $data = array('product_id' => $product_id,
+            $data = array(
+                'product_id' => $product_id,
                 'reg_site_id' => $reg_site_id,
                 'tra_site_id' => $tra_site_id,
-                'status_id' => 1);
+                'status_id' => 1
+            );
 
-            $where = array('reg_site_id' => $reg_site_id,
-                'product_id' => $product_id);
+            $where = array(
+                'reg_site_id' => $reg_site_id,
+                'product_id' => $product_id
+            );
             if (!recordExists($table_name, $where)) {
                 $data['created_by'] = $user_id;
                 $data['created_on'] = Carbon::now();
 
                 $resp = insertRecord($table_name, $data, $user_id);
                 $manufacturer_id = $resp['record_id'];
-
             } else {
                 $resp = array('success' => false, 'message' => 'The Product GMP Application inspection exists');
             }
 
             if ($resp['success']) {
 
-                $res = array('success' => true,
-                    'message' => 'The Product GMP Application inspection Saved Successfully');
-
+                $res = array(
+                    'success' => true,
+                    'message' => 'The Product GMP Application inspection Saved Successfully'
+                );
             } else {
-                $res = array('success' => false,
-                    'message' => $resp['message']);
-
+                $res = array(
+                    'success' => false,
+                    'message' => $resp['message']
+                );
             }
         } catch (\Exception $exception) {
             $res = array(
@@ -2984,8 +3128,6 @@ $product_id = $results->product_id;
         }
 
         return response()->json($res);
-
-
     }
 
     public function saveManufacturerDetails(Request $req)
@@ -3010,37 +3152,38 @@ $product_id = $results->product_id;
                     $previous_data = getPreviousRecords($table_name, $where);
 
                     $resp = updateRecord($table_name, $previous_data['results'], $where, $data, $user_id);
-
                 }
             } else {
                 //insert
                 //check duplicate
-                $where = array('name' => $manufacturer_name,
-                    'physical_address' => $physical_address);
+                $where = array(
+                    'name' => $manufacturer_name,
+                    'physical_address' => $physical_address
+                );
                 if (!recordExists($table_name, $where)) {
                     $data['created_by'] = $user_id;
                     $data['created_on'] = Carbon::now();
 
                     $resp = insertRecord($table_name, $data, $user_id);
                     $manufacturer_id = $resp['record_id'];
-
                 } else {
                     $resp = array('success' => false, 'message' => 'The Manufacturer details exists');
                 }
-
             }
             if ($resp['success']) {
 
-                $res = array('success' => true,
+                $res = array(
+                    'success' => true,
                     'manufacturer_id' => $manufacturer_id,
                     'manufacturer_name' => $manufacturer_name,
                     'physical_address' => $physical_address,
-                    'message' => 'Saved Successfully');
-
+                    'message' => 'Saved Successfully'
+                );
             } else {
-                $res = array('success' => false,
-                    'message' => $resp['message']);
-
+                $res = array(
+                    'success' => false,
+                    'message' => $resp['message']
+                );
             }
         } catch (\Exception $exception) {
             $res = array(
@@ -3067,7 +3210,7 @@ $product_id = $results->product_id;
                 ->join('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
                 ->join('par_system_statuses as t4', 't1.application_status_id', '=', 't4.id')
                 ->leftJoin('tra_approval_recommendations as t5', 't1.application_code', '=', 't5.application_code')
-               
+
                 ->join('tra_product_information as t7', 't1.product_id', '=', 't7.id')
                 ->leftJoin('par_common_names as t8', 't7.common_name_id', '=', 't8.id')
                 ->leftJoin('par_approval_decisions as t6', 't5.decision_id', '=', 't6.id')
@@ -3075,9 +3218,22 @@ $product_id = $results->product_id;
                 ->join('wf_workflow_stages as t8', 't1.workflow_stage_id', '=', 't8.id')
                 ->join('tc_recommendations as t14', 't1.application_code', '=', 't14.application_code')
                 ->join('par_tcmeeting_decisions as t15', 't14.decision_id', '=', 't15.id')
-                ->select('t1.*', 't1.id as active_application_id', 't3.name as applicant_name', 't4.name as application_status', 't6.name as approval_status',
-                    't7.name as process_name', 't8.name as workflow_stage', 't8.is_general', 't5.id as recommendation_id', 't6.name as recommendation',
-                    't15.name as tc_recomm', 't14.decision_id', 't14.id as recomm_id', 't14.comments')
+                ->select(
+                    't1.*',
+                    't1.id as active_application_id',
+                    't3.name as applicant_name',
+                    't4.name as application_status',
+                    't6.name as approval_status',
+                    't7.name as process_name',
+                    't8.name as workflow_stage',
+                    't8.is_general',
+                    't5.id as recommendation_id',
+                    't6.name as recommendation',
+                    't15.name as tc_recomm',
+                    't14.decision_id',
+                    't14.id as recomm_id',
+                    't14.comments'
+                )
                 ->where('t1.workflow_stage_id', $workflow_stage);
 
             $results = $qry->get();
@@ -3099,8 +3255,6 @@ $product_id = $results->product_id;
             );
         }
         return \response()->json($res);
-
-
     }
 
     //
@@ -3117,29 +3271,41 @@ $product_id = $results->product_id;
                 ->leftJoin('tra_product_information as t7', 't1.product_id', '=', 't7.id')
                 ->leftJoin('par_common_names as t8', 't7.common_name_id', '=', 't8.id')
                 ->leftJoin('tc_meeting_applications as t9', 't1.application_code', '=', 't9.application_code')
-                 ->leftJoin('tra_applications_comments as t10', function ($join) {
+                ->leftJoin('tra_applications_comments as t10', function ($join) {
                     $join->on('t1.application_code', '=', 't10.application_code')
-                        
+
                         ->where('t10.comment_type_id', 2);
                 })
                 ->leftJoin('par_evaluation_recommendations as t11', 't10.recommendation_id', '=', 't11.id')
                 ->leftJoin('tra_applications_comments as t12', function ($join) {
                     $join->on('t1.application_code', '=', 't12.application_code')
-                    
+
                         ->where('t12.comment_type_id', 3);
                 })
                 ->leftJoin('par_evaluation_recommendations as t13', 't12.recommendation_id', '=', 't13.id')
 
-                ->select('t1.*', 't3.name as applicant_name', 't4.name as application_status',
-                    't9.meeting_id', 't1.id as active_application_id', 't7.brand_name', 't8.name as common_name',
-                    't11.name as evaluator_recommendation', 't13.name as auditor_recommendation', 't15.name as tc_recomm', 't14.decision_id', 't14.id as recomm_id', 't14.comments')
+                ->select(
+                    't1.*',
+                    't3.name as applicant_name',
+                    't4.name as application_status',
+                    't9.meeting_id',
+                    't1.id as active_application_id',
+                    't7.brand_name',
+                    't8.name as common_name',
+                    't11.name as evaluator_recommendation',
+                    't13.name as auditor_recommendation',
+                    't15.name as tc_recomm',
+                    't14.decision_id',
+                    't14.id as recomm_id',
+                    't14.comments'
+                )
                 ->leftJoin('tc_recommendations as t14', 't1.application_code', '=', 't14.application_code')
                 ->leftJoin('par_tcmeeting_decisions as t15', 't14.decision_id', '=', 't15.id')
-                ->where(array( 't9.meeting_id' => $meeting_id));
+                ->where(array('t9.meeting_id' => $meeting_id));
 
-                if(validateIsNumeric($workflow_stage)){
-                    $qry->where(array('t1.workflow_stage_id' => $workflow_stage));
-                }
+            if (validateIsNumeric($workflow_stage)) {
+                $qry->where(array('t1.workflow_stage_id' => $workflow_stage));
+            }
             $results = $qry->get();
 
             $res = array(
@@ -3147,7 +3313,6 @@ $product_id = $results->product_id;
                 'results' => $results,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -3160,7 +3325,6 @@ $product_id = $results->product_id;
             );
         }
         return \response()->json($res);
-
     }
 
     public function getProductApprovalApplicationsNonTc(Request $req)
@@ -3176,29 +3340,41 @@ $product_id = $results->product_id;
                 ->join('par_classifications as t14', 't7.classification_id', '=', 't14.id')
                 ->leftJoin('tra_applications_comments as t10', function ($join) {
                     $join->on('t1.application_code', '=', 't10.application_code')
-                        
+
                         ->where('t10.comment_type_id', 2);
                 })
                 ->leftJoin('par_evaluation_recommendations as t11', 't10.recommendation_id', '=', 't11.id')
                 ->leftJoin('tra_applications_comments as t12', function ($join) {
                     $join->on('t1.application_code', '=', 't12.application_code')
-                    
+
                         ->where('t12.comment_type_id', 3);
                 })
                 ->leftJoin('par_evaluation_recommendations as t13', 't12.recommendation_id', '=', 't13.id')
 
-				->leftJoin('tc_recommendations as t15', 't1.application_code', '=', 't15.application_code')
+                ->leftJoin('tc_recommendations as t15', 't1.application_code', '=', 't15.application_code')
                 ->leftJoin('par_tcmeeting_decisions as t16', 't15.decision_id', '=', 't16.id')
-                
-				
-				
-                ->select('t1.*', 't3.name as applicant_name', 't16.name as tc_recomm','t4.name as application_status', 't6.name as dg_recommendation', 't5.decision_id as recommendation_id',
-                    't1.id as active_application_id', 't7.brand_name', 't8.name as common_name', 't14.name as classification_name','t5.certificate_no',
-                    't11.name as evaluator_recommendation', 't13.name as auditor_recommendation')
-				 ->leftJoin('tra_approval_recommendations as t5', 't1.application_code', '=', 't5.application_code')
+
+
+
+                ->select(
+                    't1.*',
+                    't3.name as applicant_name',
+                    't16.name as tc_recomm',
+                    't4.name as application_status',
+                    't6.name as dg_recommendation',
+                    't5.decision_id as recommendation_id',
+                    't1.id as active_application_id',
+                    't7.brand_name',
+                    't8.name as common_name',
+                    't14.name as classification_name',
+                    't5.certificate_no',
+                    't11.name as evaluator_recommendation',
+                    't13.name as auditor_recommendation'
+                )
+                ->leftJoin('tra_approval_recommendations as t5', 't1.application_code', '=', 't5.application_code')
                 ->leftJoin('par_approval_decisions as t6', 't5.decision_id', '=', 't6.id')
-				->join('tra_submissions as t9', 't1.application_code','t9.application_code')
-                ->where(array('t9.current_stage' => $workflow_stage, 'isDone'=>0));
+                ->join('tra_submissions as t9', 't1.application_code', 't9.application_code')
+                ->where(array('t9.current_stage' => $workflow_stage, 'isDone' => 0));
 
             $results = $qry->get();
 
@@ -3207,7 +3383,6 @@ $product_id = $results->product_id;
                 'results' => $results,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -3235,12 +3410,12 @@ $product_id = $results->product_id;
                 ->leftJoin('par_common_names as t8', 't7.common_name_id', '=', 't8.id')
                 ->join('par_classifications as t14', 't7.classification_id', '=', 't14.id')
                 ->join('par_appeal_types as t10', 't1.appeal_type_id', '=', 't10.id')
-                ->select('t1.*', 't3.name as applicant_name','t10.name as type_of_appeal', 't4.name as application_status', 't6.name as dg_recommendation', 't5.decision_id as recommendation_id', 't1.id as active_application_id', 't7.brand_name', 't8.name as common_name', 't14.name as classification_name')
-               
+                ->select('t1.*', 't3.name as applicant_name', 't10.name as type_of_appeal', 't4.name as application_status', 't6.name as dg_recommendation', 't5.decision_id as recommendation_id', 't1.id as active_application_id', 't7.brand_name', 't8.name as common_name', 't14.name as classification_name')
+
                 ->leftJoin('tra_approval_recommendations as t5', 't5.application_code', '=', 't1.application_code')
                 ->leftJoin('par_approval_decisions as t6', 't5.decision_id', '=', 't6.id')
-                ->join('tra_submissions as t9', 't1.application_code','t9.application_code')
-                ->where(array('t9.current_stage' => $workflow_stage, 'isDone'=>0));
+                ->join('tra_submissions as t9', 't1.application_code', 't9.application_code')
+                ->where(array('t9.current_stage' => $workflow_stage, 'isDone' => 0));
 
             $results = $qry->get();
 
@@ -3249,7 +3424,6 @@ $product_id = $results->product_id;
                 'results' => $results,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -3262,8 +3436,6 @@ $product_id = $results->product_id;
             );
         }
         return \response()->json($res);
-
-
     }
     public function getProductApprovalApplications(Request $req)
     {
@@ -3285,24 +3457,44 @@ $product_id = $results->product_id;
                 ->leftJoin('par_evaluation_recommendations as t11', 't10.recommendation_id', '=', 't11.id')
                 ->leftJoin('tra_applications_comments as t12', function ($join) {
                     $join->on('t1.application_code', '=', 't12.application_code')
-                        
+
                         ->where('t12.comment_type_id', 3);
                 })
                 ->leftJoin('par_evaluation_recommendations as t13', 't12.recommendation_id', '=', 't13.id')
 
-                ->select('t1.*', 't3.name as applicant_name', 't4.name as application_status', 't6.name as dg_recommendation', 't5.decision_id as recommendation_id','t5.certificate_no','t5.expiry_date',
-                    't9.meeting_id', 't1.id as active_application_id', 't7.brand_name', 't8.name as common_name',
-                    't11.name as evaluator_recommendation', 't13.name as auditor_recommendation','reason_for_conditionalapproval','reason_for_rejection', 't15.name as tc_recomm', 't14.decision_id', 't14.id as recomm_id', 't14.comments', 't7.classification_id','t7.prodclass_category_id' )
+                ->select(
+                    't1.*',
+                    't3.name as applicant_name',
+                    't4.name as application_status',
+                    't6.name as dg_recommendation',
+                    't5.decision_id as recommendation_id',
+                    't5.certificate_no',
+                    't5.expiry_date',
+                    't9.meeting_id',
+                    't1.id as active_application_id',
+                    't7.brand_name',
+                    't8.name as common_name',
+                    't11.name as evaluator_recommendation',
+                    't13.name as auditor_recommendation',
+                    'reason_for_conditionalapproval',
+                    'reason_for_rejection',
+                    't15.name as tc_recomm',
+                    't14.decision_id',
+                    't14.id as recomm_id',
+                    't14.comments',
+                    't7.classification_id',
+                    't7.prodclass_category_id'
+                )
                 ->leftJoin('tc_recommendations as t14', 't1.application_code', '=', 't14.application_code')
                 ->leftJoin('par_tcmeeting_decisions as t15', 't14.decision_id', '=', 't15.id')
-                
-					
+
+
                 ->leftJoin('tra_approval_recommendations as t5', 't5.application_code', '=', 't1.application_code')
                 ->leftJoin('par_approval_decisions as t6', 't5.decision_id', '=', 't6.id')
                 ->leftJoin('tra_apprejprovisional_recommendation as t16', 't16.permit_id', '=', 't5.id')
-				->leftJoin('tra_submissions as t17', 't1.application_code','t17.application_code')
-                ->where(array('t17.current_stage' => $workflow_stage, 'isDone'=>0,'t9.meeting_id' => $meeting_id));
-              
+                ->leftJoin('tra_submissions as t17', 't1.application_code', 't17.application_code')
+                ->where(array('t17.current_stage' => $workflow_stage, 'isDone' => 0, 't9.meeting_id' => $meeting_id));
+
 
             $results = $qry->get();
 
@@ -3311,7 +3503,6 @@ $product_id = $results->product_id;
                 'results' => $results,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -3333,13 +3524,13 @@ $product_id = $results->product_id;
         $start = $req->input('start');
         $section_id = $req->input('section_id');
         $man_site_id = $req->input('man_site_id');
-        
+
         $filter = $req->input('filter');
-        
+
         $search_value = $req->input('search_value');
-       
+
         $status_id = $req->input('status_id');
-        $registration_status_id =explode(',',$status_id);
+        $registration_status_id = explode(',', $status_id);
 
         $search_field = $req->input('search_field');
 
@@ -3351,19 +3542,18 @@ $product_id = $results->product_id;
             if ($filters != NULL) {
                 foreach ($filters as $filter) {
                     switch ($filter->property) {
-                        case 'brand_name' :
+                        case 'brand_name':
                             $whereClauses[] = "t7.brand_name like '%" . ($filter->value) . "%'";
                             break;
-                        case 'common_name' :
+                        case 'common_name':
                             $whereClauses[] = "t8.name like '%" . ($filter->value) . "%'";
                             break;
-                        case 'certificate_no' :
+                        case 'certificate_no':
                             $whereClauses[] = "t11.certificate_no like '%" . ($filter->value) . "%'";
                             break;
-							 case 'reference_no' :
+                        case 'reference_no':
                             $whereClauses[] = "t1.reference_no like '%" . ($filter->value) . "%'";
                             break;
-                        
                     }
                 }
                 $whereClauses = array_filter($whereClauses);
@@ -3371,15 +3561,15 @@ $product_id = $results->product_id;
             if (!empty($whereClauses)) {
                 $filter_string = implode(' AND ', $whereClauses);
             }
-        } 
-		
+        }
+
         try {
-			$qry_count = DB::table('tra_product_applications as t1')
+            $qry_count = DB::table('tra_product_applications as t1')
                 ->join('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
                 ->join('tra_product_information as t7', 't1.product_id', '=', 't7.id')
                 ->join('tra_approval_recommendations as t12', 't1.application_code', '=', 't12.application_code')
-				->select('DISTINCT t7.id');
-				//DB::enableQueryLog();
+                ->select('DISTINCT t7.id');
+            //DB::enableQueryLog();
             $qry = DB::table('tra_product_applications as t1')
                 ->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
                 ->join('tra_product_information as t7', 't1.product_id', '=', 't7.id')
@@ -3402,32 +3592,30 @@ $product_id = $results->product_id;
                 $qry->where('t7.section_id', $section_id);
             }
             if (validateIsNumeric($man_site_id)) {
-              //  $qry->where('t14.man_site_id', $man_site_id);
+                //  $qry->where('t14.man_site_id', $man_site_id);
             }
             if ($search_value != '') {
                 $qry = $qry->where($search_field, 'like', '%' . $search_value . '%');
             }
-            
-            
-            if(count($registration_status_id) >0){
-               //$qry->whereIn('t12.registration_status_id', $registration_status_id);
-            }
-            else{
-                
-            }
-			$qry->where('t11.appregistration_status_id', 2);
-                $qry_count->where('t12.appregistration_status_id', 2);
-			if($filter_string != ''){
-				$qry->whereRAW($filter_string);
-			}
-			
-		$count = $qry_count->count();
 
 
-          //  $results = $qry->orderBy('t11.expiry_date','desc')->groupBy('t7.id')->skip($start)->take($limit)->get();
-           
-			
-          
+            if (count($registration_status_id) > 0) {
+                //$qry->whereIn('t12.registration_status_id', $registration_status_id);
+            } else {
+            }
+            $qry->where('t11.appregistration_status_id', 2);
+            $qry_count->where('t12.appregistration_status_id', 2);
+            if ($filter_string != '') {
+                $qry->whereRAW($filter_string);
+            }
+
+            $count = $qry_count->count();
+
+
+            //  $results = $qry->orderBy('t11.expiry_date','desc')->groupBy('t7.id')->skip($start)->take($limit)->get();
+
+
+
             $results = $qry->groupBy('t12.id')->get()->slice($start)->take($limit);
 
             $res = array(
@@ -3436,7 +3624,6 @@ $product_id = $results->product_id;
                 'total' => $count,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -3468,22 +3655,32 @@ $product_id = $results->product_id;
                 })
                 ->leftJoin('tra_applications_comments as t10', function ($join) {
                     $join->on('t1.application_code', '=', 't10.application_code')
-                      
+
                         ->where('t10.comment_type_id', 2);
                 })
                 ->leftJoin('par_evaluation_recommendations as t11', 't10.recommendation_id', '=', 't11.id')
                 ->leftJoin('tra_applications_comments as t12', function ($join) {
                     $join->on('t1.application_code', '=', 't12.application_code')
-                      
+
                         ->where('t12.comment_type_id', 3);
                 })
                 ->leftJoin('par_evaluation_recommendations as t13', 't12.recommendation_id', '=', 't13.id')
 
                 ->leftJoin('tra_submissions as t14', 't1.application_code', '=', 't14.application_code')
-                ->select('t1.*', 't3.name as applicant_name', 't4.name as application_status',
-                    't9.meeting_id', 't1.id as active_application_id', 't7.brand_name', 't8.name as common_name',
-                    't11.name as evaluator_recommendation','t7.classification_id','t7.prodclass_category_id', 't13.name as auditor_recommendation')
-                ->where(array('t14.current_stage'=>$workflow_stage, 'isDone'=>0) );
+                ->select(
+                    't1.*',
+                    't3.name as applicant_name',
+                    't4.name as application_status',
+                    't9.meeting_id',
+                    't1.id as active_application_id',
+                    't7.brand_name',
+                    't8.name as common_name',
+                    't11.name as evaluator_recommendation',
+                    't7.classification_id',
+                    't7.prodclass_category_id',
+                    't13.name as auditor_recommendation'
+                )
+                ->where(array('t14.current_stage' => $workflow_stage, 'isDone' => 0));
             $results = $qry->get();
 
             $res = array(
@@ -3491,7 +3688,6 @@ $product_id = $results->product_id;
                 'results' => $results,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -3513,18 +3709,18 @@ $product_id = $results->product_id;
         $meeting_name = $request->input('meeting_name');
         $meeting_desc = $request->input('meeting_desc');
         $date_requested = $request->input('date_requested');
-        
+
         $meeting_time = $request->input('meeting_time');
         $meeting_end_time = $request->input('meeting_end_time');
-        
+
         $meeting_venue = $request->input('meeting_venue');
         $meeting_type_id = $request->input('meeting_type_id');
         $meeting_invitation_details = $request->input('meeting_invitation_details');
-        
+
         $module_id = $request->input('module_id');
-        
+
         $sub_module_id = $request->input('sub_module_id');
-        
+
         $section_id = $request->input('section_id');
         $selected = $request->input('selected');
         $selected_codes = json_decode($selected);
@@ -3607,8 +3803,10 @@ $product_id = $results->product_id;
                         'user_id' => $selected_user->user_id,
                         'meeting_id' => $meeting_id
                     );
-                    if (DB::table('tc_meeting_participants')
-                            ->where($check)->count() == 0) {
+                    if (
+                        DB::table('tc_meeting_participants')
+                        ->where($check)->count() == 0
+                    ) {
                         $params[] = array(
                             'meeting_id' => $meeting_id,
                             'user_id' => $selected_user->user_id,
@@ -3647,23 +3845,23 @@ $product_id = $results->product_id;
         $application_code = $request->input('application_code');
         $module_id = $request->input('module_id');
         $table_name = $request->input('table_name');
-        if(validateIsNumeric($module_id)){
-            $table_name = getSingleRecordColValue('modules', array('id'=>$module_id), 'table_name');
+        if (validateIsNumeric($module_id)) {
+            $table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
         }
-        
+
         try {
-            
-            if(validateIsNumeric($meeting_id)){
+
+            if (validateIsNumeric($meeting_id)) {
                 $qry = DB::table('tc_meeting_details as t3')
-                ->select(DB::raw("t3.*"));
+                    ->select(DB::raw("t3.*"));
                 $qry->where('t3.id', $meeting_id);
-            }else{
+            } else {
                 $qry = DB::table($table_name . ' as t1')
-                ->join('tc_meeting_applications as t2', function ($join) use ($application_code) {
-                    $join->on('t1.application_code', '=', 't2.application_code');
-                })
-                ->join('tc_meeting_details as t3', 't2.meeting_id', '=', 't3.id')
-                ->select(DB::raw("t3.*"));
+                    ->join('tc_meeting_applications as t2', function ($join) use ($application_code) {
+                        $join->on('t1.application_code', '=', 't2.application_code');
+                    })
+                    ->join('tc_meeting_details as t3', 't2.meeting_id', '=', 't3.id')
+                    ->select(DB::raw("t3.*"));
                 $qry->where('t1.id', $application_id);
             }
 
@@ -3749,23 +3947,43 @@ $product_id = $results->product_id;
         $section_id = $request->input('section_id');
         $sub_module_id = $request->input('sub_module_id');
         try {
-			
-            $mis_db = DB::connection('mysql')->getDatabaseName();
+
+            // $mis_db = DB::connection('mysql')->getDatabaseName();
+            $mis_db = "mis_db";
             $data = array();
             $portal_db = DB::connection('portal_db');
             //get process details
             $qry = $portal_db->table('wb_product_applications as t1')
+
                 ->leftJoin('wb_product_information as t2', 't1.product_id', '=', 't2.id')
                 ->leftJoin('wb_trader_account as t3', 't1.trader_id', '=', 't3.id')
                 ->leftJoin('wb_statuses as t4', 't1.application_status_id', '=', 't4.id')
                 ->leftJoin('wb_statuses_types as t6', 't4.status_type_id', '=', 't4.id')
-                ->leftJoin($mis_db.'.tra_premises as t5', 't1.local_agent_id', '=', 't5.id')
-                ->select('t1.*', 't1.id as active_application_id', 't1.application_code', 't2.brand_name',
-                    't3.name as applicant_name', 't3.contact_person', 't5.name as local_agent',
-                    't3.tin_no', 't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id', 't3.physical_address as app_physical_address',
-                    't3.postal_address as app_postal_address', 't3.telephone_no as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website',
-                    't2.*', 't4.name as application_status', 't4.status_type_id', 't4.is_manager_query')
-                ->whereIn('application_status_id', array(2, 13, 14, 15,16));
+                ->leftJoin($mis_db . '.tra_premises as t5', 't1.local_agent_id', '=', 't5.id')
+                ->select(
+                    't1.*',
+                    't1.id as active_application_id',
+                    't1.application_code',
+                    't2.brand_name',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't5.name as local_agent',
+                    't3.tin_no',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't3.telephone_no as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website',
+                    't2.*',
+                    't4.name as application_status',
+                    't4.status_type_id',
+                    't4.is_manager_query'
+                )
+                ->whereIn('application_status_id', array(2, 13, 14, 15, 16));
 
             $modulesData = getParameterItems('modules', '', '');
             $subModulesData = getParameterItems('sub_modules', '', '');
@@ -3779,7 +3997,8 @@ $product_id = $results->product_id;
             $records = $qry->get();
             foreach ($records as $rec) {
 
-                $data[] = array('active_application_id' => $rec->active_application_id,
+                $data[] = array(
+                    'active_application_id' => $rec->active_application_id,
                     'application_code' => $rec->application_code,
                     'brand_name' => $rec->brand_name,
                     'applicant_name' => $rec->applicant_name,
@@ -3806,8 +4025,8 @@ $product_id = $results->product_id;
                     'productrisk_category_id' => $rec->productrisk_category_id,
                     'module_name' => returnParamFromArray($modulesData, $rec->module_id),
                     'sub_module' => returnParamFromArray($subModulesData, $rec->sub_module_id),
-                    'zone_name' => returnParamFromArray($zoneData, $rec->zone_id));
-
+                    'zone_name' => returnParamFromArray($zoneData, $rec->zone_id)
+                );
             }
 
 
@@ -3868,7 +4087,6 @@ $product_id = $results->product_id;
             );
         }
         return response()->json($res);
-
     }
 
     public function onLoadOnlineproductNutrients(Request $req)
@@ -3889,7 +4107,8 @@ $product_id = $results->product_id;
             foreach ($records as $rec) {
                 //get the array
 
-                $data[] = array('product_id' => $rec->product_id,
+                $data[] = array(
+                    'product_id' => $rec->product_id,
                     'id' => $rec->id,
                     'nutrients_category_id' => $rec->nutrients_category_id,
                     'nutrients_id' => $rec->nutrients_id,
@@ -3899,7 +4118,6 @@ $product_id = $results->product_id;
                     'nutrients_category' => returnParamFromArray($nutrientsCategory, $rec->nutrients_category_id),
                     'si_unit' => returnParamFromArray($si_unitData, $rec->units_id),
                 );
-
             }
             $res = array('success' => true, 'results' => $data);
         } catch (\Exception $e) {
@@ -3915,90 +4133,88 @@ $product_id = $results->product_id;
         }
         return response()->json($res);
     }
-    public function saveOnlineProductRegistrationReceiving(Request $req){
-        try { 
+    public function saveOnlineProductRegistrationReceiving(Request $req)
+    {
+        try {
             $application_code = $req->application_code;
             $product_id = $req->product_id;
             $user_id = $this->user_id;
-            $product_infor = array('common_name_id'=>$req->common_name_id,
-                                'atc_code_id'=>$req->atc_code_id,
-                                'classification_id'=>$req->classification_id,
-                                'brand_name'=>$req->brand_name,
-                                'device_type_id'=>$req->device_type_id,
-                                'physical_description'=>$req->physical_description,
-                                'dosage_form_id'=>$req->dosage_form_id,
-                                'product_form_id'=>$req->product_form_id,
-                                'product_strength'=>$req->product_strength,
-                                'si_unit_id'=>$req->si_unit_id,
-                                'storage_condition_id'=>$req->storage_condition_id,
-                                'indication'=>$req->indication,
-                                'product_origin_id'=>$req->product_origin_id,
-                                'product_category_id'=>$req->product_category_id,
-                                'prodclass_category_id'=>$req->prodclass_category_id,
-                                'product_subcategory_id'=>$req->product_subcategory_id,
-                                'distribution_category_id'=>$req->distribution_category_id,
-                                'special_category_id'=>$req->special_category_id,
-                                'intended_enduser_id'=>$req->intended_enduser_id,
-                                'intended_use_id'=>$req->intended_use_id,
-                                'route_of_administration_id'=>$req->route_of_administration_id,
-                                'method_ofuse_id'=>$req->method_ofuse_id,
-                                'section_id'=>$req->section_id,
-                                'contraindication'=>$req->contraindication,
-                                'gmdn_code'=>$req->gmdn_code,
-                                'gmdn_category'=>$req->gmdn_category,
-                                'gmdn_term'=>$req->gmdn_term,
-                                'shelf_lifeafter_opening'=>$req->shelf_lifeafter_opening,
-                                'shelf_life'=>$req->shelf_life,
-                                'instructions_of_use'=>$req->instructions_of_use,
-                                'warnings'=>$req->warnings,
-                                'intended_use'=>$req->intended_use,
-                                'medical_systemmodel_series'=>$req->medical_systemmodel_series,
-                                'medical_family'=>$req->medical_family,
-                                'shelflifeduration_desc'=>$req->shelflifeduration_desc,
-                                'shelflifeafteropeningduration_desc'=>$req->shelflifeafteropeningduration_desc,
-                                'reason_for_classification_id'=>$req->reason_for_classification_id,
-                                'prodclass_category_id'=>$req->prodclass_category_id,
-                                'productrisk_category_id'=>$req->productrisk_category_id,
+            $product_infor = array(
+                'common_name_id' => $req->common_name_id,
+                'atc_code_id' => $req->atc_code_id,
+                'classification_id' => $req->classification_id,
+                'brand_name' => $req->brand_name,
+                'device_type_id' => $req->device_type_id,
+                'physical_description' => $req->physical_description,
+                'dosage_form_id' => $req->dosage_form_id,
+                'product_form_id' => $req->product_form_id,
+                'product_strength' => $req->product_strength,
+                'si_unit_id' => $req->si_unit_id,
+                'storage_condition_id' => $req->storage_condition_id,
+                'indication' => $req->indication,
+                'product_origin_id' => $req->product_origin_id,
+                'product_category_id' => $req->product_category_id,
+                'prodclass_category_id' => $req->prodclass_category_id,
+                'product_subcategory_id' => $req->product_subcategory_id,
+                'distribution_category_id' => $req->distribution_category_id,
+                'special_category_id' => $req->special_category_id,
+                'intended_enduser_id' => $req->intended_enduser_id,
+                'intended_use_id' => $req->intended_use_id,
+                'route_of_administration_id' => $req->route_of_administration_id,
+                'method_ofuse_id' => $req->method_ofuse_id,
+                'section_id' => $req->section_id,
+                'contraindication' => $req->contraindication,
+                'gmdn_code' => $req->gmdn_code,
+                'gmdn_category' => $req->gmdn_category,
+                'gmdn_term' => $req->gmdn_term,
+                'shelf_lifeafter_opening' => $req->shelf_lifeafter_opening,
+                'shelf_life' => $req->shelf_life,
+                'instructions_of_use' => $req->instructions_of_use,
+                'warnings' => $req->warnings,
+                'intended_use' => $req->intended_use,
+                'medical_systemmodel_series' => $req->medical_systemmodel_series,
+                'medical_family' => $req->medical_family,
+                'shelflifeduration_desc' => $req->shelflifeduration_desc,
+                'shelflifeafteropeningduration_desc' => $req->shelflifeafteropeningduration_desc,
+                'reason_for_classification_id' => $req->reason_for_classification_id,
+                'prodclass_category_id' => $req->prodclass_category_id,
+                'productrisk_category_id' => $req->productrisk_category_id,
 
-                                'has_medical_systemmodel_series'=>$req->has_medical_systemmodel_series,
-                                'reagents_accessories'=>$req->reagents_accessories,
-                                'has_reagents_accessories'=>$req->has_reagents_accessories,
-                                'has_medical_family'=>$req->has_medical_family
-                            );
-                            $resp = '';
-                        
-                        if(validateIsNumeric($product_id)){
-                                //update the record 
-                                //product information
-                                //date_added
-                                $where = array('id'=>$product_id);
-                                $where_app = array('product_id'=>$product_id);
-                                if (recordExists('wb_product_information', $where, 'portal_db')) {
-                                    
-                                    $product_infor['dola'] = Carbon::now();
-                                    $product_infor['altered_by'] = $user_id;
-                                    $table_name = 'wb_product_information';
-                                    $previous_data = getPreviousRecords($table_name, $where,'portal_db');
-                                    $previous_data =  $previous_data['results'];
-                                    $resp = updateRecord('wb_product_information', $previous_data, $where, $product_infor, $user_id,'portal_db');
-                                    
-                                }
-                             
-                        }
-                        if($resp['success']){
-                            $res = array(
-                                 'success'=>true,
-                                 'message'=>'Product Notification Updated Successfully');
-                    
-                         }
-                         else{
-                            $res = array(
-                            'success'=>false,
-                            'error'=>$resp['message'],
-                            'message'=>'Error Occurred Product Notification not saved, it this persists contact the system Administrator');
-                         }
+                'has_medical_systemmodel_series' => $req->has_medical_systemmodel_series,
+                'reagents_accessories' => $req->reagents_accessories,
+                'has_reagents_accessories' => $req->has_reagents_accessories,
+                'has_medical_family' => $req->has_medical_family
+            );
+            $resp = '';
 
-                        
+            if (validateIsNumeric($product_id)) {
+                //update the record 
+                //product information
+                //date_added
+                $where = array('id' => $product_id);
+                $where_app = array('product_id' => $product_id);
+                if (recordExists('wb_product_information', $where, 'portal_db')) {
+
+                    $product_infor['dola'] = Carbon::now();
+                    $product_infor['altered_by'] = $user_id;
+                    $table_name = 'wb_product_information';
+                    $previous_data = getPreviousRecords($table_name, $where, 'portal_db');
+                    $previous_data =  $previous_data['results'];
+                    $resp = updateRecord('wb_product_information', $previous_data, $where, $product_infor, $user_id, 'portal_db');
+                }
+            }
+            if ($resp['success']) {
+                $res = array(
+                    'success' => true,
+                    'message' => 'Product Notification Updated Successfully'
+                );
+            } else {
+                $res = array(
+                    'success' => false,
+                    'error' => $resp['message'],
+                    'message' => 'Error Occurred Product Notification not saved, it this persists contact the system Administrator'
+                );
+            }
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -4010,199 +4226,195 @@ $product_id = $results->product_id;
                 'message' => $throwable->getMessage()
             );
         }
-        
+
         return response()->json($res);
-        
-
-
     }
 
 
     //export
-    public function ExportMeetingReport(Request $req){
-        $meeting_id=$req->id;
-          
-//product application details
+    public function ExportMeetingReport(Request $req)
+    {
+        $meeting_id = $req->id;
+
+        //product application details
         $ExportMeetingDetails = new Spreadsheet();
         $sheet = $ExportMeetingDetails->getActiveSheet();
         $ExportMeetingDetails->getActiveSheet()->setTitle('Meeting Export');
-//get all data 
-       $meetingDetails=DB::table('tc_meeting_details')
-                        ->select('meeting_name','meeting_desc','date_requested')
-                       ->where('id',$meeting_id)
-                       ->get()->toArray();
-      $meetingDetails=$this->prepareArrayOfArrays((array)$meetingDetails);
+        //get all data 
+        $meetingDetails = DB::table('tc_meeting_details')
+            ->select('meeting_name', 'meeting_desc', 'date_requested')
+            ->where('id', $meeting_id)
+            ->get()->toArray();
+        $meetingDetails = $this->prepareArrayOfArrays((array)$meetingDetails);
 
-        $participantDetails=DB::table('tc_meeting_participants')
-                            ->where('meeting_id',$meeting_id)
-                            ->select('participant_name','phone','email')
-                            ->get()->toArray();
-      $participantDetails=$this->prepareArrayOfArrays((array)$participantDetails);
-        
-       $ApplicationDetails=DB::table('tc_meeting_applications as t1')
-             ->leftJoin('tra_product_applications as t4','t1.application_code','t4.application_code')
-             ->leftJoin('tra_product_information as t6','t4.product_id','t6.id')
-             ->leftJoin('par_common_names as t7','t6.common_name_id','t7.id')
-             ->leftJoin('wb_trader_account as t8','t4.applicant_id','t8.id')
-             ->leftJoin('par_system_statuses as t9','t4.application_status_id','t9.id')
-             ->select(DB::raw('DISTINCT t4.reference_no,t6.brand_name,t7.name as common_name,t8.name as applicant_name,t9.name as status'))
-             ->where('t1.meeting_id',$meeting_id)
-             ->get()->toArray();
+        $participantDetails = DB::table('tc_meeting_participants')
+            ->where('meeting_id', $meeting_id)
+            ->select('participant_name', 'phone', 'email')
+            ->get()->toArray();
+        $participantDetails = $this->prepareArrayOfArrays((array)$participantDetails);
 
-             //reoder to pair
-             $final_Array=[];
-             $array=$this->prepareArrayOfArrays((array)$ApplicationDetails);
-              foreach ($array as $key => $value) {
-                      foreach ($value as $key => $value2) {
-                          $final_Array[]=[$key,$value2];
-                      }
-                      $final_Array[]=['',''];
-                  }
-      
-      $ApplicationDetails=$final_Array;
-        
+        $ApplicationDetails = DB::table('tc_meeting_applications as t1')
+            ->leftJoin('tra_product_applications as t4', 't1.application_code', 't4.application_code')
+            ->leftJoin('tra_product_information as t6', 't4.product_id', 't6.id')
+            ->leftJoin('par_common_names as t7', 't6.common_name_id', 't7.id')
+            ->leftJoin('wb_trader_account as t8', 't4.applicant_id', 't8.id')
+            ->leftJoin('par_system_statuses as t9', 't4.application_status_id', 't9.id')
+            ->select(DB::raw('DISTINCT t4.reference_no,t6.brand_name,t7.name as common_name,t8.name as applicant_name,t9.name as status'))
+            ->where('t1.meeting_id', $meeting_id)
+            ->get()->toArray();
 
-        $cell=2;
-//Main heading style
+        //reoder to pair
+        $final_Array = [];
+        $array = $this->prepareArrayOfArrays((array)$ApplicationDetails);
+        foreach ($array as $key => $value) {
+            foreach ($value as $key => $value2) {
+                $final_Array[] = [$key, $value2];
+            }
+            $final_Array[] = ['', ''];
+        }
+
+        $ApplicationDetails = $final_Array;
+
+
+        $cell = 2;
+        //Main heading style
         $styleArray = [
-                'font' => [
-                    'bold' => true,
+            'font' => [
+                'bold' => true,
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            ],
+            'borders' => [
+                'top' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                 ],
-                'alignment' => [
-                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+                'rotation' => 90,
+                'startColor' => [
+                    'argb' => 'FFA0A0A0',
                 ],
-                'borders' => [
-                    'top' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    ],
+                'endColor' => [
+                    'argb' => 'FFFFFFFF',
                 ],
-                'fill' => [
-                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
-                    'rotation' => 90,
-                    'startColor' => [
-                        'argb' => 'FFA0A0A0',
-                    ],
-                    'endColor' => [
-                        'argb' => 'FFFFFFFF',
-                    ],
-                ]
-            ];
-
-//Sub-Main heading style
-        $SubstyleArray = [
-              'fill' => [
-                    'type' =>  \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    'color' => ['rgb' => 'E5E4E2']
-                ],
-             'alignment' => [
-                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
-                ],
-             'font'  => [
-                  'bold'  =>  true
-                ]
+            ]
         ];
 
- //first heading
+        //Sub-Main heading style
+        $SubstyleArray = [
+            'fill' => [
+                'type' =>  \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'color' => ['rgb' => 'E5E4E2']
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+            ],
+            'font'  => [
+                'bold'  =>  true
+            ]
+        ];
+
+        //first heading
         $sheet->mergeCells('A1:C1')
-              ->getCell('A1')
-              ->setValue('Meeting Details');
+            ->getCell('A1')
+            ->setValue('Meeting Details');
         $sheet->getStyle('A1:C1')->applyFromArray($styleArray);
         $sheet->getColumnDimension('A')->setAutoSize(true);
         $sheet->getColumnDimension('B')->setAutoSize(true);
         $sheet->getColumnDimension('C')->setAutoSize(true);
         $sheet->getStyle('B1:B17')
-                 ->getNumberFormat()
-                ->setFormatCode('0');
-//header
+            ->getNumberFormat()
+            ->setFormatCode('0');
+        //header
         $sheet->getCell('A2')->setValue('Name');
         $sheet->getCell('B2')->setValue('Description');
         $sheet->getCell('C2')->setValue('Date Requested');
         $sheet->getStyle('A2:C2')->applyFromArray($SubstyleArray);
         $cell++;
 
-//loop data while writting
-       $sheet->fromArray( $meetingDetails, null,  "A".$cell  );
-//jump one row
-        $cell=count($meetingDetails)+$cell+1;
+        //loop data while writting
+        $sheet->fromArray($meetingDetails, null,  "A" . $cell);
+        //jump one row
+        $cell = count($meetingDetails) + $cell + 1;
 
 
- //second heading
-        $sheet->mergeCells("A".$cell.":C".$cell)
-              ->getCell("A".$cell)
-              ->setValue('Perticipants');
-        $sheet->getStyle("A".$cell.":C".$cell)->applyFromArray($styleArray);
-            $cell++;
-
-//header
-        $sheet->getCell("A".$cell)->setValue('Name');
-        $sheet->getCell("B".$cell)->setValue('Phone No');
-        $sheet->getCell("C".$cell)->setValue('Email');
-        $sheet->getStyle("A".$cell.":C".$cell)->applyFromArray($SubstyleArray);
+        //second heading
+        $sheet->mergeCells("A" . $cell . ":C" . $cell)
+            ->getCell("A" . $cell)
+            ->setValue('Perticipants');
+        $sheet->getStyle("A" . $cell . ":C" . $cell)->applyFromArray($styleArray);
         $cell++;
-//write array data to sheet
-        $sheet->fromArray( $participantDetails, null,  "A".$cell  );
 
-//jump one row
-        $cell=count($participantDetails)+$cell+1;
+        //header
+        $sheet->getCell("A" . $cell)->setValue('Name');
+        $sheet->getCell("B" . $cell)->setValue('Phone No');
+        $sheet->getCell("C" . $cell)->setValue('Email');
+        $sheet->getStyle("A" . $cell . ":C" . $cell)->applyFromArray($SubstyleArray);
+        $cell++;
+        //write array data to sheet
+        $sheet->fromArray($participantDetails, null,  "A" . $cell);
 
-
-//third heading
-        $sheet->mergeCells("A".$cell.":C".$cell)
-              ->getCell("A".$cell)
-              ->setValue('Application Details');
-        $sheet->getStyle("A".$cell.":C".$cell)->applyFromArray($styleArray);
-            $cell++;
-           $initialcell=$cell;
-//write array data to sheet
-        $sheet->fromArray( $ApplicationDetails, null,  "A".$cell  );
-
-//jump one row
-        $cell=count($ApplicationDetails)+$cell+1;
-$sheet->getStyle("A".$initialcell.":A".$cell)->applyFromArray($SubstyleArray);
+        //jump one row
+        $cell = count($participantDetails) + $cell + 1;
 
 
-       
+        //third heading
+        $sheet->mergeCells("A" . $cell . ":C" . $cell)
+            ->getCell("A" . $cell)
+            ->setValue('Application Details');
+        $sheet->getStyle("A" . $cell . ":C" . $cell)->applyFromArray($styleArray);
+        $cell++;
+        $initialcell = $cell;
+        //write array data to sheet
+        $sheet->fromArray($ApplicationDetails, null,  "A" . $cell);
+
+        //jump one row
+        $cell = count($ApplicationDetails) + $cell + 1;
+        $sheet->getStyle("A" . $initialcell . ":A" . $cell)->applyFromArray($SubstyleArray);
 
 
 
-          $writer = new Xlsx($ExportMeetingDetails);
-
-            ob_start();
-            $writer->save('php://output');
-            $excelOutput = ob_get_clean();
 
 
-    
-$response =  array(
-   'name' => "meeting.Xlsx", //no extention needed
-   'file' => "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,".base64_encode($excelOutput) //mime type of used format
-);
+
+        $writer = new Xlsx($ExportMeetingDetails);
+
+        ob_start();
+        $writer->save('php://output');
+        $excelOutput = ob_get_clean();
+
+
+
+        $response =  array(
+            'name' => "meeting.Xlsx", //no extention needed
+            'file' => "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," . base64_encode($excelOutput) //mime type of used format
+        );
 
         return $response;
-
-        
-
     }
 
-     public function prepareArrayOfArrays(array $array){
-        $clean_Array=[];
+    public function prepareArrayOfArrays(array $array)
+    {
+        $clean_Array = [];
 
         //ensure the inner array is array not collection 
-      foreach ($array as $key => $value) {
-          $clean_Array[]=(array)$value;
-      }
-    
-       return $clean_Array;
+        foreach ($array as $key => $value) {
+            $clean_Array[] = (array)$value;
+        }
 
+        return $clean_Array;
     }
-	public function saveProductEditionBaseDetails(Request $req){
+    public function saveProductEditionBaseDetails(Request $req)
+    {
         $table_data = $req->all();
         $applicant_id = $req->applicant_id;
         $zone_id = $req->zone_id;
         $local_agent_id = $req->local_agent_id;
         $product_id = $req->product_id;
         $application_code = '';
-        if(validateIsNumeric($product_id)){
+        if (validateIsNumeric($product_id)) {
             unset($table_data['product_id']);
             unset($table_data['application_code']);
             unset($table_data['table_name']);
@@ -4222,18 +4434,17 @@ $response =  array(
                 'product_id' => $product_id
             );
             $user_id = $this->user_id;
-            
+
             $prev_appdata = getPreviousRecords($app_table_name, $app_where);
-            
+
             if ($prev_appdata['success'] == true) {
                 $previous_data = $prev_appdata['results'];
                 $app_res = updateRecord($app_table_name, $previous_data, $app_where, $app_data, $user_id);
-                if($app_res['success']){
-                   $application_code = $previous_data[0]['application_code'];
-                }else{
+                if ($app_res['success']) {
+                    $application_code = $previous_data[0]['application_code'];
+                } else {
                     return $app_res;
                 }
-                
             }
             //update info table
             $table_name = 'tra_product_information';
@@ -4245,20 +4456,19 @@ $response =  array(
             if ($prev_data['success'] == true) {
                 $previous_data = $prev_data['results'];
                 $res = updateRecord($table_name, $previous_data, $where, $table_data, $user_id);
-                if($res['success']){
-                   $res['application_code'] = $application_code;
+                if ($res['success']) {
+                    $res['application_code'] = $application_code;
                 }
-                
             }
-        }else{
+        } else {
             $res = array(
-                'success'=>false,
-                'message'=>'Product not submitted, please contact administrator'
+                'success' => false,
+                'message' => 'Product not submitted, please contact administrator'
             );
         }
         return \response()->json($res);
     }
-	public function getAllProductsAppsDetails( Request $req)
+    public function getAllProductsAppsDetails(Request $req)
     {
         $limit = $req->input('limit');
         $page = $req->input('page');
@@ -4272,19 +4482,18 @@ $response =  array(
             if ($filters != NULL) {
                 foreach ($filters as $filter) {
                     switch ($filter->property) {
-                        case 'brand_name' :
+                        case 'brand_name':
                             $whereClauses[] = "t7.brand_name like '%" . ($filter->value) . "%'";
                             break;
-                        case 'common_name' :
+                        case 'common_name':
                             $whereClauses[] = "t8.name like '%" . ($filter->value) . "%'";
                             break;
-							case 'reference_no' :
+                        case 'reference_no':
                             $whereClauses[] = "t1.reference_no like '%" . ($filter->value) . "%'";
                             break;
-                        case 'certificate_no' :
+                        case 'certificate_no':
                             $whereClauses[] = "t11.certificate_no like '%" . ($filter->value) . "%'";
                             break;
-                        
                     }
                 }
                 $whereClauses = array_filter($whereClauses);
@@ -4292,14 +4501,14 @@ $response =  array(
             if (!empty($whereClauses)) {
                 $filter_string = implode(' AND ', $whereClauses);
             }
-        } 
-        
+        }
+
         try {
             $qry_count = DB::table('tra_product_applications as t1')
                 ->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
                 ->join('tra_product_information as t7', 't1.product_id', '=', 't7.id')
                 ->selectRaw('DISTINCT t7.id');
-                DB::enableQueryLog();
+            DB::enableQueryLog();
             $qry = DB::table('tra_product_applications as t1')
                 ->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
                 ->join('tra_product_information as t7', 't1.product_id', '=', 't7.id')
@@ -4312,41 +4521,39 @@ $response =  array(
                 ->leftJoin('par_storage_conditions as t13', 't7.storage_condition_id', '=', 't13.id')
                 ->leftJoin('tra_product_manufacturers as t14', function ($join) {
                     $join->on('t7.id', '=', 't14.product_id')
-                       ->on('t14.manufacturer_type_id', '=', DB::raw(1));
+                        ->on('t14.manufacturer_type_id', '=', DB::raw(1));
                 })
                 ->leftJoin('par_dosage_forms as t15', 't7.dosage_form_id', '=', 't15.id')
                 ->select(DB::raw("DISTINCT t7.id,t7.*, t1.*, t1.id as active_application_id, t1.reg_product_id, t3.name as applicant_name, t9.name as local_agent,
                 t13.name as storage_condition, t7.brand_name, t7.id as tra_product_id, t8.name as common_name, t10.name as classification_name, t11.certificate_no, t11.expiry_date,
                 t7.brand_name as sample_name, t14.manufacturer_id, t15.name as dosage_form"));
-          
-            
-           
-            if(validateIsNumeric($section_id)){
+
+
+
+            if (validateIsNumeric($section_id)) {
                 //$qry->where('t1.section_id', $section_id);
-                 $qry_count->where('t1.section_id', $section_id);
+                $qry_count->where('t1.section_id', $section_id);
             }
-			//dd($qry_count->toSql());
-			//dd($qry->toSql());
-            
- if ($filter_string != '') {
+            //dd($qry_count->toSql());
+            //dd($qry->toSql());
+
+            if ($filter_string != '') {
                 $qry->whereRAW($filter_string);
-				
-				$results = $qry->orderBy('t11.expiry_date','desc')->groupBy('t7.id')->skip($start)->take($limit)->get();
-				$count = $qry_count->count();
+
+                $results = $qry->orderBy('t11.expiry_date', 'desc')->groupBy('t7.id')->skip($start)->take($limit)->get();
+                $count = $qry_count->count();
+            } else {
+                $count = 0;
+                $results = array();
             }
-			else{
-				$count = 0;
-				$results = array();
-			}
-            $results = $qry->orderBy('t11.expiry_date','desc')->groupBy('t7.id')->skip($start)->take($limit)->get();
-				$count = $qry_count->count();
+            $results = $qry->orderBy('t11.expiry_date', 'desc')->groupBy('t7.id')->skip($start)->take($limit)->get();
+            $count = $qry_count->count();
             $res = array(
                 'success' => true,
                 'results' => $results,
                 'total' => $count,
                 'message' => 'All is well'
             );
-
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -4359,5 +4566,5 @@ $response =  array(
             );
         }
         return \response()->json($res);
-    } 
+    }
 }

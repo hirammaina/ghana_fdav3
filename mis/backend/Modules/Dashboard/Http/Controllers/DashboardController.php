@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use App\Modules\Dashboard\Entities\SystemGuideline;
+use Modules\Dashboard\Entities\SystemGuideline;
 use Illuminate\Support\Carbon;
 //use App\Http\Controllers\Controller;
 

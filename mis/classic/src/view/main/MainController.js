@@ -23,11 +23,9 @@ Ext.define("Admin.view.main.MainController", {
       mainLayout = mainCard.getLayout(),
       navigationList = refs.navigationTreeList,
       store = navigationList.getStore();
-    console.log(store);
-    console.log(hashTag);
+
     node =
       store.findNode("routeId", hashTag) || store.findNode("viewType", hashTag);
-    console.log(node);
 
     if (node == null) {
       store.on("load", function (th, records, success, eOpts) {

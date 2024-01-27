@@ -16,123 +16,120 @@ use App\Http\Controllers\commonController;
 
 //Route::group(['middleware' => ['auth:api', 'web']], function () {
 Route::group(['middleware' => ['auth:api']], function () {
-    Route::post('saveApplicationChecklistDetails', [commonController::class, 'saveApplicationChecklistDetails']);
+  Route::post('saveApplicationChecklistDetails', [commonController::class, 'saveApplicationChecklistDetails']);
 
-    Route::post('saveCommonData', [commonController::class, 'saveCommonData']);
+  Route::post('saveCommonData', [commonController::class, 'saveCommonData']);
 
-    Route::post('deleteCommonRecord', [commonController::class, 'deleteCommonRecord']);
+  Route::post('deleteCommonRecord', [commonController::class, 'deleteCommonRecord']);
 
-    Route::get('getApplicationInvoiceDetails', [commonController::class, 'getApplicationInvoiceDetails']);
+  Route::get('getApplicationInvoiceDetails', [commonController::class, 'getApplicationInvoiceDetails']);
 
-    Route::get('getElementCosts', [commonController::class, 'getElementCosts']);
+  Route::get('getElementCosts', [commonController::class, 'getElementCosts']);
 
-    Route::get('getApplicationPaymentDetails', [commonController::class, 'getApplicationPaymentDetails']);
-     Route::get('getAllInspectionsCaparequests', [commonController::class, 'getAllInspectionsCaparequests']);
+  Route::get('getApplicationPaymentDetails', [commonController::class, 'getApplicationPaymentDetails']);
+  Route::get('getAllInspectionsCaparequests', [commonController::class, 'getAllInspectionsCaparequests']);
 
-      Route::get('getInspectionCapaFindingChecklists', [commonController::class, 'getInspectionCapaFindingChecklists']);
-       Route::get('getInspectionCapaFindingChecklists', [commonController::class, 'getInspectionCapaFindingChecklists']);
-
-
-      Route::post('saveChecklistApplicationCAPA ', [commonController::class, 'saveChecklistApplicationCAPA']);
-
-    Route::get('getOnlineApplicationRejections', [commonController::class, 'getOnlineApplicationRejections']);
-
-    Route::get('getApplicationWithdrawalReasons', [commonController::class, 'getApplicationWithdrawalReasons']);
-
-    Route::post('saveApplicationWithdrawalReasons', [commonController::class, 'saveApplicationWithdrawalReasons']);
-
-    Route::get('getSystemNotifications', [commonController::class, 'getSystemNotifications']);
-
-    Route::get('getApplicationVariationRequests', [commonController::class, 'getApplicationVariationRequests']);
-
-    
-    Route::get('getApplicationDataAmmendmentRequests', [commonController::class, 'getApplicationDataAmmendmentRequests']);
-
-    
-    Route::get('checkReviewREcommendationDEtails', [commonController::class, 'checkReviewREcommendationDEtails']);
+  Route::get('getInspectionCapaFindingChecklists', [commonController::class, 'getInspectionCapaFindingChecklists']);
+  Route::get('getInspectionCapaFindingChecklists', [commonController::class, 'getInspectionCapaFindingChecklists']);
 
 
-    Route::get('checkApprovalREcommendationDEtails', [commonController::class, 'checkApprovalREcommendationDEtails']);
+  Route::post('saveChecklistApplicationCAPA ', [commonController::class, 'saveChecklistApplicationCAPA']);
 
-    Route::get('validateDocumentsSubmissonRecRecommendation', [commonController::class, 'validateDocumentsSubmissonRecRecommendation']);
+  Route::get('getOnlineApplicationRejections', [commonController::class, 'getOnlineApplicationRejections']);
 
-    Route::get('validateInspectionReportSubmission', [commonController::class, 'validateInspectionReportSubmission']);
-     Route::get('validateIsPopupSubmission', [commonController::class, 'validateIsPopupSubmission']);
+  Route::get('getApplicationWithdrawalReasons', [commonController::class, 'getApplicationWithdrawalReasons']);
 
-    Route::get('checkPrecheckingrecommendation', [commonController::class, 'checkPrecheckingrecommendation']);
+  Route::post('saveApplicationWithdrawalReasons', [commonController::class, 'saveApplicationWithdrawalReasons']);
 
+  Route::get('getSystemNotifications', [commonController::class, 'getSystemNotifications']);
 
-    Route::get('checkAssignedProcessingZone', [commonController::class, 'checkAssignedProcessingZone']);
-
-
-    
-    Route::get('checkApplicationRaisedQueries', [commonController::class, 'checkApplicationRaisedQueries']);
-
-    Route::get('getAllApplicationQueries', [commonController::class, 'getAllApplicationQueries']);
-
-    Route::post('saveApplicationDismissalDetails', [commonController::class, 'saveApplicationDismissalDetails']);
-
-    Route::get('getApplicationChecklistQueries', [commonController::class, 'getApplicationChecklistQueries']);
-
-    Route::get('checkApplicationUnstructuredQueries', [commonController::class, 'checkApplicationUnstructuredQueries']);
-
-    Route::post('closeApplicationQuery', [commonController::class, 'closeApplicationQuery']);
-
-    Route::post('saveApplicationReQueryDetails', [commonController::class, 'saveApplicationReQueryDetails']);
-
-    Route::post('saveApplicationInternalReQueryDetails', [commonController::class, 'saveApplicationInternalReQueryDetails']);
-
-    Route::get('checkApplicationRespondedUnclosedQueries', [commonController::class, 'checkApplicationRespondedUnclosedQueries']);
-
-    Route::get('checkSampleSubmisisonDetails', [commonController::class, 'checkSampleSubmisisonDetails']);
-
-    Route::get('checkOnlineApplicationChecklistDetails', [commonController::class, 'checkOnlineApplicationChecklistDetails']);
-
-    Route::get('checkGeneratedInvoiceDetails', [commonController::class, 'checkGeneratedInvoiceDetails']);
+  Route::get('getApplicationVariationRequests', [commonController::class, 'getApplicationVariationRequests']);
 
 
-    Route::get('checkApplicationChecklistUploadDetails', [commonController::class, 'checkApplicationChecklistUploadDetails']);
+  Route::get('getApplicationDataAmmendmentRequests', [commonController::class, 'getApplicationDataAmmendmentRequests']);
 
-    Route::post('appDataAmmendmentStatusUpdate', [commonController::class, 'appDataAmmendmentStatusUpdate']);
 
-    Route::get('getApplicationDetailsAlterationSetup', [commonController::class, 'getApplicationDetailsAlterationSetup']);
+  Route::get('checkReviewREcommendationDEtails', [commonController::class, 'checkReviewREcommendationDEtails']);
 
-    Route::get('getApplicationDataAppealRequests', [commonController::class, 'getApplicationDataAppealRequests']);
 
-    Route::post('saveApplicatioAppealReasons', [commonController::class, 'saveApplicatioAppealReasons']);
+  Route::get('checkApprovalREcommendationDEtails', [commonController::class, 'checkApprovalREcommendationDEtails']);
 
-    Route::post('saveChecklistApplicationQuery', [commonController::class, 'saveChecklistApplicationQuery']);
+  Route::get('validateDocumentsSubmissonRecRecommendation', [commonController::class, 'validateDocumentsSubmissonRecRecommendation']);
 
-    Route::get('checkApplicationEvaluationOverralRecom', [commonController::class, 'checkApplicationEvaluationOverralRecom']);
+  Route::get('validateInspectionReportSubmission', [commonController::class, 'validateInspectionReportSubmission']);
+  Route::get('validateIsPopupSubmission', [commonController::class, 'validateIsPopupSubmission']);
 
-    Route::get('getUploadedApplicationPaymentDetails', [commonController::class, 'getUploadedApplicationPaymentDetails']);
+  Route::get('checkPrecheckingrecommendation', [commonController::class, 'checkPrecheckingrecommendation']);
 
-    Route::post('deleteChecklistRaisedQuery', [commonController::class, 'deleteChecklistRaisedQuery']);
 
-    
-    Route::get('checkIfHasGeneratedInvoiceDEtails', [commonController::class, 'checkIfHasGeneratedInvoiceDEtails']);
+  Route::get('checkAssignedProcessingZone', [commonController::class, 'checkAssignedProcessingZone']);
 
-    
-    Route::get('validateHasUploadedDocumentsDetils', [commonController::class, 'validateHasUploadedDocumentsDetils']);
 
-    
-    Route::get('validateHasImportExportProductDetils', [commonController::class, 'validateHasImportExportProductDetils']);
 
-    Route::get('checkSampleAnalysisReviewRecommendationDEtails', [commonController::class, 'checkSampleAnalysisReviewRecommendationDEtails']);
+  Route::get('checkApplicationRaisedQueries', [commonController::class, 'checkApplicationRaisedQueries']);
 
-      Route::get('checkUserAccountActivities', [commonController::class, 'checkUserAccountActivities']);
+  Route::get('getAllApplicationQueries', [commonController::class, 'getAllApplicationQueries']);
 
-    Route::get('getUploadedApplicationPaymentDetails', [commonController::class, 'getUploadedApplicationPaymentDetails']);
+  Route::post('saveApplicationDismissalDetails', [commonController::class, 'saveApplicationDismissalDetails']);
 
-    Route::get('validateproductInformationdetails', [commonController::class, 'validateproductInformationdetails']);
+  Route::get('getApplicationChecklistQueries', [commonController::class, 'getApplicationChecklistQueries']);
 
-    
-    Route::get('checkApplicationChecklistDetails', [commonController::class, 'checkApplicationChecklistDetails']);
+  Route::get('checkApplicationUnstructuredQueries', [commonController::class, 'checkApplicationUnstructuredQueries']);
 
-   
- });  
+  Route::post('closeApplicationQuery', [commonController::class, 'closeApplicationQuery']);
+
+  Route::post('saveApplicationReQueryDetails', [commonController::class, 'saveApplicationReQueryDetails']);
+
+  Route::post('saveApplicationInternalReQueryDetails', [commonController::class, 'saveApplicationInternalReQueryDetails']);
+
+  Route::get('checkApplicationRespondedUnclosedQueries', [commonController::class, 'checkApplicationRespondedUnclosedQueries']);
+
+  Route::get('checkSampleSubmisisonDetails', [commonController::class, 'checkSampleSubmisisonDetails']);
+
+  Route::get('checkOnlineApplicationChecklistDetails', [commonController::class, 'checkOnlineApplicationChecklistDetails']);
+
+  Route::get('checkGeneratedInvoiceDetails', [commonController::class, 'checkGeneratedInvoiceDetails']);
+
+
+  Route::get('checkApplicationChecklistUploadDetails', [commonController::class, 'checkApplicationChecklistUploadDetails']);
+
+  Route::post('appDataAmmendmentStatusUpdate', [commonController::class, 'appDataAmmendmentStatusUpdate']);
+
+  Route::get('getApplicationDetailsAlterationSetup', [commonController::class, 'getApplicationDetailsAlterationSetup']);
+
+  Route::get('getApplicationDataAppealRequests', [commonController::class, 'getApplicationDataAppealRequests']);
+
+  Route::post('saveApplicatioAppealReasons', [commonController::class, 'saveApplicatioAppealReasons']);
+
+  Route::post('saveChecklistApplicationQuery', [commonController::class, 'saveChecklistApplicationQuery']);
+
+  Route::get('checkApplicationEvaluationOverralRecom', [commonController::class, 'checkApplicationEvaluationOverralRecom']);
+
+  Route::get('getUploadedApplicationPaymentDetails', [commonController::class, 'getUploadedApplicationPaymentDetails']);
+
+  Route::post('deleteChecklistRaisedQuery', [commonController::class, 'deleteChecklistRaisedQuery']);
+
+
+  Route::get('checkIfHasGeneratedInvoiceDEtails', [commonController::class, 'checkIfHasGeneratedInvoiceDEtails']);
+
+
+  Route::get('validateHasUploadedDocumentsDetils', [commonController::class, 'validateHasUploadedDocumentsDetils']);
+
+
+  Route::get('validateHasImportExportProductDetils', [commonController::class, 'validateHasImportExportProductDetils']);
+
+  Route::get('checkSampleAnalysisReviewRecommendationDEtails', [commonController::class, 'checkSampleAnalysisReviewRecommendationDEtails']);
+
+  Route::get('checkUserAccountActivities', [commonController::class, 'checkUserAccountActivities']);
+
+  Route::get('getUploadedApplicationPaymentDetails', [commonController::class, 'getUploadedApplicationPaymentDetails']);
+
+  Route::get('validateproductInformationdetails', [commonController::class, 'validateproductInformationdetails']);
+
+
+  Route::get('checkApplicationChecklistDetails', [commonController::class, 'checkApplicationChecklistDetails']);
+});
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-
+  return $request->user();
 });

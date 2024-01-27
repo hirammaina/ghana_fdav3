@@ -1277,6 +1277,12 @@ class ProductRegistrationController extends Controller
             unset($data['trader_id']);
             unset($data['manufacturer_name']);
             unset($data['physical_address']);
+
+            if ($table_name == 'wb_product_ingredients') {
+                unset($data['id']);
+            }
+
+
             if ($table_name == 'wb_product_manufacturers') {
                 $manufacturer_role_id = $req->manufacturer_role_id;
 
@@ -1311,6 +1317,7 @@ class ProductRegistrationController extends Controller
                     //insert 
                     $data['created_by'] = $email_address;
                     $data['created_on'] = Carbon::now();
+
                     $resp = insertRecord($table_name, $data, $email_address);
                 }
             }
@@ -1654,6 +1661,7 @@ class ProductRegistrationController extends Controller
                         ->on('t1.application_status_id', '!=', DB::raw(1));
                 })
                 ->leftJoin('wb_statuses_actions as t7', 't6.action_id', 't7.id');
+
             // ->whereRaw("if(t1.group_application_code >0,t1.application_status_id >1,1)");
 
             if ($trader_id != 25) {

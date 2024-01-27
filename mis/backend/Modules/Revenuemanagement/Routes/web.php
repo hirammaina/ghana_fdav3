@@ -17,72 +17,72 @@
 use Modules\Revenuemanagement\Http\Controllers\RevenuemanagementController;
 use Modules\Revenuemanagement\Http\Controllers\RetentionmanagementController;
 
-Route::group(['prefix' => 'revenuemanagement','middleware' => ['auth:api', 'web']], function() {
+Route::group(['prefix' => 'revenuemanagement', 'middleware' => ['auth:api', 'web']], function () {
     Route::get('getApplicationRaisedInvoices', [RevenuemanagementController::class, 'getApplicationRaisedInvoices']);
-    Route::get('/', [RevenuemanagementController::class,'index']);
-    
-    Route::get('getGepgbillinvoicepostingdetails', [RevenuemanagementController::class,'getGepgbillinvoicepostingdetails']);
-    Route::get('getGepgbillPaymentspostingdetails', [RevenuemanagementController::class,'getGepgbillPaymentspostingdetails']);
-    Route::post('saveBatchInvoiceDetails', [RevenuemanagementController::class,'saveBatchInvoiceDetails']);
-    Route::get('getBatchInvoiceApplications', [RevenuemanagementController::class,'getBatchInvoiceApplications']);
-    Route::get('getBatchRetentionsInvoices', [RevenuemanagementController::class,'getBatchRetentionsInvoices']);
-    Route::get('getBatchApplicationInvoicesDetails', [RevenuemanagementController::class,'getBatchApplicationInvoicesDetails']);
-    Route::get('getRetentionChargesInvoicesdetails', [RevenuemanagementController::class,'getRetentionChargesInvoicesdetails']);
-    
-    
-    Route::get('getReversedRequestsApplicationInvoices', [RevenuemanagementController::class,'getReversedRequestsApplicationInvoices']);
-    
-    Route::get('getApplicationInvoicesDetails', [RevenuemanagementController::class,'getApplicationInvoicesDetails']);
-    Route::get('prepareCancellationREquestDetails', [RevenuemanagementController::class,'prepareCancellationREquestDetails']);
-    Route::post('approveInvoiceCancellationRequest', [RevenuemanagementController::class,'approveInvoiceCancellationRequest']);
-    Route::get('getPaymentsReversalRequestApplications', [RevenuemanagementController::class,'getPaymentsReversalRequestApplications']);
-    Route::get('getGepgbillPaymentspostingdetails', [RevenuemanagementController::class,'getGepgbillPaymentspostingdetails']);
-    Route::get('getPaymentspostingdetails', [RevenuemanagementController::class,'getPaymentspostingdetails']);
-    Route::post('approvePaymentCancellationRequest', [RevenuemanagementController::class,'approvePaymentCancellationRequest']);
-    Route::post('funcOnFetchCurrencyExchangeRate', [RevenuemanagementController::class,'funcOnFetchCurrencyExchangeRate']);
-    
-    
-    
-    Route::get('getWavePaymentManagementDashDetails', [RevenuemanagementController::class,'getWavePaymentManagementDashDetails']);
-    Route::post('approveCreditNoteRequest', [RevenuemanagementController::class,'approveCreditNoteRequest']);
-    
-    Route::get('getApplicationRaisedInvoices', [RevenuemanagementController::class,'getApplicationRaisedInvoices']);
-    Route::get('getNewInvoiceQuotation', [RevenuemanagementController::class,'getNewInvoiceQuotation']);
-    Route::get('getOnlineAppNewInvoiceQuotation', [RevenuemanagementController::class,'getOnlineAppNewInvoiceQuotation']);
-    
-    Route::get('getImportFOBApplicationInvoiceDetails', [RevenuemanagementController::class,'getImportFOBApplicationInvoiceDetails']);
-   
-    Route::get('getAdhocInvoicingApplicationsDetails', [RevenuemanagementController::class,'getAdhocInvoicingApplicationsDetails']);
-    Route::post('saveInspectionAtOwnersPremises', [RevenuemanagementController::class,'saveInspectionAtOwnersPremises']);
-    Route::get('prepareInspectionatownerpremreceiving', [RevenuemanagementController::class,'prepareInspectionatownerpremreceiving']);
-    Route::get('prepareadhocinvoicingreceiptingpnl', [RevenuemanagementController::class,'prepareadhocinvoicingreceiptingpnl']);
-   
-    Route::get('getApplicationInvoiceDetails', [RevenuemanagementController::class,'getApplicationInvoiceDetails']);
-    Route::get('getRetentionPendingInvoicesdetails', [RevenuemanagementController::class,'getRetentionPendingInvoicesdetails']);
-    Route::get('getRetentionAplicantsDetails', [RetentionmanagementController::class, 'getRetentionAplicantsDetails']);
-    Route::get('getRetentionChargesPaymentsdetails', [RetentionmanagementController::class,'getRetentionChargesPaymentsdetails']);
-    Route::get('prepareAdhocInvoiceRequestpnl', [RetentionmanagementController::class,'prepareAdhocInvoiceRequestpnl']);
-    Route::post('saveAdhocApplicationInvoiceDetails', [RevenuemanagementController::class,'saveAdhocApplicationInvoiceDetails']);
-    
-    Route::post('saveapplicationreceiceinvoiceDetails', [RevenuemanagementController::class,'saveapplicationreceiceinvoiceDetails']);
-    Route::post('saveonlineapplicationreceiceinvoiceDetails', [RevenuemanagementController::class,'saveonlineapplicationreceiceinvoiceDetails']);
-    Route::post('checkApplicationInvoiceBalance', [RevenuemanagementController::class,'checkApplicationInvoiceBalance']);
-    Route::get('getRaisedApplicationReinvoices', [RevenuemanagementController::class,'getRaisedApplicationReinvoices']);
- 
-    Route::get('onCancelGeneratedApplicationInvoice', [RevenuemanagementController::class,'onCancelGeneratedApplicationInvoice']);
-     Route::get('/', [RetentionmanagementController::class,'index']);
-    Route::get('getRetentionChargesInvoicesdetails', [RetentionmanagementController::class,'getRetentionChargesInvoicesdetails']);
-   
-    
-    Route::get('generateSingleProductRetentionCharge', [RetentionmanagementController::class,'generateSingleProductRetentionCharge']);
+    Route::get('/', [RevenuemanagementController::class, 'index']);
 
-    Route::get('generateProductRetentionCharges', [RetentionmanagementController::class,'generateProductRetentionCharges']);
-    Route::get('generateProductRetentionPenalty', [RetentionmanagementController::class,'generateProductRetentionPenalty']);
+    Route::get('getGepgbillinvoicepostingdetails', [RevenuemanagementController::class, 'getGepgbillinvoicepostingdetails']);
+    Route::get('getGepgbillPaymentspostingdetails', [RevenuemanagementController::class, 'getGepgbillPaymentspostingdetails']);
+    Route::post('saveBatchInvoiceDetails', [RevenuemanagementController::class, 'saveBatchInvoiceDetails']);
+    Route::get('getBatchInvoiceApplications', [RevenuemanagementController::class, 'getBatchInvoiceApplications']);
+    Route::get('getBatchRetentionsInvoices', [RevenuemanagementController::class, 'getBatchRetentionsInvoices']);
+    Route::get('getBatchApplicationInvoicesDetails', [RevenuemanagementController::class, 'getBatchApplicationInvoicesDetails']);
+    Route::get('getRetentionChargesInvoicesdetails', [RevenuemanagementController::class, 'getRetentionChargesInvoicesdetails']);
+
+
+    Route::get('getReversedRequestsApplicationInvoices', [RevenuemanagementController::class, 'getReversedRequestsApplicationInvoices']);
+
+    Route::get('getApplicationInvoicesDetails', [RevenuemanagementController::class, 'getApplicationInvoicesDetails']);
+    Route::get('prepareCancellationREquestDetails', [RevenuemanagementController::class, 'prepareCancellationREquestDetails']);
+    Route::post('approveInvoiceCancellationRequest', [RevenuemanagementController::class, 'approveInvoiceCancellationRequest']);
+    Route::get('getPaymentsReversalRequestApplications', [RevenuemanagementController::class, 'getPaymentsReversalRequestApplications']);
+    Route::get('getGepgbillPaymentspostingdetails', [RevenuemanagementController::class, 'getGepgbillPaymentspostingdetails']);
+    Route::get('getPaymentspostingdetails', [RevenuemanagementController::class, 'getPaymentspostingdetails']);
+    Route::post('approvePaymentCancellationRequest', [RevenuemanagementController::class, 'approvePaymentCancellationRequest']);
+    Route::post('funcOnFetchCurrencyExchangeRate', [RevenuemanagementController::class, 'funcOnFetchCurrencyExchangeRate']);
+
+
+
+    Route::get('getWavePaymentManagementDashDetails', [RevenuemanagementController::class, 'getWavePaymentManagementDashDetails']);
+    Route::post('approveCreditNoteRequest', [RevenuemanagementController::class, 'approveCreditNoteRequest']);
+
+    Route::get('getApplicationRaisedInvoices', [RevenuemanagementController::class, 'getApplicationRaisedInvoices']);
+    Route::get('getNewInvoiceQuotation', [RevenuemanagementController::class, 'getNewInvoiceQuotation']);
+    Route::get('getOnlineAppNewInvoiceQuotation', [RevenuemanagementController::class, 'getOnlineAppNewInvoiceQuotation']);
+
+    Route::get('getImportFOBApplicationInvoiceDetails', [RevenuemanagementController::class, 'getImportFOBApplicationInvoiceDetails']);
+
+    Route::get('getAdhocInvoicingApplicationsDetails', [RevenuemanagementController::class, 'getAdhocInvoicingApplicationsDetails']);
+    Route::post('saveInspectionAtOwnersPremises', [RevenuemanagementController::class, 'saveInspectionAtOwnersPremises']);
+    Route::get('prepareInspectionatownerpremreceiving', [RevenuemanagementController::class, 'prepareInspectionatownerpremreceiving']);
+    Route::get('prepareadhocinvoicingreceiptingpnl', [RevenuemanagementController::class, 'prepareadhocinvoicingreceiptingpnl']);
+
+    Route::get('getApplicationInvoiceDetails', [RevenuemanagementController::class, 'getApplicationInvoiceDetails']);
+    Route::get('getRetentionPendingInvoicesdetails', [RevenuemanagementController::class, 'getRetentionPendingInvoicesdetails']);
+    Route::get('getRetentionAplicantsDetails', [RetentionmanagementController::class, 'getRetentionAplicantsDetails']);
+    Route::get('getRetentionChargesPaymentsdetails', [RetentionmanagementController::class, 'getRetentionChargesPaymentsdetails']);
+    Route::get('prepareAdhocInvoiceRequestpnl', [RetentionmanagementController::class, 'prepareAdhocInvoiceRequestpnl']);
+    Route::post('saveAdhocApplicationInvoiceDetails', [RevenuemanagementController::class, 'saveAdhocApplicationInvoiceDetails']);
+
+    Route::post('saveapplicationreceiceinvoiceDetails', [RevenuemanagementController::class, 'saveapplicationreceiceinvoiceDetails']);
+    Route::post('saveonlineapplicationreceiceinvoiceDetails', [RevenuemanagementController::class, 'saveonlineapplicationreceiceinvoiceDetails']);
+    Route::post('checkApplicationInvoiceBalance', [RevenuemanagementController::class, 'checkApplicationInvoiceBalance']);
+    Route::get('getRaisedApplicationReinvoices', [RevenuemanagementController::class, 'getRaisedApplicationReinvoices']);
+
+    Route::get('onCancelGeneratedApplicationInvoice', [RevenuemanagementController::class, 'onCancelGeneratedApplicationInvoice']);
+    Route::get('/', [RetentionmanagementController::class, 'index']);
+    Route::get('getRetentionChargesInvoicesdetails', [RetentionmanagementController::class, 'getRetentionChargesInvoicesdetails']);
+
+
+    Route::get('generateSingleProductRetentionCharge', [RetentionmanagementController::class, 'generateSingleProductRetentionCharge']);
+
+    Route::get('generateProductRetentionCharges', [RetentionmanagementController::class, 'generateProductRetentionCharges']);
+    Route::get('generateProductRetentionPenalty', [RetentionmanagementController::class, 'generateProductRetentionPenalty']);
 
     //post notifications
-    Route::get('sendProductRetentionChargesNotifications', [RetentionmanagementController::class,'sendProductRetentionChargesNotifications']);
-    Route::get('getRetentionReport', [RetentionmanagementController::class,'getRetentionReport']);
-    Route::get('exportRevenueReportsData', [RetentionmanagementController::class,'exportRevenueReportsData']); 
+    Route::get('sendProductRetentionChargesNotifications', [RetentionmanagementController::class, 'sendProductRetentionChargesNotifications']);
+    Route::get('getRetentionReport', [RetentionmanagementController::class, 'getRetentionReport']);
+    Route::get('exportRevenueReportsData', [RetentionmanagementController::class, 'exportRevenueReportsData']);
 
 
 
@@ -120,13 +120,7 @@ Route::group(['prefix' => 'revenuemanagement','middleware' => ['auth:api', 'web'
     Route::get('getAccountBalances', [RevenuemanagementController::class, 'getAccountBalances']);
     Route::get('getApprovedRefundsList', [RevenuemanagementController::class, 'getApprovedRefundsList']);
     //
-     Route::get('getApprovedRefundsList', [RevenuemanagementController::class, 'getApprovedRefundsList']);
-     Route::get('getIssuedInvoicesList', [RevenuemanagementController::class, 'getIssuedInvoicesList']);
-     Route::get('getCustomerList', [RevenuemanagementController::class, 'getCustomerList']);
-     
-
-      
+    Route::get('getApprovedRefundsList', [RevenuemanagementController::class, 'getApprovedRefundsList']);
+    Route::get('getIssuedInvoicesList', [RevenuemanagementController::class, 'getIssuedInvoicesList']);
+    Route::get('getCustomerList', [RevenuemanagementController::class, 'getCustomerList']);
 });
-
-
-   

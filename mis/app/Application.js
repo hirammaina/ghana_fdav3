@@ -50,26 +50,58 @@ Ext.define("Admin.Application", {
   //mainView: 'Admin.view.main.Main',
 
   launch: function () {
-    //If user is logged in open 'app-main' else open 'login'
-    Ext.create({
-      xtype: is_logged_in
-        ? "main-app"
-        : is_reset_pwd
-        ? "resetpwdscreen"
-        : "login",
-    });
-    if (is_logged_in) {
-      checkUserSessionValidity(800000);
-      setupTimers();
-      var usersstr = Ext.getStore("usersstr"),
-        gmpproductlinestatusstr = Ext.getStore("gmpproductlinestatusstr"),
-        confirmationstr = Ext.getStore("confirmationstr"),
-        navigationstr = Ext.getStore("navigationstr");
+    if (Ext.manifest) {
+      var environment = Ext.manifest.profile;
 
-      usersstr.load();
-      gmpproductlinestatusstr.load();
-      navigationstr.load();
-      confirmationstr.load();
+      if (environment === "production") {
+        //If user is logged in open 'app-main' else open 'login'
+        Ext.create({
+          xtype: is_logged_in
+            ? "main-app"
+            : is_reset_pwd
+            ? "resetpwdscreen"
+            : "login",
+        });
+        if (is_logged_in) {
+          checkUserSessionValidity(800000);
+          setupTimers();
+          var usersstr = Ext.getStore("usersstr"),
+            gmpproductlinestatusstr = Ext.getStore("gmpproductlinestatusstr"),
+            confirmationstr = Ext.getStore("confirmationstr"),
+            navigationstr = Ext.getStore("navigationstr");
+
+          usersstr.load();
+          gmpproductlinestatusstr.load();
+          navigationstr.load();
+          confirmationstr.load();
+        }
+      } else {
+        Ext.create({
+          xtype: is_logged_in
+            ? "main-app"
+            : is_reset_pwd
+            ? "resetpwdscreen"
+            : "login",
+        });
+        if (is_logged_in) {
+          // checkUserSessionValidity(800000);
+          // setupTimers();
+          var usersstr = Ext.getStore("usersstr"),
+            gmpproductlinestatusstr = Ext.getStore("gmpproductlinestatusstr"),
+            confirmationstr = Ext.getStore("confirmationstr"),
+            navigationstr = Ext.getStore("navigationstr");
+
+          usersstr.load();
+          gmpproductlinestatusstr.load();
+          navigationstr.load();
+          confirmationstr.load();
+        }
+      }
+    } else {
+      // Fallback in case manifest is not available
+      console.warn(
+        "Ext.manifest is not available. Unable to determine environment."
+      );
     }
   },
 

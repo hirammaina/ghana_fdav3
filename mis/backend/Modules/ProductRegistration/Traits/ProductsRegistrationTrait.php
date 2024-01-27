@@ -10,7 +10,7 @@ trait ProductsRegistrationTrait
 {
     public function getProductApplicationReferenceCodes($application_details)
     {
-         
+
         $zone_code = getSingleRecordColValue('par_zones', array('id' => $application_details->zone_id), 'zone_code');
         $section_code = getSingleRecordColValue('par_sections', array('id' => $application_details->section_id), 'code');
         $class_code = getSingleRecordColValue('par_classifications', array('id' => $application_details->classification_id), 'code');
@@ -22,10 +22,10 @@ trait ProductsRegistrationTrait
             'section_code' => $section_code,
             'zone_code' => $zone_code,
             'class_code' => $class_code,
-            'assessment_code' => $assessment_code, 
-            'device_typecode'=>$device_typecode
-        );  
-              
+            'assessment_code' => $assessment_code,
+            'device_typecode' => $device_typecode
+        );
+
         return $codes_array;
     }
     public function processProductsApplicationSubmission(Request $request)
@@ -44,109 +44,102 @@ trait ProductsRegistrationTrait
         $table_name = $request->input('table_name');
         $application_id = $request->input('application_id');
         $process_id = $request->input('process_id');
-        
+
         $data = DB::table('wf_workflow_actions')
-                ->where(array('stage_id'=>$request->curr_stage_id,'id'=>$request->action))
-                ->select('*')
+            ->where(array('stage_id' => $request->curr_stage_id, 'id' => $request->action))
+            ->select('*')
+            ->first();
+        if ($table_name == '') {
+            $table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
+            $request->merge(['table_name' => $table_name]);
+        }
+
+        if ($table_name == 'tra_product_notifications') {
+            $table_name = 'tra_product_applications';
+        }
+
+        //print_r($data);
+        //exit();
+        if ($data) {
+
+            $application_details = DB::table($table_name . ' as t1')
+                ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
+                ->select('t1.*', 't2.classification_id', 't2.product_origin_id', 't2.device_type_id')
+                ->where('t1.id', $application_id)
                 ->first();
-if($table_name == ''){
-				$table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
-				$request->table_name = $table_name;
-				
-			}
-			
-			if($table_name == 'tra_product_notifications'){
-				$table_name = 'tra_product_applications';
-			}
-			
-			//print_r($data);
-			//exit();
-        if($data){
-			
-            $application_details = DB::table($table_name. ' as t1')
-                    ->join('tra_product_information as t2', 't1.product_id', '=','t2.id')
-                    ->select('t1.*', 't2.classification_id','t2.product_origin_id', 't2.device_type_id')
-                    ->where('t1.id', $application_id)
-                    ->first();
-                if (is_null($application_details)) {
-                    $res = array(
-                        'success' => false,
-                        'message' => 'Problem encountered while fetching application details!!'
-                    );
-                    echo json_encode($res);
+            if (is_null($application_details)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while fetching application details!!'
+                );
+                echo json_encode($res);
+                exit();
+            }
+            $zone_id = $application_details->zone_id;
+            $refno_generated = $application_details->refno_generated;
+            $portal_id = $application_details->portal_id;
+
+            $recommendation_table = $data->recommendation_table;
+            $update_portal_status = $data->update_portal_status;
+            $portal_status_id = $data->portal_status_id;
+
+            $has_email_notification = $data->has_email_notification;
+            $email_message_id = $data->email_message_id;
+
+
+            $action_details = $this->getApplicationWorkflowActionDetails($action);
+            $keep_status = $action_details->keep_status;
+            $action_type = $action_details->action_type_id;
+            $sub_module_id = $application_details->sub_module_id;
+            $module_id = $application_details->module_id;
+            $reference_no = $application_details->reference_no;
+
+            if ($update_portal_status == 1) {
+                $proceed = updatePortalApplicationStatusWithCode($application_code, 'wb_product_applications', $portal_status_id);
+                if ($proceed == false) {
+                    echo json_encode($proceed);
                     exit();
                 }
-                $zone_id = $application_details->zone_id;
-                $refno_generated = $application_details->refno_generated;
-                $portal_id = $application_details->portal_id;
+            }
+            if ($action_details->generate_refno == 1) {
+                if ($refno_generated != 1 && ($reference_no == '' or is_null($reference_no))) {
 
-                 $recommendation_table = $data->recommendation_table;
-                 $update_portal_status = $data->update_portal_status;
-                 $portal_status_id = $data->portal_status_id;
+                    $codes_array = $this->getProductApplicationReferenceCodes($application_details);
 
-                 $has_email_notification = $data->has_email_notification;
-                 $email_message_id = $data->email_message_id;
-                 
+                    $refno_details = generateApplicationRefNumber($application_id, $table_name, $sub_module_id,  1, $codes_array, $process_id, $zone_id, $user_id, $module_id, $section_id);
 
-                 $action_details = $this->getApplicationWorkflowActionDetails($action);
-                 $keep_status = $action_details->keep_status;
-                 $action_type = $action_details->action_type_id;
-                 $sub_module_id = $application_details->sub_module_id;
-                 $module_id = $application_details->module_id;
-                 $reference_no = $application_details->reference_no;
-
-                if($update_portal_status == 1){
-                    $proceed = updatePortalApplicationStatusWithCode($application_code, 'wb_product_applications',$portal_status_id);
-                    if ($proceed == false) {
-                        echo json_encode($proceed);
+                    if ($refno_details['success'] == false) {
+                        echo json_encode($refno_details);
                         exit();
-                    }      
-                }
-                if ($action_details->generate_refno == 1) {
-                      if ($refno_generated != 1 && ($reference_no == '' or is_null($reference_no))) {
-
-                        $codes_array = $this->getProductApplicationReferenceCodes($application_details);
-                       
-                        $refno_details = generateApplicationRefNumber($application_id, $table_name, $sub_module_id,  1, $codes_array, $process_id, $zone_id, $user_id,$module_id,$section_id);
-
-                        if ($refno_details['success'] == false) {
-                            echo json_encode($refno_details);
-                            exit();
-                        }
-                        
-                        $portal_params = array(
-                            'reference_no' => $refno_details['ref_no']
-                        );
-                        $portal_where = array(
-                            'application_code' => $application_code
-                        );
-                        updatePortalParams('wb_product_applications', $portal_params, $portal_where);
                     }
-                }
-                if ($action_type == 2) {//initial query
-                  
-                    $this->processReceivingQueriedApplicationSubmission($request);
 
-                } else if ($action_type == 3) {//initial rejection
-                    $this->processReceivingRejectedApplicationSubmission($request);
-                } else if ($action_type == 6) {//recommendation submission
-                    $recommendation_table = $action_details->recommendation_table;
-                    $this->processRecommendationApplicationSubmission($request, $recommendation_table);
-                }else{
-                    
-                    $this->processNormalApplicationSubmission($request);
+                    $portal_params = array(
+                        'reference_no' => $refno_details['ref_no']
+                    );
+                    $portal_where = array(
+                        'application_code' => $application_code
+                    );
+                    updatePortalParams('wb_product_applications', $portal_params, $portal_where);
                 }
-                //must have set all variables
-                if($has_email_notification == 1){
+            }
+            if ($action_type == 2) { //initial query
 
+                $this->processReceivingQueriedApplicationSubmission($request);
+            } else if ($action_type == 3) { //initial rejection
+                $this->processReceivingRejectedApplicationSubmission($request);
+            } else if ($action_type == 6) { //recommendation submission
+                $recommendation_table = $action_details->recommendation_table;
+                $this->processRecommendationApplicationSubmission($request, $recommendation_table);
+            } else {
 
-                }
+                $this->processNormalApplicationSubmission($request);
+            }
+            //must have set all variables
+            if ($has_email_notification == 1) {
+            }
+        } else {
+            $this->processNormalApplicationSubmission($request);
         }
-        else{
-                 $this->processNormalApplicationSubmission($request);
-        }
-
-        
     }
     public function updateQueriedProductsApplicationPortal(Request $request, $application_details)
     {
@@ -157,7 +150,7 @@ if($table_name == ''){
         $portal_db = DB::connection('portal_db');
         $update = $portal_db->table('wb_product_applications')
             ->where('id', $application_details->portal_id)
-            ->update(array('application_status_id' => 6, 'dola'=>Carbon::now()));
+            ->update(array('application_status_id' => 6, 'dola' => Carbon::now()));
         $insert_remark = array(
             'application_id' => $application_details->portal_id,
             'remark' => $remarks,
@@ -166,7 +159,7 @@ if($table_name == ''){
         );
         $insert = $portal_db->table('wb_query_remarks')
             ->insert($insert_remark);
-           
+
         if ($update > 0 && $insert > 0) {
             return true;
         } else {
@@ -176,26 +169,24 @@ if($table_name == ''){
 
     public function processProductManagersApplicationSubmission($request)
     {
-        
-         //get workflow action details
-         $action = $request->input('action');
-         $action_details = $this->getApplicationWorkflowActionDetails($action);
-         $keep_status = $action_details->keep_status;
-         $action_type = $action_details->action_type_id;
-         $approval_submission = $action_details->is_approval_submission;
-			
-         if ($approval_submission == 1) {
+
+        //get workflow action details
+        $action = $request->input('action');
+        $action_details = $this->getApplicationWorkflowActionDetails($action);
+        $keep_status = $action_details->keep_status;
+        $action_type = $action_details->action_type_id;
+        $approval_submission = $action_details->is_approval_submission;
+
+        if ($approval_submission == 1) {
             $this->processNewApprovalApplicationSubmission($request, $keep_status);
-        } else if ($action_type == 4) {//manager query to customer
+        } else if ($action_type == 4) { //manager query to customer
             $this->submitApplicationFromManagerQueryToCustomer($request);
-        } else if ($action_type == 5) {//manager query normal submission
+        } else if ($action_type == 5) { //manager query normal submission
             $this->processManagerQueryReturnApplicationSubmission($request);
         } else {
-            
+
             $this->processNormalManagersApplicationSubmission($request, $keep_status);
         }
-
-         
     }
 
     public function updateQueriedProductApplicationPortal(Request $request, $application_details)
@@ -511,7 +502,7 @@ if($table_name == ''){
             $decision_id = DB::table('tra_approval_recommendations')
                 ->where(array('application_id' => $application_id, 'application_code' => $application_code))
                 ->value('decision_id');
-            if ($decision_id == 1 || $decision_id == 2) {//granted
+            if ($decision_id == 1 || $decision_id == 2) { //granted
 
                 //todo: check for allowed changes
                 //1. Basic Product info
@@ -800,7 +791,7 @@ if($table_name == ''){
             $init_permit_id = $log_data->permit_id;
 
             $initPermitDetails = DB::table('tra_approval_recommendations as t1')
-                ->select('t1.certificate_no', 't1.approval_date', 't1.expiry_date','t1.appvalidity_status_id','t1.appregistration_status_id')
+                ->select('t1.certificate_no', 't1.approval_date', 't1.expiry_date', 't1.appvalidity_status_id', 't1.appregistration_status_id')
                 ->where('t1.id', $init_permit_id)
                 ->first();
             $initPermitDetails = convertStdClassObjToArray($initPermitDetails);
@@ -942,7 +933,7 @@ if($table_name == ''){
         }
         return $return_val;
     }
-    
+
     public function validateProductApprovalApplication($application_code)
     {
         $return_val = true;
@@ -958,55 +949,47 @@ if($table_name == ''){
 
     public function saveProductApplicationApprovalDetails(Request $request, $sub_module_id)
     {
-   
+
         if ($sub_module_id == 7) {
             $res = $this->saveProductApplicationRecommendationDetails($request);
-        }else if ($sub_module_id == 8) {
+        } else if ($sub_module_id == 8) {
             $res = $this->saveRenewalProductApplicationRecommendationDetails($request);
-        }else if ($sub_module_id == 9) {
+        } else if ($sub_module_id == 9) {
             $res = $this->saveProductApplicationAlterationRecommendationDetails($request);
-        }else if ($sub_module_id == 30) {
+        } else if ($sub_module_id == 30) {
             $res = $this->saveProductApplicationRecommendationDetails($request);
-        }else if($sub_module_id == 17){
-			 $res = $this->saveProductApplicationWithdrawalRecommendationDetails($request);
-		}else if($sub_module_id == 20){
-          $res = $this->saveProductApplicationWithdrawalReversalRecommendationDetails($request);
-        }
-
-		else {
-          $res = $this->saveProductApplicationAlterationRecommendationDetails($request);
+        } else if ($sub_module_id == 17) {
+            $res = $this->saveProductApplicationWithdrawalRecommendationDetails($request);
+        } else if ($sub_module_id == 20) {
+            $res = $this->saveProductApplicationWithdrawalReversalRecommendationDetails($request);
+        } else {
+            $res = $this->saveProductApplicationAlterationRecommendationDetails($request);
         }
         return $res;
     }
-	 public function saveRenewalProductApplicationRecommendationDetails(Request $request)
+    public function saveRenewalProductApplicationRecommendationDetails(Request $request)
     {
-        
+
         $table_name = $request->input('table_name');
         $application_id = $request->input('application_id');
         $application_code = $request->input('application_code');
-        
+
         $selected_appcodes = $request->input('selected_appcodes');
-      
+
         $res = array();
-        
+
         try {
-            if($selected_appcodes != ''){
-                
+            if ($selected_appcodes != '') {
+
                 $selected_ids = json_decode($selected_appcodes);
-               
+
                 foreach ($selected_ids as $application_code) {
-                   
+
                     $res = $this->saveProductApplicationRenewalRecommendationDetails($application_id, $application_code, $table_name, $request, $res);
-                
-
                 }
-               
+            } else {
+                $res = $this->saveProductApplicationRenewalRecommendationDetails($application_id, $application_code, $table_name, $request, $res);
             }
-            else{
-                     $res = $this->saveProductApplicationRenewalRecommendationDetails($application_id, $application_code, $table_name, $request, $res);
-
-            }
-         
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -1020,36 +1003,30 @@ if($table_name == ''){
         }
         return $res;
     }
-	
+
     public function saveProductApplicationRecommendationDetails(Request $request)
     {
-        
+
         $table_name = $request->input('table_name');
         $application_id = $request->input('application_id');
         $application_code = $request->input('application_code');
-        
+
         $selected_appcodes = $request->input('selected_appcodes');
-      
+
         $res = array();
-        
+
         try {
-            if($selected_appcodes != ''){
-                
+            if ($selected_appcodes != '') {
+
                 $selected_ids = json_decode($selected_appcodes);
-               
+
                 foreach ($selected_ids as $application_code) {
-                   
+
                     $res = $this->saveNewProductApprovalRecommendation($application_id, $application_code, $table_name, $request, $res);
-                
-
                 }
-               
+            } else {
+                $res = $this->saveNewProductApprovalRecommendation($application_id, $application_code, $table_name, $request, $res);
             }
-            else{
-                     $res = $this->saveNewProductApprovalRecommendation($application_id, $application_code, $table_name, $request, $res);
-
-            }
-         
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -1064,294 +1041,290 @@ if($table_name == ''){
         return $res;
     }
     //renewal 
-    public function saveNewProductApprovalRecommendation($application_id, $application_code, $table_name, $request,  &$res){
+    public function saveNewProductApprovalRecommendation($application_id, $application_code, $table_name, $request,  &$res)
+    {
 
         DB::transaction(function () use ($application_id, $application_code, $table_name, $request,  &$res) {
-            $qry = DB::table($table_name. ' as t1')
-                     ->where('t1.application_code', $application_code);
+            $qry = DB::table($table_name . ' as t1')
+                ->where('t1.application_code', $application_code);
 
             $ProductUpdateParams = array();
-            $app_details = DB::table($table_name. ' as t1')
-                                    ->join('tra_product_information as t2', 't1.product_id', '=','t2.id')
-                                    ->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=','t3.id')
-									
-									->leftJoin('tra_approval_recommendations as t4', 't1.application_code', 't4.application_code')
-                                    ->select('t1.*','t2.brand_name', 't2.classification_id','t3.name as applicant_name','t3.email as applicant_email', 't2.device_type_id', 't2.product_origin_id','t4.id as recommendation_id')
-                                    ->where('t1.application_code', $application_code)
-                                    ->first();
-                                    if (is_null($app_details)) {
-                                        $res = array(
-                                            'success' => false,
-                                            'message' => 'Problem encountered while getting application details!!'
-                                        );
-                                        return $res;
-                                    }
-									
-                    $zone_id = $app_details->zone_id;
-                    $process_id = $request->input('process_id');
-                    $workflow_stage_id = $request->input('workflow_stage_id');
-                    $decision_id = $request->input('decision_id');
-                    $comment = $request->input('comment');
-                    $approved_by = $request->input('approved_by');
-                    $approval_date = formatDate($request->input('approval_date'));
-                    $expiry_date = $request->input('expiry_date');
-                    $dg_signatory = $request->input('dg_signatory');
-                    $signatory = $request->input('permit_signatory');
-                    $user_id = $this->user_id;
-                    $classification_id = $app_details->classification_id;
-                    $applicant_id = $app_details->applicant_id;
-                    $local_agent_id = $app_details->local_agent_id;
-                    $section_id = $app_details->section_id;
-                    $device_type_id = $app_details->device_type_id;
-                    $sub_module_id = $app_details->sub_module_id;
-                    $application_id = $app_details->id;
-                    $module_id = $app_details->module_id;
-                    $section_id = $app_details->section_id;
-                    $reference_no = $app_details->reference_no;
-                    $id = $app_details->recommendation_id;
-					
-                    if ($dg_signatory == 1) {
-                        $permit_signatory = getPermitSignatory();
-                    } else {
-                        $permit_signatory = $signatory;
+            $app_details = DB::table($table_name . ' as t1')
+                ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
+                ->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
+
+                ->leftJoin('tra_approval_recommendations as t4', 't1.application_code', 't4.application_code')
+                ->select('t1.*', 't2.brand_name', 't2.classification_id', 't3.name as applicant_name', 't3.email as applicant_email', 't2.device_type_id', 't2.product_origin_id', 't4.id as recommendation_id')
+                ->where('t1.application_code', $application_code)
+                ->first();
+            if (is_null($app_details)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting application details!!'
+                );
+                return $res;
+            }
+
+            $zone_id = $app_details->zone_id;
+            $process_id = $request->input('process_id');
+            $workflow_stage_id = $request->input('workflow_stage_id');
+            $decision_id = $request->input('decision_id');
+            $comment = $request->input('comment');
+            $approved_by = $request->input('approved_by');
+            $approval_date = formatDate($request->input('approval_date'));
+            $expiry_date = $request->input('expiry_date');
+            $dg_signatory = $request->input('dg_signatory');
+            $signatory = $request->input('permit_signatory');
+            $user_id = $this->user_id;
+            $classification_id = $app_details->classification_id;
+            $applicant_id = $app_details->applicant_id;
+            $local_agent_id = $app_details->local_agent_id;
+            $section_id = $app_details->section_id;
+            $device_type_id = $app_details->device_type_id;
+            $sub_module_id = $app_details->sub_module_id;
+            $application_id = $app_details->id;
+            $module_id = $app_details->module_id;
+            $section_id = $app_details->section_id;
+            $reference_no = $app_details->reference_no;
+            $id = $app_details->recommendation_id;
+
+            if ($dg_signatory == 1) {
+                $permit_signatory = getPermitSignatory();
+            } else {
+                $permit_signatory = $signatory;
+            }
+            $params = array(
+                'application_id' => $application_id,
+                'application_code' => $application_code,
+                'workflow_stage_id' => $workflow_stage_id,
+                'decision_id' => $decision_id,
+                'comment' => $comment,
+                'approval_date' => $approval_date,
+                'certificate_issue_date' => $approval_date,
+                'approved_by' => $approved_by,
+                'dg_signatory' => $dg_signatory,
+                'permit_signatory' => $permit_signatory
+            );
+
+
+            if ($decision_id == 1) {
+
+                $expiry_date = getApplicationExpiryDate($approval_date, $sub_module_id, $module_id, $section_id);
+                $params['expiry_date'] = $expiry_date;
+            } else if ($decision_id == 2) {
+                $params['expiry_date'] = $expiry_date;
+            } else {
+                $params['expiry_date'] = '';
+            }
+            $codes_array = $this->getProductApplicationReferenceCodes($app_details);
+
+            //zone_id
+            $ProductUpdateParams['certificate_issue_date'] = $approval_date;
+            if (validateIsNumeric($id)) {
+                //update
+                $where = array(
+                    'id' => $id
+                );
+                $params['dola'] = Carbon::now();
+                $params['altered_by'] = $user_id;
+                $prev_data = getPreviousRecords('tra_approval_recommendations', $where);
+                if ($prev_data['success'] == false) {
+                    return \response()->json($prev_data);
+                }
+                $prev_data_results = $prev_data['results'];
+                $prev_decision_id = $prev_data_results[0]['decision_id'];
+                $certificate_no = $prev_data_results[0]['decision_id'];
+                $prev_data_results[0]['record_id'] = $id;
+                $prev_data_results[0]['update_by'] = $user_id;
+                $prev_data_results[0]['recommendation_id'] = $prev_data_results[0]['id'];
+                unset($prev_data_results[0]['id']);
+
+                //permits no formats ref id 
+
+                DB::table('tra_approval_recommendations_log')
+                    ->insert($prev_data_results);
+                if ($decision_id == 1 || $decision_id == 2) {
+                    $product_status_id = 6;
+                    $portal_status_id = 10;
+                    $application_status_id = 6;
+                    $qry->update(array('application_status_id' => 6));
+                    //permit
+                    if ($prev_decision_id != 1) {
+
+
+                        $certificate_data = generateApplicationCertificateNumber($application_id, $table_name, $sub_module_id,  2, $codes_array, $process_id, $zone_id, $user_id, $module_id, $section_id);
+                        if ($certificate_data['success'] == false) {
+                            echo json_encode($certificate_data);
+                            exit();
+                        }
+
+                        $certificate_no = $certificate_data['certificate_no'];
+
+                        $params['certificate_no'] = $certificate_no;
                     }
-                    $params = array(
-                        'application_id' => $application_id,
-                        'application_code' => $application_code,
-                        'workflow_stage_id' => $workflow_stage_id,
-                        'decision_id' => $decision_id,
-                        'comment' => $comment,
+                    $params['appvalidity_status_id'] = 2;
+                    $params['appregistration_status_id'] = 2;
+
+                    $registration_data = array(
+                        'tra_product_id' => $app_details->product_id,
+                        'status_id' => 6,
+                        'validity_status_id' => 2,
+                        'registration_status_id' => 2,
+                        'registration_date' => $approval_date,
                         'approval_date' => $approval_date,
-                        'certificate_issue_date' => $approval_date,
-                        'approved_by' => $approved_by,
-                        'dg_signatory' => $dg_signatory,
-                        'permit_signatory' => $permit_signatory
+                        'expiry_date' => $expiry_date,
+                        'registration_no' => $certificate_no,
+                        'reg_applicant_id' => $applicant_id,
+                        'reg_local_agent_id' => $local_agent_id,
+                        'active_application_code' => $application_code,
+                        'active_app_referenceno' => $reference_no,
+                        'registration_ref_no' => $reference_no,
                     );
+                } else {
+                    $product_status_id = 3;
+                    $portal_status_id = 11;
+                    $application_status_id = 3;
+                    $qry->update(array('application_status_id' => 7));
+                    $params['certificate_no'] = null;
+                    $params['appvalidity_status_id'] = 3;
+                    $params['appregistration_status_id'] = 3;
 
-                    
-                    if($decision_id == 1){
+                    $registration_data = array(
+                        'tra_product_id' => $app_details->product_id,
+                        'status_id' => 7,
+                        'validity_status_id' => 3,
+                        'registration_status_id' => 3,
+                        'approval_date' => $approval_date,
+                        'reg_applicant_id' => $applicant_id,
+                        'reg_local_agent_id' => $local_agent_id,
+                        'active_application_code' => $application_code,
+                        'active_app_referenceno' => $reference_no,
+                        'registration_ref_no' => $reference_no
+                    );
+                }
+                $res = updateRecord('tra_approval_recommendations', $prev_data['results'], $where, $params, $user_id);
+            } else {
+                //insert
 
-                        $expiry_date = getApplicationExpiryDate($approval_date,$sub_module_id,$module_id,$section_id);
-						$params['expiry_date'] =$expiry_date ;
+                $params['created_on'] = Carbon::now();
+                $params['created_by'] = $user_id;
+                if ($decision_id == 1 || $decision_id == 2) {
+                    $portal_status_id = 10;
+                    $product_status_id = 6;
+                    //permits
+                    $application_status_id = 6;
+                    $certificate_data = generateApplicationCertificateNumber($application_id, $table_name, $sub_module_id,  2, $codes_array, $process_id, $zone_id, $user_id, $module_id, $section_id);
+                    if ($certificate_data['success'] == false) {
+                        echo json_encode($certificate_data);
+                        exit();
                     }
-                    else if($decision_id == 2){
+
+                    $certificate_no = $certificate_data['certificate_no'];
+
+                    $params['certificate_no'] = $certificate_no;
+                    if ($decision_id == 1) { //set the expiration date as defined by the system configurations
+                        $expiry_date = getApplicationExpiryDate($approval_date, $sub_module_id, $module_id, $section_id);
                         $params['expiry_date'] = $expiry_date;
+                    } //else{//get the expiration date as specified by the manager
+                    //$params['expiry_date'] = $expiry_date ;
+                    //}
+                    $params['appvalidity_status_id'] = 2;
+                    $params['appregistration_status_id'] = 2;
+                    $qry->update(array('application_status_id' => 6));
+                    $registration_data = array(
+                        'tra_product_id' => $app_details->product_id,
+                        'status_id' => 6,
+                        'validity_status_id' => 2,
+                        'registration_status_id' => 2,
+                        'registration_date' => $approval_date,
+                        'approval_date' => $approval_date,
+                        'expiry_date' => $expiry_date,
+                        'registration_no' => $certificate_no,
+                        'active_application_code' => $application_code,
+                        'active_app_referenceno' => $reference_no,
+                        'registration_ref_no' => $reference_no,
+                    );
+                } else {
+                    $portal_status_id = 11;
+                    $product_status_id = 6;
+                    $application_status_id = 7;
+                    $qry->update(array('application_status_id' => 7));
+                    $params['certificate_no'] = '';
+                    $params['expiry_date'] = null;
+                    $params['appvalidity_status_id'] = 3;
+                    $params['appregistration_status_id'] = 3;
+                    $registration_data = array(
+                        'tra_product_id' => $app_details->product_id,
+                        'status_id' => 7,
+                        'validity_status_id' => 3,
+                        'registration_status_id' => 3,
+                        'approval_date' => $approval_date,
+                        'reg_applicant_id' => $applicant_id,
+                        'reg_local_agent_id' => $local_agent_id,
+                        'active_application_code' => $application_code,
+                        'active_app_referenceno' => $reference_no,
+                        'registration_ref_no' => $reference_no
+                    );
+                }
 
-                    }
-                    else{
-                        $params['expiry_date'] = '';
-                    }
-                     $codes_array = $this->getProductApplicationReferenceCodes($app_details);
-                
-//zone_id
-                    $ProductUpdateParams['certificate_issue_date'] = $approval_date;
-                    if (validateIsNumeric($id)) {
-                        //update
-                        $where = array(
-                            'id' => $id
-                        );
-                        $params['dola'] = Carbon::now();
-                        $params['altered_by'] = $user_id;
-                        $prev_data = getPreviousRecords('tra_approval_recommendations', $where);
-                        if ($prev_data['success'] == false) {
-                            return \response()->json($prev_data);
-                        }
-                        $prev_data_results = $prev_data['results'];
-                        $prev_decision_id = $prev_data_results[0]['decision_id'];
-                        $certificate_no = $prev_data_results[0]['decision_id'];
-                        $prev_data_results[0]['record_id'] = $id;
-                        $prev_data_results[0]['update_by'] = $user_id;
-                        $prev_data_results[0]['recommendation_id'] = $prev_data_results[0]['id'];
-                        unset($prev_data_results[0]['id']);
-    
-                        //permits no formats ref id 
-                       
-                        DB::table('tra_approval_recommendations_log')
-                            ->insert($prev_data_results);
-                        if ($decision_id == 1 || $decision_id == 2) {
-                            $product_status_id = 6;
-                            $portal_status_id = 10;
-                            $application_status_id = 6;
-                            $qry->update(array('application_status_id' => 6));
-                            //permit
-                            if ($prev_decision_id != 1) {
-                                
-								
-                                 $certificate_data = generateApplicationCertificateNumber($application_id, $table_name, $sub_module_id,  2, $codes_array, $process_id, $zone_id, $user_id,$module_id,$section_id);
-								if ($certificate_data['success'] == false) {
-									echo json_encode($certificate_data);
-									exit();
-								}
-								
-								$certificate_no = $certificate_data['certificate_no'];
+                $res = insertRecord('tra_approval_recommendations', $params, $user_id);
 
-							   $params['certificate_no'] = $certificate_no;
+                $id = $res['record_id'];
+            }
+            //save the provisional or reject details 
+            $permit_id = $id;
+            if ($decision_id == 2 || $decision_id == 3) {
+                funcSaveProvisionalRejectionDetails($request, $permit_id, $decision_id, $application_id, $application_code, $user_id);
+            }
 
-                            }
-							$params['appvalidity_status_id'] = 2;
-                            $params['appregistration_status_id'] = 2;
-                            
-							$registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                        'status_id'=>6,
-                                                        'validity_status_id'=>2,
-                                                        'registration_status_id'=>2,
-                                                        'registration_date'=>$approval_date,
-                                                        'approval_date'=>$approval_date,
-                                                        'expiry_date'=>$expiry_date,
-                                                        'registration_no'=>$certificate_no,
-														'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id,
-                                                        'active_application_code'=>$application_code,
-                                                        'active_app_referenceno'=>$reference_no,
-                                                        'registration_ref_no'=>$reference_no,
-                                                    );
-                        } else {
-                            $product_status_id = 3;
-                            $portal_status_id = 11;
-                            $application_status_id = 3;
-                            $qry->update(array('application_status_id' => 7));
-                            $params['certificate_no'] = null;
-                            $params['appvalidity_status_id'] = 3;
-                            $params['appregistration_status_id'] = 3;
-                        
-							 $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                    'status_id'=>7,
-                                                    'validity_status_id'=>3,
-                                                    'registration_status_id'=>3,
-                                                    'approval_date'=>$approval_date,
-													'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id,
-													'active_application_code'=>$application_code,
-                                                     'active_app_referenceno'=>$reference_no,
-                                                     'registration_ref_no'=>$reference_no
-                                                );
-                        }
-                        $res = updateRecord('tra_approval_recommendations', $prev_data['results'], $where, $params, $user_id);
-                        
-                    } else {
-                        //insert
-                    
-                        $params['created_on'] = Carbon::now();
-                        $params['created_by'] = $user_id;
-                        if ($decision_id == 1 || $decision_id == 2) {
-                            $portal_status_id = 10;
-                            $product_status_id = 6;
-                            //permits
-                            $application_status_id = 6;
-                            $certificate_data = generateApplicationCertificateNumber($application_id, $table_name, $sub_module_id,  2, $codes_array, $process_id, $zone_id, $user_id,$module_id,$section_id);
-                            if ($certificate_data['success'] == false) {
-                                echo json_encode($certificate_data);
-                                exit();
-                            }
-                            
-                            $certificate_no = $certificate_data['certificate_no'];
 
-                           $params['certificate_no'] = $certificate_no;
-                           if($decision_id == 1){//set the expiration date as defined by the system configurations
-                                $expiry_date = getApplicationExpiryDate($approval_date,$sub_module_id,$module_id,$section_id);
-                                $params['expiry_date'] = $expiry_date ;
-                            }//else{//get the expiration date as specified by the manager
-                                //$params['expiry_date'] = $expiry_date ;
-                            //}
-                            $params['appvalidity_status_id'] = 2;
-                            $params['appregistration_status_id'] = 2;
-                            $qry->update(array('application_status_id' => 6));
-                            $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                        'status_id'=>6,
-                                                        'validity_status_id'=>2,
-                                                        'registration_status_id'=>2,
-                                                        'registration_date'=>$approval_date,
-                                                        'approval_date'=>$approval_date,
-                                                        'expiry_date'=>$expiry_date,
-                                                        'registration_no'=>$certificate_no,
-                                                        'active_application_code'=>$application_code,
-                                                        'active_app_referenceno'=>$reference_no,
-                                                        'registration_ref_no'=>$reference_no,
-                                                    );
+            $where_statement = array('tra_product_id' => $app_details->product_id);
 
-                        } else {
-                            $portal_status_id = 11;
-                            $product_status_id = 6;
-                            $application_status_id = 7;
-                            $qry->update(array('application_status_id' => 7));
-                            $params['certificate_no'] = '';
-                            $params['expiry_date'] = null;
-							 $params['appvalidity_status_id'] = 3;
-                            $params['appregistration_status_id'] = 3;
-                            $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                    'status_id'=>7,
-                                                    'validity_status_id'=>3,
-                                                    'registration_status_id'=>3,
-                                                    'approval_date'=>$approval_date,
-													'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id,
-													'active_application_code'=>$application_code,
-                                                     'active_app_referenceno'=>$reference_no,
-                                                     'registration_ref_no'=>$reference_no
-                                                );
-                            
-                        }
-                        
-                        $res = insertRecord('tra_approval_recommendations', $params, $user_id);
-                    
-                        $id = $res['record_id'];
+            $res = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, $where_statement, $user_id);
 
-                    }
-                    //save the provisional or reject details 
-                    $permit_id = $id;
-                    if($decision_id == 2 || $decision_id == 3){
-                        funcSaveProvisionalRejectionDetails($request,$permit_id,$decision_id,$application_id, $application_code,$user_id);
+            //update Portal Status
+            updatePortalApplicationStatusWithCode($application_code, 'wb_product_applications', $portal_status_id);
+            if ($decision_id == 1  || $decision_id == 2) {
+                $message = $this->getProductApprovalTemplate($app_details->section_id, $app_details->brand_name, $app_details->sub_module_id, $app_details->reference_no, $certificate_no, $approval_date, $application_code);
+                //sendMailNotification($app_details->applicant_name, $app_details->applicant_email,'Approval Recommendation',$message);
 
-                    }
-                   
+            }
+            //finally update the reqistered products details
+            if ($res['success']) {
 
-                    $where_statement = array('tra_product_id'=>$app_details->product_id);
-                        
-                    $res = saveApplicationRegistrationDetails('tra_registered_products',$registration_data,$where_statement,$user_id);
-                    
-                    //update Portal Status
-                    updatePortalApplicationStatusWithCode($application_code, 'wb_product_applications',$portal_status_id);
-						if($decision_id == 1  || $decision_id == 2){
-								$message = $this->getProductApprovalTemplate($app_details->section_id,$app_details->brand_name,$app_details->sub_module_id,$app_details->reference_no,$certificate_no,$approval_date,$application_code);
-								 //sendMailNotification($app_details->applicant_name, $app_details->applicant_email,'Approval Recommendation',$message);
+                $app_data =  array(
+                    'permit_id' => $id,
+                    'reg_product_id' => $res['record_id'],
+                    'application_status_id' => $application_status_id,
+                    'dola' => Carbon::now(),
+                    'altered_by' => $user_id
+                );
 
-							}
-                    //finally update the reqistered products details
-                    if($res['success']){
+                $app_where = array('id' => $application_id);
 
-                        $app_data =  array('permit_id' => $id, 
-                                            'reg_product_id' => $res['record_id'], 
-                                            'application_status_id'=>$application_status_id,
-                                            'dola' => Carbon::now(),
-                                            'altered_by' => $user_id);
+                $appprev_data = getPreviousRecords('tra_product_applications', $app_where);
 
-                        $app_where = array('id'=>$application_id);
+                $res = updateRecord('tra_product_applications', $appprev_data['results'], $app_where, $app_data, $user_id);
 
-                        $appprev_data = getPreviousRecords('tra_product_applications', $app_where);
+                //update applicaiton registration statuses
 
-                         $res = updateRecord('tra_product_applications', $appprev_data['results'], $app_where,$app_data, $user_id);
-
-                        //update applicaiton registration statuses
-                        
-                    }
-                    
+            }
         }, 5);
         return $res;
-
     }
-	//public function 
+    //public function 
     public function saveProductApplicationRenewalRecommendationDetails($application_id, $application_code, $table_name, $request, $res)
     {
-     //   $table_name = $request->input('table_name');
-       // $application_id = $request->input('application_id');
-      //  $application_code = $request->input('application_code');
+        //   $table_name = $request->input('table_name');
+        // $application_id = $request->input('application_id');
+        //  $application_code = $request->input('application_code');
         $reg_product_id = $request->input('reg_product_id');
-        
-        $qry = DB::table($table_name.'  as t1')
-            ->join('tra_product_information as t2','t1.product_id','=','t2.id')
-			->leftJoin('wb_trader_account as t3', 't1.applicant_id', 't3.id')
-			->leftJoin('tra_approval_recommendations as t4', 't1.application_code', 't4.application_code')
-			->select('t1.*', 't3.*','t2.brand_name', 't3.name as applicant_name','t4.id as recommendation_id', 't3.email as applicant_email', 't1.id as application_id')
+
+        $qry = DB::table($table_name . '  as t1')
+            ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
+            ->leftJoin('wb_trader_account as t3', 't1.applicant_id', 't3.id')
+            ->leftJoin('tra_approval_recommendations as t4', 't1.application_code', 't4.application_code')
+            ->select('t1.*', 't3.*', 't2.brand_name', 't3.name as applicant_name', 't4.id as recommendation_id', 't3.email as applicant_email', 't1.id as application_id')
             ->where('t1.application_code', $application_code);
         $app_details = $qry->first();
         if (is_null($app_details)) {
@@ -1361,14 +1334,14 @@ if($table_name == ''){
             );
             return $res;
         }
-      
-           
+
+
         $res = array();
         try {
-            
-            DB::transaction(function () use ($qry, $application_id, $application_code, $table_name, $request, $app_details,$reg_product_id, &$res) {
+
+            DB::transaction(function () use ($qry, $application_id, $application_code, $table_name, $request, $app_details, $reg_product_id, &$res) {
                 $ProductUpdateParams = array();
-              //  $id = $request->input('recommendation_id');
+                //  $id = $request->input('recommendation_id');
                 $process_id = $request->input('process_id');
                 $workflow_stage_id = $request->input('workflow_stage_id');
                 $decision_id =  $request->input('decision_id');
@@ -1378,29 +1351,29 @@ if($table_name == ''){
                 $expiry_date = $request->input('expiry_date');
                 $dg_signatory = $request->input('dg_signatory');
                 $signatory = $request->input('permit_signatory');
- 
-                $prev_product_id= $request->input('prev_product_id');
-               $product_id =  $app_details->product_id;
-               $reference_no =  $app_details->reference_no;
-               $reg_product_id =  $app_details->reg_product_id;
-               $id =  $app_details->recommendation_id;
-               $application_id =  $app_details->application_id;
-               $applicant_id =  $app_details->applicant_id;
-               $local_agent_id =  $app_details->local_agent_id;
+
+                $prev_product_id = $request->input('prev_product_id');
+                $product_id =  $app_details->product_id;
+                $reference_no =  $app_details->reference_no;
+                $reg_product_id =  $app_details->reg_product_id;
+                $id =  $app_details->recommendation_id;
+                $application_id =  $app_details->application_id;
+                $applicant_id =  $app_details->applicant_id;
+                $local_agent_id =  $app_details->local_agent_id;
 
                 $user_id = $this->user_id;
 
                 $sub_module_id = $app_details->sub_module_id;
                 $module_id = $app_details->module_id;
                 $section_id = $app_details->section_id;
-        
+
                 if ($dg_signatory == 1) {
                     $permit_signatory = getPermitSignatory($process_id);
                 } else {
                     $permit_signatory = $signatory;
                 }
                 //get the previous produt registration
-                
+
                 $params = array(
                     'application_id' => $application_id,
                     'application_code' => $application_code,
@@ -1412,196 +1385,191 @@ if($table_name == ''){
                     'dg_signatory' => $dg_signatory,
                     'permit_signatory' => $permit_signatory
                 );
-              
-                if(validateIsNumeric($id)) {
-                            //update prev_data_results
-                            $where = array(
-                                'id' => $id
-                            );
-                            $params['dola'] = Carbon::now();
-                            $params['altered_by'] = $user_id;
 
-                            $prev_data = getPreviousRecords('tra_approval_recommendations', $where);
-                            
-                            if ($prev_data['success'] == false) {
-                                return \response()->json($prev_data);
-                            }
-                            $prev_data_results = $prev_data['results'];
-                          $prev_decision_id = $prev_data_results[0]['decision_id'];
-                              $prev_data_results[0]['record_id'] = $id;
-                            $prev_data_results[0]['update_by'] = $user_id;
-                            $prev_data_results[0]['recommendation_id'] = $prev_data_results[0]['id'];
-                            unset($prev_data_results[0]['id']);
-                            
-                            //permits no formats ref id 
-                        
-                            DB::table('tra_approval_recommendations_log')
-                                ->insert($prev_data_results);
-                              
-                            if($decision_id == 1 || $decision_id == 2){
-                                $product_status_id = 6;
-                                $application_status_id = 6;
-                                //permit
-                                if ($prev_decision_id != 1) {
-                                 //   need to get the prev data
-                                    
-                                    $where_statement = array('t1.tra_product_id'=>$product_id); 
-                                 
-                                    $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
-                                   
-                                    $prev_product_id = $prev_productreg->prev_product_id;
+                if (validateIsNumeric($id)) {
+                    //update prev_data_results
+                    $where = array(
+                        'id' => $id
+                    );
+                    $params['dola'] = Carbon::now();
+                    $params['altered_by'] = $user_id;
 
-                                    $prev_productexpirydate =  $prev_productreg->expiry_date;
-                                   
-                                    $product_expirydate = getApplicationExpiryDate($prev_productexpirydate,$sub_module_id,$module_id,$section_id);
-                                   $expiry_date = getApplicationExpiryDate($prev_productexpirydate,$sub_module_id,$module_id,$section_id);
-                                    $params['expiry_date'] =  $expiry_date;
+                    $prev_data = getPreviousRecords('tra_approval_recommendations', $where);
 
-                                    $params['certificate_issue_date'] = $prev_productexpirydate;
+                    if ($prev_data['success'] == false) {
+                        return \response()->json($prev_data);
+                    }
+                    $prev_data_results = $prev_data['results'];
+                    $prev_decision_id = $prev_data_results[0]['decision_id'];
+                    $prev_data_results[0]['record_id'] = $id;
+                    $prev_data_results[0]['update_by'] = $user_id;
+                    $prev_data_results[0]['recommendation_id'] = $prev_data_results[0]['id'];
+                    unset($prev_data_results[0]['id']);
 
-                                    $params['certificate_no'] = $prev_productreg->certificate_no;
-                                    $certificate_no = $prev_productreg->certificate_no;
-                                     $params['appvalidity_status_id'] = 2;
-									$params['appregistration_status_id'] = 2;
-							
-                                    $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                                'status_id'=>$prev_productreg->status_id,
-                                                                'validity_status_id'=>$prev_productreg->validity_status_id,
-                                                                'registration_status_id'=>$prev_productreg->registration_status_id,
-                                                                'prev_product_id'=>$prev_product_id,
-                                                                'registration_date'=>$prev_productreg->approval_date,
-																'approval_date'=>$approval_date,
-																'expiry_date'=>$expiry_date,
-																'registration_no'=>$prev_productreg->certificate_no,
-																'active_application_code'=>$application_code,
-																'active_app_referenceno'=>$reference_no,
-																'registration_ref_no'=>$reference_no,
-																'reg_applicant_id' => $applicant_id,
-																'reg_local_agent_id' => $local_agent_id,
-                                                            );
-                                    $res = saveApplicationRegistrationDetails('tra_registered_products',$registration_data,array('id'=>$reg_product_id),$user_id);
-                             
-                                }
-                               
-                            } else {
-                               
-                                $application_status_id = 7;
-                                $params['certificate_no'] = null;
-								   $params['appvalidity_status_id'] = 3;
-									$params['appregistration_status_id'] = 3;
-                                $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                        'status_id'=>7,
-                                                        'validity_status_id'=>3,
-                                                        'registration_status_id'=>3,
-                                                        'approval_date'=>$approval_date,
-														'active_application_code'=>$application_code,
-                                                        'active_app_referenceno'=>$reference_no,
-														'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id,
-                                                    );
-                                 $res = saveApplicationRegistrationDetails('tra_registered_products',$registration_data,array('id'=>$reg_product_id),$user_id);
-                             
-                            }
-                                 
-                            $res = updateRecord('tra_approval_recommendations', $prev_data['results'], $where, $params, $user_id);
-                            
-                        } else {
-                            //insert
-                          
-                            $application_status_id = 6;
-                            $where_statement = array('t1.id'=>$reg_product_id);
+                    //permits no formats ref id 
+
+                    DB::table('tra_approval_recommendations_log')
+                        ->insert($prev_data_results);
+
+                    if ($decision_id == 1 || $decision_id == 2) {
+                        $product_status_id = 6;
+                        $application_status_id = 6;
+                        //permit
+                        if ($prev_decision_id != 1) {
+                            //   need to get the prev data
+
+                            $where_statement = array('t1.tra_product_id' => $product_id);
+
                             $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
-						
+
                             $prev_product_id = $prev_productreg->prev_product_id;
-						
-                            if($decision_id == 1 || $decision_id == 2){
 
-                                $prev_productexpirydate =  $prev_productreg->expiry_date;
-                                $expiry_date = getApplicationExpiryDate($prev_productexpirydate,$sub_module_id,$module_id,$section_id);
-                                $params['expiry_date'] = date('Y-m-d H:i:s', strtotime($expiry_date));
+                            $prev_productexpirydate =  $prev_productreg->expiry_date;
 
-                                $params['certificate_issue_date'] = $prev_productexpirydate;
-                                $params['certificate_no'] = $prev_productreg->certificate_no;
-                                $certificate_no = $prev_productreg->certificate_no;
-                                  $params['appvalidity_status_id'] =2;
-									$params['appregistration_status_id'] = 2;
-                            
-                                        $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                        'status_id'=>$prev_productreg->status_id,
-                                                        'validity_status_id'=>2,
-                                                        'registration_status_id'=>2,
-                                                        'registration_date'=>$approval_date,
-                                                        'approval_date'=>$prev_productreg->approval_date,
-                                                        'expiry_date'=>$expiry_date,
-                                                        'registration_no'=>$prev_productreg->certificate_no,
-                                                        'active_application_code'=>$application_code,
-                                                        'active_app_referenceno'=>$reference_no,
-														'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id,
-                                                      //  'registration_ref_no'=>$prev_productreg->registration_ref_no
-                                                    );
-										
-										
-                            }else {
+                            $product_expirydate = getApplicationExpiryDate($prev_productexpirydate, $sub_module_id, $module_id, $section_id);
+                            $expiry_date = getApplicationExpiryDate($prev_productexpirydate, $sub_module_id, $module_id, $section_id);
+                            $params['expiry_date'] =  $expiry_date;
 
-                                $application_status_id = 7;
-                                $params['certificate_no'] = '';
-                                $params['expiry_date'] = null;
-								$params['appvalidity_status_id'] =3;
-								$params['appregistration_status_id'] = 3;
-                                $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                        'status_id'=>7,
-                                                        'validity_status_id'=>3,
-                                                        'registration_status_id'=>3,
-                                                        'prev_product_id'=>$prev_product_id,
-														 'approval_date'=>$approval_date,
-													'active_application_code'=>$application_code,
-                                                     'active_app_referenceno'=>$reference_no,'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id,
-                                                 
-                                                    );
+                            $params['certificate_issue_date'] = $prev_productexpirydate;
 
-                            }
-                            $res = saveApplicationRegistrationDetails('tra_registered_products',$registration_data,array('id'=>$reg_product_id),$user_id);
-                            
-                            $params['created_on'] = Carbon::now();
-                            $params['created_by'] = $user_id;
-                            $res = insertRecord('tra_approval_recommendations', $params, $user_id);
-                      
-                            $id = $res['record_id'];
-                            $app_data =  array('permit_id' => $id, 
-                                               'application_status_id'=>$application_status_id,
-                                               'dola' => Carbon::now(),
-                                               'altered_by' => $user_id);
-                            $app_where = array('id'=>$application_id);
-                            $appprev_data = getPreviousRecords('tra_product_applications', $app_where);
-                            $res = updateRecord('tra_product_applications', $appprev_data['results'], $app_where,$app_data, $user_id);
-                            if($decision_id == 1  || $decision_id == 2){
-								$message = $this->getProductApprovalTemplate($app_details->section_id,$app_details->brand_name,$app_details->sub_module_id,$app_details->reference_no,$certificate_no,$approval_date,$application_code);
-								 sendMailNotification($app_details->applicant_name, $app_details->applicant_email,'Approval Recommendation',$message);
+                            $params['certificate_no'] = $prev_productreg->certificate_no;
+                            $certificate_no = $prev_productreg->certificate_no;
+                            $params['appvalidity_status_id'] = 2;
+                            $params['appregistration_status_id'] = 2;
 
-							}
-							
+                            $registration_data = array(
+                                'tra_product_id' => $app_details->product_id,
+                                'status_id' => $prev_productreg->status_id,
+                                'validity_status_id' => $prev_productreg->validity_status_id,
+                                'registration_status_id' => $prev_productreg->registration_status_id,
+                                'prev_product_id' => $prev_product_id,
+                                'registration_date' => $prev_productreg->approval_date,
+                                'approval_date' => $approval_date,
+                                'expiry_date' => $expiry_date,
+                                'registration_no' => $prev_productreg->certificate_no,
+                                'active_application_code' => $application_code,
+                                'active_app_referenceno' => $reference_no,
+                                'registration_ref_no' => $reference_no,
+                                'reg_applicant_id' => $applicant_id,
+                                'reg_local_agent_id' => $local_agent_id,
+                            );
+                            $res = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, array('id' => $reg_product_id), $user_id);
                         }
-						if($decision_id == 1  || $decision_id == 2){
-								$portal_params = array(
-									'application_status_id' => 10,
-									//'reference_no' => $ref_no
-								);
-							}
-							else{
-								$portal_params = array(
-									'application_status_id' => 11,
-									//'reference_no' => $ref_no
-								);
-							}
-							
-							$portal_where = array(
-								'application_code' => $application_code
-							);
-							
-						updatePortalParams('wb_product_applications', $portal_params, $portal_where);
-						   
+                    } else {
+
+                        $application_status_id = 7;
+                        $params['certificate_no'] = null;
+                        $params['appvalidity_status_id'] = 3;
+                        $params['appregistration_status_id'] = 3;
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => 7,
+                            'validity_status_id' => 3,
+                            'registration_status_id' => 3,
+                            'approval_date' => $approval_date,
+                            'active_application_code' => $application_code,
+                            'active_app_referenceno' => $reference_no,
+                            'reg_applicant_id' => $applicant_id,
+                            'reg_local_agent_id' => $local_agent_id,
+                        );
+                        $res = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, array('id' => $reg_product_id), $user_id);
+                    }
+
+                    $res = updateRecord('tra_approval_recommendations', $prev_data['results'], $where, $params, $user_id);
+                } else {
+                    //insert
+
+                    $application_status_id = 6;
+                    $where_statement = array('t1.id' => $reg_product_id);
+                    $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
+
+                    $prev_product_id = $prev_productreg->prev_product_id;
+
+                    if ($decision_id == 1 || $decision_id == 2) {
+
+                        $prev_productexpirydate =  $prev_productreg->expiry_date;
+                        $expiry_date = getApplicationExpiryDate($prev_productexpirydate, $sub_module_id, $module_id, $section_id);
+                        $params['expiry_date'] = date('Y-m-d H:i:s', strtotime($expiry_date));
+
+                        $params['certificate_issue_date'] = $prev_productexpirydate;
+                        $params['certificate_no'] = $prev_productreg->certificate_no;
+                        $certificate_no = $prev_productreg->certificate_no;
+                        $params['appvalidity_status_id'] = 2;
+                        $params['appregistration_status_id'] = 2;
+
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => $prev_productreg->status_id,
+                            'validity_status_id' => 2,
+                            'registration_status_id' => 2,
+                            'registration_date' => $approval_date,
+                            'approval_date' => $prev_productreg->approval_date,
+                            'expiry_date' => $expiry_date,
+                            'registration_no' => $prev_productreg->certificate_no,
+                            'active_application_code' => $application_code,
+                            'active_app_referenceno' => $reference_no,
+                            'reg_applicant_id' => $applicant_id,
+                            'reg_local_agent_id' => $local_agent_id,
+                            //  'registration_ref_no'=>$prev_productreg->registration_ref_no
+                        );
+                    } else {
+
+                        $application_status_id = 7;
+                        $params['certificate_no'] = '';
+                        $params['expiry_date'] = null;
+                        $params['appvalidity_status_id'] = 3;
+                        $params['appregistration_status_id'] = 3;
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => 7,
+                            'validity_status_id' => 3,
+                            'registration_status_id' => 3,
+                            'prev_product_id' => $prev_product_id,
+                            'approval_date' => $approval_date,
+                            'active_application_code' => $application_code,
+                            'active_app_referenceno' => $reference_no, 'reg_applicant_id' => $applicant_id,
+                            'reg_local_agent_id' => $local_agent_id,
+
+                        );
+                    }
+                    $res = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, array('id' => $reg_product_id), $user_id);
+
+                    $params['created_on'] = Carbon::now();
+                    $params['created_by'] = $user_id;
+                    $res = insertRecord('tra_approval_recommendations', $params, $user_id);
+
+                    $id = $res['record_id'];
+                    $app_data =  array(
+                        'permit_id' => $id,
+                        'application_status_id' => $application_status_id,
+                        'dola' => Carbon::now(),
+                        'altered_by' => $user_id
+                    );
+                    $app_where = array('id' => $application_id);
+                    $appprev_data = getPreviousRecords('tra_product_applications', $app_where);
+                    $res = updateRecord('tra_product_applications', $appprev_data['results'], $app_where, $app_data, $user_id);
+                    if ($decision_id == 1  || $decision_id == 2) {
+                        $message = $this->getProductApprovalTemplate($app_details->section_id, $app_details->brand_name, $app_details->sub_module_id, $app_details->reference_no, $certificate_no, $approval_date, $application_code);
+                        sendMailNotification($app_details->applicant_name, $app_details->applicant_email, 'Approval Recommendation', $message);
+                    }
+                }
+                if ($decision_id == 1  || $decision_id == 2) {
+                    $portal_params = array(
+                        'application_status_id' => 10,
+                        //'reference_no' => $ref_no
+                    );
+                } else {
+                    $portal_params = array(
+                        'application_status_id' => 11,
+                        //'reference_no' => $ref_no
+                    );
+                }
+
+                $portal_where = array(
+                    'application_code' => $application_code
+                );
+
+                updatePortalParams('wb_product_applications', $portal_params, $portal_where);
             }, 5);
         } catch (\Exception $exception) {
             $res = array(
@@ -1616,15 +1584,16 @@ if($table_name == ''){
         }
         return $res;
     }
-	public function saveProductApplicationWithdrawalReversalRecommendationDetails(Request $request){
-		
+    public function saveProductApplicationWithdrawalReversalRecommendationDetails(Request $request)
+    {
+
         $table_name = $request->input('table_name');
         $application_id = $request->input('application_id');
         $application_code = $request->input('application_code');
         $reg_product_id = $request->input('reg_product_id');
-       
-        $qry = DB::table($table_name.'  as t1')
-            ->join('tra_product_information as t2','t1.product_id','=','t2.id')
+
+        $qry = DB::table($table_name . '  as t1')
+            ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
             ->where('t1.id', $application_id);
         $app_details = $qry->first();
         if (is_null($app_details)) {
@@ -1634,18 +1603,18 @@ if($table_name == ''){
             );
             return $res;
         }
-        $qry = DB::table($table_name.'  as t1')
-            ->join('tra_product_information as t2','t1.product_id','=','t2.id')
-			->leftJoin('wb_trader_account as t3', 't1.applicant_id','=','t3.id')
-			->select('t1.*', 't2.*','t3.name as applicant_name', 't3.email as applicant_email')
+        $qry = DB::table($table_name . '  as t1')
+            ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
+            ->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
+            ->select('t1.*', 't2.*', 't3.name as applicant_name', 't3.email as applicant_email')
             ->where('t1.id', $application_id);
         $res = array();
         try {
-           
-            DB::transaction(function () use ($qry, $application_id, $application_code, $table_name, $request, $app_details,$reg_product_id, &$res) {
+
+            DB::transaction(function () use ($qry, $application_id, $application_code, $table_name, $request, $app_details, $reg_product_id, &$res) {
                 $ProductUpdateParams = array();
-				$application_details = $qry->first();
-				
+                $application_details = $qry->first();
+
                 $id = $request->input('recommendation_id');
                 $process_id = $request->input('process_id');
                 $workflow_stage_id = $request->input('workflow_stage_id');
@@ -1656,9 +1625,9 @@ if($table_name == ''){
                 $expiry_date = $request->input('expiry_date');
                 $dg_signatory = $request->input('dg_signatory');
                 $signatory = $request->input('permit_signatory');
-				$reference_no = $app_details->reference_no;
-				$applicant_id = $app_details->applicant_id;
-				$local_agent_id = $app_details->local_agent_id;
+                $reference_no = $app_details->reference_no;
+                $applicant_id = $app_details->applicant_id;
+                $local_agent_id = $app_details->local_agent_id;
                 $user_id = $this->user_id;
                 $certificate_no = '';
                 if ($dg_signatory == 1) {
@@ -1668,7 +1637,7 @@ if($table_name == ''){
                 }
                 //get the previous produt registration
 
-               
+
                 $params = array(
                     'application_id' => $application_id,
                     'application_code' => $application_code,
@@ -1680,138 +1649,139 @@ if($table_name == ''){
                     'dg_signatory' => $dg_signatory,
                     'permit_signatory' => $permit_signatory
                 );
-                
-                        if (validateIsNumeric($id)) {
-                            //update
-                            $where = array(
-                                'id' => $id
-                            );
-                            $params['dola'] = Carbon::now();
-                            $params['altered_by'] = $user_id;
 
-                            $prev_data = getPreviousRecords('tra_approval_recommendations', $where);
-                            
-                            if ($prev_data['success'] == false) {
-                                return \response()->json($prev_data);
-                            }
-                            $prev_data_results = $prev_data['results'];
-                            $prev_decision_id = $prev_data_results[0]['decision_id'];
-                            $prev_data_results[0]['record_id'] = $id;
-                            $prev_data_results[0]['update_by'] = $user_id;
-                            $prev_data_results[0]['recommendation_id'] = $prev_data_results[0]['id'];
-                            unset($prev_data_results[0]['id']);
-                            
-                            //permits no formats ref id 
-                        
-                            DB::table('tra_approval_recommendations_log')
-                                ->insert($prev_data_results);
-                           
-                                $product_status_id = 18;
-                                $application_status_id = 18;
-                                //permit
-                                if ($prev_decision_id != 1) {
-                                    $where_statement = array('t1.id'=>$reg_product_id);
-                                    $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
-                                    $prev_product_id = $prev_productreg->prev_product_id;
-                                    
-                                    $params['expiry_date'] = $prev_productreg->expiry_date;
-                                    $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
-                                    $params['certificate_no'] = $prev_productreg->certificate_no;
-                                    $certificate_no = $prev_productreg->certificate_no;
-									 $params['appvalidity_status_id'] =$prev_productreg->validity_status_id;
-									$params['appregistration_status_id'] = $prev_productreg->registration_status_id;
-									
-                                    $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                                'status_id'=>$prev_productreg->status_id,
-                                                                'validity_status_id'=>2,
-                                                                'registration_status_id'=>2,
-                                                                'prev_product_id'=>$prev_product_id,
-                                                                'registration_date'=>$prev_productreg->approval_date,
-																 'active_application_code'=>$application_code,
-																'active_app_referenceno'=>$reference_no,
-																'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id
-                                                            );
-                                    $res = saveApplicationRegistrationDetails('tra_registered_products',$registration_data,array('id'=>$reg_product_id),$user_id);
-                                   
-                                }
-                           
-                            
-                            $res = updateRecord('tra_approval_recommendations', $prev_data['results'], $where, $params, $user_id);
-                            
-                        } else {
-                            //insert
-                           $product_status_id = 18;
-                                $application_status_id = 18;
-                            $where_statement = array('t1.id'=>$reg_product_id);
-                            $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
-                            $prev_product_id = $prev_productreg->prev_product_id;
-                           
-                            if($decision_id == 1  || $decision_id == 2){
-								$certificate_no = $prev_productreg->certificate_no;
-                                $params['expiry_date'] = $prev_productreg->expiry_date;
-                                $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
-                                $params['certificate_no'] = $prev_productreg->certificate_no;
-                                 
-									
-									 $params['appvalidity_status_id'] =$prev_productreg->validity_status_id;
-									$params['appregistration_status_id'] = $prev_productreg->registration_status_id;
-									
-                                $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                            'status_id'=>$prev_productreg->status_id,
-                                                            'validity_status_id'=>2,
-                                                                'registration_status_id'=>2,
-                                                            'prev_product_id'=>$prev_product_id,
-                                                            'registration_date'=>$prev_productreg->approval_date,
-															'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id
-															//'active_application_code'=>$prev_productreg->active_application_code,
-														//		'active_app_referenceno'=>$prev_productreg->active_app_referenceno
-                                                        );
-                                $res = saveApplicationRegistrationDetails('tra_registered_products',$registration_data,array('id'=>$reg_product_id),$user_id);
-                                //finally update the reqistered products details
-                                               
-                            }else {
+                if (validateIsNumeric($id)) {
+                    //update
+                    $where = array(
+                        'id' => $id
+                    );
+                    $params['dola'] = Carbon::now();
+                    $params['altered_by'] = $user_id;
 
-                                $application_status_id = 7;
-                                $params['certificate_no'] = '';
-                                $params['expiry_date'] = null;
-$params['appvalidity_status_id'] =3;
-									$params['appregistration_status_id'] = 3;
-									
-                                $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                        'status_id'=>7,'validity_status_id'=>3,
-                                                                'registration_status_id'=>4,
-                                                        'approval_date'=>$approval_date,
-														
-															'active_application_code'=>$prev_productreg->active_application_code,
-																'active_app_referenceno'=>$prev_productreg->active_app_referenceno
-                                                    );
+                    $prev_data = getPreviousRecords('tra_approval_recommendations', $where);
 
-                                //no update on the registration statuses 
+                    if ($prev_data['success'] == false) {
+                        return \response()->json($prev_data);
+                    }
+                    $prev_data_results = $prev_data['results'];
+                    $prev_decision_id = $prev_data_results[0]['decision_id'];
+                    $prev_data_results[0]['record_id'] = $id;
+                    $prev_data_results[0]['update_by'] = $user_id;
+                    $prev_data_results[0]['recommendation_id'] = $prev_data_results[0]['id'];
+                    unset($prev_data_results[0]['id']);
 
-                            }
+                    //permits no formats ref id 
 
-                            $params['created_on'] = Carbon::now();
-                            $params['created_by'] = $user_id;
-                            $res = insertRecord('tra_approval_recommendations', $params, $user_id);
-                            $id = $res['record_id'];
-                            $app_data =  array('permit_id' => $id, 
-                                               'application_status_id'=>$application_status_id,
-                                               'dola' => Carbon::now(),
-                                               'altered_by' => $user_id);
-                            $app_where = array('id'=>$application_id);
-                            $appprev_data = getPreviousRecords('tra_product_applications', $app_where);
-                            $res = updateRecord('tra_product_applications', $appprev_data['results'], $app_where,$app_data, $user_id);
-							//send notifications 
-							// applicant_name', 't3.email as applicant_email
-							if($decision_id == 1  || $decision_id == 2){
-								$message = $this->getProductApprovalTemplate($application_details->section_id,$application_details->brand_name,$application_details->sub_module_id,$application_details->reference_no,$certificate_no,$approval_date,$application_code);
-								 sendMailNotification($application_details->applicant_name, $application_details->applicant_email,'Approval Recommendation',$message);
+                    DB::table('tra_approval_recommendations_log')
+                        ->insert($prev_data_results);
 
-							}
-                         
-                        }
+                    $product_status_id = 18;
+                    $application_status_id = 18;
+                    //permit
+                    if ($prev_decision_id != 1) {
+                        $where_statement = array('t1.id' => $reg_product_id);
+                        $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
+                        $prev_product_id = $prev_productreg->prev_product_id;
+
+                        $params['expiry_date'] = $prev_productreg->expiry_date;
+                        $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
+                        $params['certificate_no'] = $prev_productreg->certificate_no;
+                        $certificate_no = $prev_productreg->certificate_no;
+                        $params['appvalidity_status_id'] = $prev_productreg->validity_status_id;
+                        $params['appregistration_status_id'] = $prev_productreg->registration_status_id;
+
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => $prev_productreg->status_id,
+                            'validity_status_id' => 2,
+                            'registration_status_id' => 2,
+                            'prev_product_id' => $prev_product_id,
+                            'registration_date' => $prev_productreg->approval_date,
+                            'active_application_code' => $application_code,
+                            'active_app_referenceno' => $reference_no,
+                            'reg_applicant_id' => $applicant_id,
+                            'reg_local_agent_id' => $local_agent_id
+                        );
+                        $res = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, array('id' => $reg_product_id), $user_id);
+                    }
+
+
+                    $res = updateRecord('tra_approval_recommendations', $prev_data['results'], $where, $params, $user_id);
+                } else {
+                    //insert
+                    $product_status_id = 18;
+                    $application_status_id = 18;
+                    $where_statement = array('t1.id' => $reg_product_id);
+                    $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
+                    $prev_product_id = $prev_productreg->prev_product_id;
+
+                    if ($decision_id == 1  || $decision_id == 2) {
+                        $certificate_no = $prev_productreg->certificate_no;
+                        $params['expiry_date'] = $prev_productreg->expiry_date;
+                        $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
+                        $params['certificate_no'] = $prev_productreg->certificate_no;
+
+
+                        $params['appvalidity_status_id'] = $prev_productreg->validity_status_id;
+                        $params['appregistration_status_id'] = $prev_productreg->registration_status_id;
+
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => $prev_productreg->status_id,
+                            'validity_status_id' => 2,
+                            'registration_status_id' => 2,
+                            'prev_product_id' => $prev_product_id,
+                            'registration_date' => $prev_productreg->approval_date,
+                            'reg_applicant_id' => $applicant_id,
+                            'reg_local_agent_id' => $local_agent_id
+                            //'active_application_code'=>$prev_productreg->active_application_code,
+                            //		'active_app_referenceno'=>$prev_productreg->active_app_referenceno
+                        );
+                        $res = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, array('id' => $reg_product_id), $user_id);
+                        //finally update the reqistered products details
+
+                    } else {
+
+                        $application_status_id = 7;
+                        $params['certificate_no'] = '';
+                        $params['expiry_date'] = null;
+                        $params['appvalidity_status_id'] = 3;
+                        $params['appregistration_status_id'] = 3;
+
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => 7, 'validity_status_id' => 3,
+                            'registration_status_id' => 4,
+                            'approval_date' => $approval_date,
+
+                            'active_application_code' => $prev_productreg->active_application_code,
+                            'active_app_referenceno' => $prev_productreg->active_app_referenceno
+                        );
+
+                        //no update on the registration statuses 
+
+                    }
+
+                    $params['created_on'] = Carbon::now();
+                    $params['created_by'] = $user_id;
+                    $res = insertRecord('tra_approval_recommendations', $params, $user_id);
+                    $id = $res['record_id'];
+                    $app_data =  array(
+                        'permit_id' => $id,
+                        'application_status_id' => $application_status_id,
+                        'dola' => Carbon::now(),
+                        'altered_by' => $user_id
+                    );
+                    $app_where = array('id' => $application_id);
+                    $appprev_data = getPreviousRecords('tra_product_applications', $app_where);
+                    $res = updateRecord('tra_product_applications', $appprev_data['results'], $app_where, $app_data, $user_id);
+                    //send notifications 
+                    // applicant_name', 't3.email as applicant_email
+                    if ($decision_id == 1  || $decision_id == 2) {
+                        $message = $this->getProductApprovalTemplate($application_details->section_id, $application_details->brand_name, $application_details->sub_module_id, $application_details->reference_no, $certificate_no, $approval_date, $application_code);
+                        sendMailNotification($application_details->applicant_name, $application_details->applicant_email, 'Approval Recommendation', $message);
+                    }
+                }
             }, 5);
         } catch (\Exception $exception) {
             $res = array(
@@ -1825,20 +1795,20 @@ $params['appvalidity_status_id'] =3;
             );
         }
         return $res;
-		
-	}
-	public function saveProductApplicationWithdrawalRecommendationDetails(Request $request){
-		
+    }
+    public function saveProductApplicationWithdrawalRecommendationDetails(Request $request)
+    {
+
         $table_name = $request->input('table_name');
         $application_id = $request->input('application_id');
         $application_code = $request->input('application_code');
         $reg_product_id = $request->input('reg_product_id');
-       
-        $qry = DB::table($table_name.'  as t1')
-            ->join('tra_product_information as t2','t1.product_id','=','t2.id')
+
+        $qry = DB::table($table_name . '  as t1')
+            ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
             ->where('t1.id', $application_id);
         $app_details = $qry->first();
-		//applicant_id
+        //applicant_id
         if (is_null($app_details)) {
             $res = array(
                 'success' => false,
@@ -1846,18 +1816,18 @@ $params['appvalidity_status_id'] =3;
             );
             return $res;
         }
-        $qry = DB::table($table_name.'  as t1')
-            ->join('tra_product_information as t2','t1.product_id','=','t2.id')
-			->leftJoin('wb_trader_account as t3', 't1.applicant_id','t3.id')
-			->select('t1.*', 't2.*','t3.name as applicant_name', 't3.email as applicant_email')
+        $qry = DB::table($table_name . '  as t1')
+            ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
+            ->leftJoin('wb_trader_account as t3', 't1.applicant_id', 't3.id')
+            ->select('t1.*', 't2.*', 't3.name as applicant_name', 't3.email as applicant_email')
             ->where('t1.id', $application_id);
         $res = array();
         try {
-           
-            DB::transaction(function () use ($qry, $application_id, $application_code, $table_name, $request, $app_details,$reg_product_id, &$res) {
+
+            DB::transaction(function () use ($qry, $application_id, $application_code, $table_name, $request, $app_details, $reg_product_id, &$res) {
                 $ProductUpdateParams = array();
-				$application_details = $qry->first();
-				
+                $application_details = $qry->first();
+
                 $id = $request->input('recommendation_id');
                 $process_id = $request->input('process_id');
                 $workflow_stage_id = $request->input('workflow_stage_id');
@@ -1868,10 +1838,10 @@ $params['appvalidity_status_id'] =3;
                 $expiry_date = $request->input('expiry_date');
                 $dg_signatory = $request->input('dg_signatory');
                 $signatory = $request->input('permit_signatory');
-				$reference_no = $app_details->reference_no;
-				$applicant_id = $app_details->applicant_id;
+                $reference_no = $app_details->reference_no;
+                $applicant_id = $app_details->applicant_id;
                 $user_id = $this->user_id;
-$certificate_no = '';
+                $certificate_no = '';
                 if ($dg_signatory == 1) {
                     $permit_signatory = getPermitSignatory($process_id);
                 } else {
@@ -1879,7 +1849,7 @@ $certificate_no = '';
                 }
                 //get the previous produt registration
 
-               
+
                 $params = array(
                     'application_id' => $application_id,
                     'application_code' => $application_code,
@@ -1891,155 +1861,158 @@ $certificate_no = '';
                     'dg_signatory' => $dg_signatory,
                     'permit_signatory' => $permit_signatory
                 );
-                
-                        if (validateIsNumeric($id)) {
-                            //update
-                            $where = array(
-                                'id' => $id
+
+                if (validateIsNumeric($id)) {
+                    //update
+                    $where = array(
+                        'id' => $id
+                    );
+                    $params['dola'] = Carbon::now();
+                    $params['altered_by'] = $user_id;
+
+                    $prev_data = getPreviousRecords('tra_approval_recommendations', $where);
+
+                    if ($prev_data['success'] == false) {
+                        return \response()->json($prev_data);
+                    }
+                    $prev_data_results = $prev_data['results'];
+                    $prev_decision_id = $prev_data_results[0]['decision_id'];
+                    $prev_data_results[0]['record_id'] = $id;
+                    $prev_data_results[0]['update_by'] = $user_id;
+                    $prev_data_results[0]['recommendation_id'] = $prev_data_results[0]['id'];
+                    unset($prev_data_results[0]['id']);
+
+                    //permits no formats ref id 
+
+                    DB::table('tra_approval_recommendations_log')
+                        ->insert($prev_data_results);
+
+                    $product_status_id = 18;
+                    $application_status_id = 18;
+                    //permit
+                    if ($prev_decision_id != 1) {
+                        $where_statement = array('t1.id' => $reg_product_id);
+                        $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
+                        $prev_product_id = $prev_productreg->prev_product_id;
+
+                        $params['expiry_date'] = $prev_productreg->expiry_date;
+                        $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
+                        $params['certificate_no'] = $prev_productreg->certificate_no;
+                        $certificate_no = $prev_productreg->certificate_no;
+                        $applicant_id = $prev_productreg->reg_applicant_id;
+                        $local_agent_id = $prev_productreg->reg_local_agent_id; //reg_local_agent_id
+
+                        $params['appvalidity_status_id'] = 3;
+                        $params['appregistration_status_id'] = 4;
+
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => $prev_productreg->status_id,
+                            'validity_status_id' => 3,
+                            'registration_status_id' => 4,
+                            'prev_product_id' => $prev_product_id,
+                            'registration_date' => $prev_productreg->approval_date,
+                            'active_application_code' => $application_code,
+                            'active_app_referenceno' => $reference_no,
+                            'reg_applicant_id' => $applicant_id,
+                            'reg_local_agent_id' => $local_agent_id
+                        );
+                        $res = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, array('id' => $reg_product_id), $user_id);
+                    }
+
+
+                    $res = updateRecord('tra_approval_recommendations', $prev_data['results'], $where, $params, $user_id);
+                } else {
+                    //insert
+                    $product_status_id = 18;
+                    $application_status_id = 18;
+                    $where_statement = array('t1.id' => $reg_product_id);
+                    $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
+                    $prev_product_id = $prev_productreg->prev_product_id;
+                    $local_agent_id = $prev_productreg->reg_local_agent_id; //reg_local_agent_id
+
+                    if ($decision_id == 1  || $decision_id == 2) {
+                        $certificate_no = $prev_productreg->certificate_no;
+                        $params['expiry_date'] = $prev_productreg->expiry_date;
+                        $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
+                        $params['certificate_no'] = $prev_productreg->certificate_no;
+
+
+                        $params['appvalidity_status_id'] = 3;
+                        $params['appregistration_status_id'] = 4;
+
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => $prev_productreg->status_id,
+                            'validity_status_id' => 3,
+                            'registration_status_id' => 4,
+                            'prev_product_id' => $prev_product_id,
+                            'registration_date' => $prev_productreg->approval_date,
+                            'reg_applicant_id' => $applicant_id,
+                            'reg_local_agent_id' => (isset($local_agent_id)) ? $local_agent_id : null
+                            //'active_application_code'=>$prev_productreg->active_application_code,
+                            //		'active_app_referenceno'=>$prev_productreg->active_app_referenceno
+
+                        );
+                        $res = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, array('id' => $reg_product_id), $user_id);
+                        //finally update the reqistered products details
+
+                    } else {
+
+                        $application_status_id = 7;
+                        $params['certificate_no'] = '';
+                        $params['expiry_date'] = null;
+                        $params['appvalidity_status_id'] = 3;
+                        $params['appregistration_status_id'] = 4;
+
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => 7, 'validity_status_id' => 3,
+                            'registration_status_id' => 4,
+                            'approval_date' => $approval_date,
+
+                            'active_application_code' => $prev_productreg->active_application_code,
+                            'active_app_referenceno' => $prev_productreg->active_app_referenceno
+                        );
+
+                        //no update on the registration statuses 
+
+                    }
+
+                    $params['created_on'] = Carbon::now();
+                    $params['created_by'] = $user_id;
+                    $res = insertRecord('tra_approval_recommendations', $params, $user_id);
+                    $id = $res['record_id'];
+                    $app_data =  array(
+                        'permit_id' => $id,
+                        'application_status_id' => $application_status_id,
+                        'dola' => Carbon::now(),
+                        'altered_by' => $user_id
+                    );
+                    $app_where = array('id' => $application_id);
+                    $appprev_data = getPreviousRecords('tra_product_applications', $app_where);
+                    $res = updateRecord('tra_product_applications', $appprev_data['results'], $app_where, $app_data, $user_id);
+                    //send notifications 
+                    // applicant_name', 't3.email as applicant_email
+                    if ($decision_id == 1  || $decision_id == 2) {
+                        if (validateIsNumeric($reg_product_id)) {
+                            //update all the other applications 
+                            $update_data = array(
+                                'validity_status_id' => 3,
+                                'registration_status_id' => 4,
+                                'dola' => Carbon::now()
                             );
-                            $params['dola'] = Carbon::now();
-                            $params['altered_by'] = $user_id;
 
-                            $prev_data = getPreviousRecords('tra_approval_recommendations', $where);
-                            
-                            if ($prev_data['success'] == false) {
-                                return \response()->json($prev_data);
-                            }
-                            $prev_data_results = $prev_data['results'];
-                            $prev_decision_id = $prev_data_results[0]['decision_id'];
-                            $prev_data_results[0]['record_id'] = $id;
-                            $prev_data_results[0]['update_by'] = $user_id;
-                            $prev_data_results[0]['recommendation_id'] = $prev_data_results[0]['id'];
-                            unset($prev_data_results[0]['id']);
-                            
-                            //permits no formats ref id 
-                        
-                            DB::table('tra_approval_recommendations_log')
-                                ->insert($prev_data_results);
-                           
-                                $product_status_id = 18;
-                                $application_status_id = 18;
-                                //permit
-                                if ($prev_decision_id != 1) {
-                                    $where_statement = array('t1.id'=>$reg_product_id);
-                                    $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
-                                    $prev_product_id = $prev_productreg->prev_product_id;
-                                    
-                                    $params['expiry_date'] = $prev_productreg->expiry_date;
-                                    $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
-                                    $params['certificate_no'] = $prev_productreg->certificate_no;
-                                    $certificate_no = $prev_productreg->certificate_no;
-                                    $applicant_id = $prev_productreg->reg_applicant_id;
-                                    $local_agent_id = $prev_productreg->reg_local_agent_id;//reg_local_agent_id
-                                    
-									 $params['appvalidity_status_id'] =3;
-									$params['appregistration_status_id'] = 4;
-									
-                                    $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                                'status_id'=>$prev_productreg->status_id,
-                                                                'validity_status_id'=>3,
-                                                                'registration_status_id'=>4,
-                                                                'prev_product_id'=>$prev_product_id,
-                                                                'registration_date'=>$prev_productreg->approval_date,
-																 'active_application_code'=>$application_code,
-																'active_app_referenceno'=>$reference_no,
-																'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id
-                                                            );
-                                    $res = saveApplicationRegistrationDetails('tra_registered_products',$registration_data,array('id'=>$reg_product_id),$user_id);
-                                   
-                                }
-                           
-                            
-                            $res = updateRecord('tra_approval_recommendations', $prev_data['results'], $where, $params, $user_id);
-                            
-                        } else {
-                            //insert
-                           $product_status_id = 18;
-                                $application_status_id = 18;
-                            $where_statement = array('t1.id'=>$reg_product_id);
-                            $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
-                            $prev_product_id = $prev_productreg->prev_product_id;
-                            $local_agent_id = $prev_productreg->reg_local_agent_id;//reg_local_agent_id
-                           
-                            if($decision_id == 1  || $decision_id == 2){
-								$certificate_no = $prev_productreg->certificate_no;
-                                $params['expiry_date'] = $prev_productreg->expiry_date;
-                                $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
-                                $params['certificate_no'] = $prev_productreg->certificate_no;
-                                 
-									
-									 $params['appvalidity_status_id'] =3;
-									$params['appregistration_status_id'] = 4;
-									
-                                $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                            'status_id'=>$prev_productreg->status_id,
-                                                            'validity_status_id'=>3,
-                                                                'registration_status_id'=>4,
-                                                            'prev_product_id'=>$prev_product_id,
-                                                            'registration_date'=>$prev_productreg->approval_date,
-															'reg_applicant_id' => $applicant_id,
-                                                            'reg_local_agent_id' => (isset($local_agent_id))?$local_agent_id:null
-															//'active_application_code'=>$prev_productreg->active_application_code,
-														//		'active_app_referenceno'=>$prev_productreg->active_app_referenceno
-														
-                                                        );
-                                $res = saveApplicationRegistrationDetails('tra_registered_products',$registration_data,array('id'=>$reg_product_id),$user_id);
-                                //finally update the reqistered products details
-                                               
-                            }else {
-
-                                $application_status_id = 7;
-                                $params['certificate_no'] = '';
-                                $params['expiry_date'] = null;
-$params['appvalidity_status_id'] =3;
-									$params['appregistration_status_id'] = 4;
-									
-                                $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                        'status_id'=>7,'validity_status_id'=>3,
-                                                                'registration_status_id'=>4,
-                                                        'approval_date'=>$approval_date,
-														
-															'active_application_code'=>$prev_productreg->active_application_code,
-																'active_app_referenceno'=>$prev_productreg->active_app_referenceno
-                                                    );
-
-                                //no update on the registration statuses 
-
-                            }
-
-                            $params['created_on'] = Carbon::now();
-                            $params['created_by'] = $user_id;
-                            $res = insertRecord('tra_approval_recommendations', $params, $user_id);
-                            $id = $res['record_id'];
-                            $app_data =  array('permit_id' => $id, 
-                                               'application_status_id'=>$application_status_id,
-                                               'dola' => Carbon::now(),
-                                               'altered_by' => $user_id);
-                            $app_where = array('id'=>$application_id);
-                            $appprev_data = getPreviousRecords('tra_product_applications', $app_where);
-                            $res = updateRecord('tra_product_applications', $appprev_data['results'], $app_where,$app_data, $user_id);
-							//send notifications 
-							// applicant_name', 't3.email as applicant_email
-							if($decision_id == 1  || $decision_id == 2){
-								if(validateIsNumeric($reg_product_id)){
-									//update all the other applications 
-									$update_data = array('validity_status_id'=>3,
-                                                         'registration_status_id'=>4,
-													     'dola'=>Carbon::now());
-														
-									DB::table('tra_product_applications as t1')
-										->join('tra_approval_recommendations as t2','t1.application_code', 't2.application_code')
-										->where(array('t1.reg_product_id'=>$reg_product_id))
-										->update($update_data);
-										
-								}
-								$message = $this->getProductApprovalTemplate($application_details->section_id,$application_details->brand_name,$application_details->sub_module_id,$application_details->reference_no,$certificate_no,$approval_date,$application_code);
-								 sendMailNotification($application_details->applicant_name, $application_details->applicant_email,'Approval Recommendation',$message);
-								//update all the rest of the applications 
-							}
-                         
+                            DB::table('tra_product_applications as t1')
+                                ->join('tra_approval_recommendations as t2', 't1.application_code', 't2.application_code')
+                                ->where(array('t1.reg_product_id' => $reg_product_id))
+                                ->update($update_data);
                         }
+                        $message = $this->getProductApprovalTemplate($application_details->section_id, $application_details->brand_name, $application_details->sub_module_id, $application_details->reference_no, $certificate_no, $approval_date, $application_code);
+                        sendMailNotification($application_details->applicant_name, $application_details->applicant_email, 'Approval Recommendation', $message);
+                        //update all the rest of the applications 
+                    }
+                }
             }, 5);
         } catch (\Exception $exception) {
             $res = array(
@@ -2053,40 +2026,33 @@ $params['appvalidity_status_id'] =3;
             );
         }
         return $res;
-		
-	}
+    }
     //alteration
-	public function saveProductApplicationAlterationRecommendationDetails(Request $request)
+    public function saveProductApplicationAlterationRecommendationDetails(Request $request)
     {
-        
+
         $table_name = $request->input('table_name');
         $application_id = $request->input('application_id');
         $application_code = $request->input('application_code');
-        
+
         $selected_appcodes = $request->input('selected_appcodes');
-      
+
         $res = array();
-        
+
         try {
-            if($selected_appcodes != ''){
-                
+            if ($selected_appcodes != '') {
+
                 $selected_ids = json_decode($selected_appcodes);
-              
+
                 foreach ($selected_ids as $application_code) {
-                 
+
                     $res = $this->saveProductAppsAmmendmentRecommendationDetails($application_id, $application_code, $table_name, $request, $res);
-                
-
                 }
-               
+            } else {
+
+
+                $res = $this->saveProductAppsAmmendmentRecommendationDetails($application_id, $application_code, $table_name, $request, $res);
             }
-            else{
-
-
-                     $res = $this->saveProductAppsAmmendmentRecommendationDetails($application_id, $application_code, $table_name, $request, $res);
-
-            }
-         
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -2100,19 +2066,19 @@ $params['appvalidity_status_id'] =3;
         }
         return $res;
     }
-	
+
     public function saveProductAppsAmmendmentRecommendationDetails($application_id, $application_code, $table_name, $request, $res)
     {
         $table_name = $request->input('table_name');
         $application_id = $request->input('application_id');
         $reg_product_id = $request->input('reg_product_id');
-       
+
         //application_id
-        $qry = DB::table($table_name.'  as t1')
-            ->join('tra_product_information as t2','t1.product_id','=','t2.id')
-			->leftJoin('wb_trader_account as t3', 't1.applicant_id', 't3.id')
-			->leftJoin('tra_approval_recommendations as t4', 't1.application_code', 't4.application_code')
-			->select('t1.*', 't3.*','t2.brand_name', 't3.name as applicant_name', 't1.id as application_id','t4.id as recommendation_id', 't3.email as applicant_email')
+        $qry = DB::table($table_name . '  as t1')
+            ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
+            ->leftJoin('wb_trader_account as t3', 't1.applicant_id', 't3.id')
+            ->leftJoin('tra_approval_recommendations as t4', 't1.application_code', 't4.application_code')
+            ->select('t1.*', 't3.*', 't2.brand_name', 't3.name as applicant_name', 't1.id as application_id', 't4.id as recommendation_id', 't3.email as applicant_email')
             ->where('t1.application_code', $application_code);
         $app_details = $qry->first();
         if (is_null($app_details)) {
@@ -2122,7 +2088,7 @@ $params['appvalidity_status_id'] =3;
             );
             return $res;
         }
-      
+
         if (is_null($app_details)) {
             $res = array(
                 'success' => false,
@@ -2130,18 +2096,18 @@ $params['appvalidity_status_id'] =3;
             );
             return $res;
         }
-        $qry = DB::table($table_name.'  as t1')
-            ->join('tra_product_information as t2','t1.product_id','=','t2.id')
-			->leftJoin('wb_trader_account as t3', 't1.applicant_id','t3.id')
-			->select('t1.*', 't2.*','t3.name as applicant_name', 't3.email as applicant_email', 't1.id as application_id')
+        $qry = DB::table($table_name . '  as t1')
+            ->join('tra_product_information as t2', 't1.product_id', '=', 't2.id')
+            ->leftJoin('wb_trader_account as t3', 't1.applicant_id', 't3.id')
+            ->select('t1.*', 't2.*', 't3.name as applicant_name', 't3.email as applicant_email', 't1.id as application_id')
             ->where('t1.application_code', $application_code);
         $res = array();
         try {
-           
-            DB::transaction(function () use ($qry, $application_id, $application_code, $table_name, $request, $app_details,$reg_product_id, &$res) {
+
+            DB::transaction(function () use ($qry, $application_id, $application_code, $table_name, $request, $app_details, $reg_product_id, &$res) {
                 $ProductUpdateParams = array();
-				$application_details = $qry->first();
-				
+                $application_details = $qry->first();
+
                 $process_id = $request->input('process_id');
                 $workflow_stage_id = $request->input('workflow_stage_id');
                 $decision_id = $request->input('decision_id');
@@ -2151,14 +2117,14 @@ $params['appvalidity_status_id'] =3;
                 $expiry_date = $request->input('expiry_date');
                 $dg_signatory = $request->input('dg_signatory');
                 $signatory = $request->input('permit_signatory');
-				$reference_no = $app_details->reference_no;
-				$id = $app_details->recommendation_id;
-				$reg_product_id = $app_details->reg_product_id;
-				$application_id = $app_details->application_id;
-				$applicant_id = $app_details->applicant_id;
-				$local_agent_id = $app_details->local_agent_id;
+                $reference_no = $app_details->reference_no;
+                $id = $app_details->recommendation_id;
+                $reg_product_id = $app_details->reg_product_id;
+                $application_id = $app_details->application_id;
+                $applicant_id = $app_details->applicant_id;
+                $local_agent_id = $app_details->local_agent_id;
                 $user_id = $this->user_id;
-$certificate_no = '';
+                $certificate_no = '';
                 if ($dg_signatory == 1) {
                     $permit_signatory = getPermitSignatory($process_id);
                 } else {
@@ -2166,7 +2132,7 @@ $certificate_no = '';
                 }
                 //get the previous produt registration
 
-               
+
                 $params = array(
                     'application_id' => $application_id,
                     'application_code' => $application_code,
@@ -2178,187 +2144,187 @@ $certificate_no = '';
                     'dg_signatory' => $dg_signatory,
                     'permit_signatory' => $permit_signatory
                 );
-                
-                        if (validateIsNumeric($id)) {
-                            //update
-                            $where = array(
-                                'id' => $id
-                            );
-                            $params['dola'] = Carbon::now();
-                            $params['altered_by'] = $user_id;
 
-                            $prev_data = getPreviousRecords('tra_approval_recommendations', $where);
-                            
-                            if ($prev_data['success'] == false) {
-                                return \response()->json($prev_data);
-                            }
-                            $prev_data_results = $prev_data['results'];
-                            $prev_decision_id = $prev_data_results[0]['decision_id'];
-                            $prev_data_results[0]['record_id'] = $id;
-                            $prev_data_results[0]['update_by'] = $user_id;
-                            $prev_data_results[0]['recommendation_id'] = $prev_data_results[0]['id'];
-                            unset($prev_data_results[0]['id']);
-                            
-                            //permits no formats ref id 
-                        
-                            DB::table('tra_approval_recommendations_log')
-                                ->insert($prev_data_results);
-                               
-                            if($decision_id == 1  || $decision_id == 2){
-                                
-                              
-                                $product_status_id = 6;
-                                $application_status_id = 6;
-                                //permit
-                                if ($prev_decision_id != 1) {
-                                    $where_statement = array('t1.id'=>$reg_product_id);
-                                    $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
-                                    $prev_product_id = $prev_productreg->prev_product_id;
-                                    
-                                    $params['expiry_date'] = $prev_productreg->expiry_date;
-                                    $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
-                                    $params['certificate_no'] = $prev_productreg->certificate_no;
-                                    $certificate_no = $prev_productreg->certificate_no;
-									 $params['appvalidity_status_id'] =$prev_productreg->validity_status_id;
-									$params['appregistration_status_id'] = $prev_productreg->registration_status_id;
-									
-                                    $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                                'status_id'=>$prev_productreg->status_id,
-                                                                'validity_status_id'=>$prev_productreg->validity_status_id,
-                                                                'registration_status_id'=>$prev_productreg->registration_status_id,
-                                                                'prev_product_id'=>$prev_product_id,
-                                                                'registration_date'=>$prev_productreg->approval_date,
-																 'active_application_code'=>$application_code,
-																'active_app_referenceno'=>$reference_no,
-																'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id
-                                                            );
-                                    $res = saveApplicationRegistrationDetails('tra_registered_products',$registration_data,array('id'=>$reg_product_id),$user_id);
-                                   
-                                }
-                               
-                            } else {
-                                
-                                if ($prev_decision_id == 1) {
-                                      //rollback option save prev
-                                      $where_statement = array('t1.id'=>$reg_product_id, 'tra_product_id'=>$app_details->product_id);
-                                      $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
+                if (validateIsNumeric($id)) {
+                    //update
+                    $where = array(
+                        'id' => $id
+                    );
+                    $params['dola'] = Carbon::now();
+                    $params['altered_by'] = $user_id;
 
-                                      $registration_data = array('tra_product_id'=>$prev_productreg->regprev_product_id, 
-                                                                'status_id'=>$prev_productreg->status_id,
-                                                                'validity_status_id'=>$prev_productreg->validity_status_id,
-                                                                'registration_status_id'=>$prev_productreg->registration_status_id,
-                                                                'prev_product_id'=>0,
-                                                                'registration_date'=>$prev_productreg->approval_date,
-																 'active_application_code'=>$prev_productreg->application_code,
-																'active_app_referenceno'=>$prev_productreg->active_app_referenceno,
-																'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id
-                                                            );
+                    $prev_data = getPreviousRecords('tra_approval_recommendations', $where);
 
-                                    $res = saveApplicationRegistrationDetails('tra_registered_products',$registration_data,array('id'=>$reg_product_id),$user_id);
-                                    
+                    if ($prev_data['success'] == false) {
+                        return \response()->json($prev_data);
+                    }
+                    $prev_data_results = $prev_data['results'];
+                    $prev_decision_id = $prev_data_results[0]['decision_id'];
+                    $prev_data_results[0]['record_id'] = $id;
+                    $prev_data_results[0]['update_by'] = $user_id;
+                    $prev_data_results[0]['recommendation_id'] = $prev_data_results[0]['id'];
+                    unset($prev_data_results[0]['id']);
 
-                                }
-                                $application_status_id = 7;
-                                $params['certificate_no'] = null;
-								 $params['appvalidity_status_id'] =3;
-									$params['appregistration_status_id'] = 3;
-									
-                                $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                        'status_id'=>7,
-                                                        'validity_status_id'=>3,
-                                                        'registration_status_id'=>3,
-                                                        'registration_date'=>$approval_date
-                                                    );
-                            }
-                            
-                            $res = updateRecord('tra_approval_recommendations', $prev_data['results'], $where, $params, $user_id);
-                            
-                        } else {
-                            //insert
-                           
-                            $application_status_id = 6;
-                            $where_statement = array('t1.id'=>$reg_product_id);
+                    //permits no formats ref id 
+
+                    DB::table('tra_approval_recommendations_log')
+                        ->insert($prev_data_results);
+
+                    if ($decision_id == 1  || $decision_id == 2) {
+
+
+                        $product_status_id = 6;
+                        $application_status_id = 6;
+                        //permit
+                        if ($prev_decision_id != 1) {
+                            $where_statement = array('t1.id' => $reg_product_id);
                             $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
                             $prev_product_id = $prev_productreg->prev_product_id;
-                           
-                            if($decision_id == 1  || $decision_id == 2){
-								$certificate_no = $prev_productreg->certificate_no;
-                                $params['expiry_date'] = $prev_productreg->expiry_date;
-                                $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
-                                $params['certificate_no'] = $prev_productreg->certificate_no;
-                                 
-									
-									 $params['appvalidity_status_id'] =$prev_productreg->validity_status_id;
-									$params['appregistration_status_id'] = $prev_productreg->registration_status_id;
-									
-                                $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                            'status_id'=>$prev_productreg->status_id,
-                                                            'validity_status_id'=>$prev_productreg->validity_status_id,
-                                                            'registration_status_id'=>$prev_productreg->registration_status_id,
-                                                            'prev_product_id'=>$prev_product_id,
-                                                            'registration_date'=>$prev_productreg->approval_date,
-															'active_application_code'=>$prev_productreg->active_application_code,
-																'active_app_referenceno'=>$prev_productreg->active_app_referenceno,
-																'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => $local_agent_id
-                                                        );
-                                $res = saveApplicationRegistrationDetails('tra_registered_products',$registration_data,array('id'=>$reg_product_id),$user_id);
-                                //finally update the reqistered products details
-                                               
-                            }else {
 
-                                $application_status_id = 7;
-                                $params['certificate_no'] = '';
-                                $params['expiry_date'] = null;
-$params['appvalidity_status_id'] =3;
-									$params['appregistration_status_id'] = 3;
-									
-                                $registration_data = array('tra_product_id'=>$app_details->product_id, 
-                                                        'status_id'=>7,
-                                                        'validity_status_id'=>3,
-                                                        'registration_status_id'=>3,
-                                                        'approval_date'=>$approval_date,
-														
-															'active_application_code'=>$prev_productreg->active_application_code,
-																'active_app_referenceno'=>$prev_productreg->active_app_referenceno
-                                                    );
+                            $params['expiry_date'] = $prev_productreg->expiry_date;
+                            $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
+                            $params['certificate_no'] = $prev_productreg->certificate_no;
+                            $certificate_no = $prev_productreg->certificate_no;
+                            $params['appvalidity_status_id'] = $prev_productreg->validity_status_id;
+                            $params['appregistration_status_id'] = $prev_productreg->registration_status_id;
 
-                                //no update on the registration statuses 
-
-                            }
-
-                            $params['created_on'] = Carbon::now();
-                            $params['created_by'] = $user_id;
-                            $res = insertRecord('tra_approval_recommendations', $params, $user_id);
-                            $id = $res['record_id'];
-                            $app_data =  array('permit_id' => $id, 
-                                               'application_status_id'=>$application_status_id,
-                                               'dola' => Carbon::now(),
-                                               'altered_by' => $user_id);
-                            $app_where = array('id'=>$application_id);
-                            $appprev_data = getPreviousRecords('tra_product_applications', $app_where);
-                            $res = updateRecord('tra_product_applications', $appprev_data['results'], $app_where,$app_data, $user_id);
-							//send notifications 
-							// applicant_name', 't3.email as applicant_email
-							if($decision_id == 1  || $decision_id == 2){
-								$message = $this->getProductApprovalTemplate($application_details->section_id,$application_details->brand_name,$application_details->sub_module_id,$application_details->reference_no,$certificate_no,$approval_date,$application_code);
-								//sendMailNotification($application_details->applicant_name, $application_details->applicant_email,'Approval Recommendation',$message);
-                                
-                                if($application_details->sub_module_id == 9){
-                                    //$file_path = public_path('/resources/uploads/ammendement_approval_letter.pdf');
-                                    //generateAmmendementApprovalletter($reference_no, true, $file_path);                             
-                                    //sendMailNotification($application_details->applicant_name, $application_details->applicant_email,'Approval Recommendation',$message,'','', $file_path,'Letter of approval for product ammendment','', array());
-                                    
-                                    }
-                                    else{
-                                    //sendMailNotification($application_details->applicant_name, $application_details->applicant_email,'Approval Recommendation',$message);
-                                    
-                                    }
-							}
-                         
+                            $registration_data = array(
+                                'tra_product_id' => $app_details->product_id,
+                                'status_id' => $prev_productreg->status_id,
+                                'validity_status_id' => $prev_productreg->validity_status_id,
+                                'registration_status_id' => $prev_productreg->registration_status_id,
+                                'prev_product_id' => $prev_product_id,
+                                'registration_date' => $prev_productreg->approval_date,
+                                'active_application_code' => $application_code,
+                                'active_app_referenceno' => $reference_no,
+                                'reg_applicant_id' => $applicant_id,
+                                'reg_local_agent_id' => $local_agent_id
+                            );
+                            $res = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, array('id' => $reg_product_id), $user_id);
                         }
+                    } else {
+
+                        if ($prev_decision_id == 1) {
+                            //rollback option save prev
+                            $where_statement = array('t1.id' => $reg_product_id, 'tra_product_id' => $app_details->product_id);
+                            $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
+
+                            $registration_data = array(
+                                'tra_product_id' => $prev_productreg->regprev_product_id,
+                                'status_id' => $prev_productreg->status_id,
+                                'validity_status_id' => $prev_productreg->validity_status_id,
+                                'registration_status_id' => $prev_productreg->registration_status_id,
+                                'prev_product_id' => 0,
+                                'registration_date' => $prev_productreg->approval_date,
+                                'active_application_code' => $prev_productreg->application_code,
+                                'active_app_referenceno' => $prev_productreg->active_app_referenceno,
+                                'reg_applicant_id' => $applicant_id,
+                                'reg_local_agent_id' => $local_agent_id
+                            );
+
+                            $res = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, array('id' => $reg_product_id), $user_id);
+                        }
+                        $application_status_id = 7;
+                        $params['certificate_no'] = null;
+                        $params['appvalidity_status_id'] = 3;
+                        $params['appregistration_status_id'] = 3;
+
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => 7,
+                            'validity_status_id' => 3,
+                            'registration_status_id' => 3,
+                            'registration_date' => $approval_date
+                        );
+                    }
+
+                    $res = updateRecord('tra_approval_recommendations', $prev_data['results'], $where, $params, $user_id);
+                } else {
+                    //insert
+
+                    $application_status_id = 6;
+                    $where_statement = array('t1.id' => $reg_product_id);
+                    $prev_productreg = getPreviousProductRegistrationDetails($where_statement, 'tra_registered_products');
+                    $prev_product_id = $prev_productreg->prev_product_id;
+
+                    if ($decision_id == 1  || $decision_id == 2) {
+                        $certificate_no = $prev_productreg->certificate_no;
+                        $params['expiry_date'] = $prev_productreg->expiry_date;
+                        $params['certificate_issue_date'] = $prev_productreg->certificate_issue_date;
+                        $params['certificate_no'] = $prev_productreg->certificate_no;
+
+
+                        $params['appvalidity_status_id'] = $prev_productreg->validity_status_id;
+                        $params['appregistration_status_id'] = $prev_productreg->registration_status_id;
+
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => $prev_productreg->status_id,
+                            'validity_status_id' => $prev_productreg->validity_status_id,
+                            'registration_status_id' => $prev_productreg->registration_status_id,
+                            'prev_product_id' => $prev_product_id,
+                            'registration_date' => $prev_productreg->approval_date,
+                            'active_application_code' => $prev_productreg->active_application_code,
+                            'active_app_referenceno' => $prev_productreg->active_app_referenceno,
+                            'reg_applicant_id' => $applicant_id,
+                            'reg_local_agent_id' => $local_agent_id
+                        );
+                        $res = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, array('id' => $reg_product_id), $user_id);
+                        //finally update the reqistered products details
+
+                    } else {
+
+                        $application_status_id = 7;
+                        $params['certificate_no'] = '';
+                        $params['expiry_date'] = null;
+                        $params['appvalidity_status_id'] = 3;
+                        $params['appregistration_status_id'] = 3;
+
+                        $registration_data = array(
+                            'tra_product_id' => $app_details->product_id,
+                            'status_id' => 7,
+                            'validity_status_id' => 3,
+                            'registration_status_id' => 3,
+                            'approval_date' => $approval_date,
+
+                            'active_application_code' => $prev_productreg->active_application_code,
+                            'active_app_referenceno' => $prev_productreg->active_app_referenceno
+                        );
+
+                        //no update on the registration statuses 
+
+                    }
+
+                    $params['created_on'] = Carbon::now();
+                    $params['created_by'] = $user_id;
+                    $res = insertRecord('tra_approval_recommendations', $params, $user_id);
+                    $id = $res['record_id'];
+                    $app_data =  array(
+                        'permit_id' => $id,
+                        'application_status_id' => $application_status_id,
+                        'dola' => Carbon::now(),
+                        'altered_by' => $user_id
+                    );
+                    $app_where = array('id' => $application_id);
+                    $appprev_data = getPreviousRecords('tra_product_applications', $app_where);
+                    $res = updateRecord('tra_product_applications', $appprev_data['results'], $app_where, $app_data, $user_id);
+                    //send notifications 
+                    // applicant_name', 't3.email as applicant_email
+                    if ($decision_id == 1  || $decision_id == 2) {
+                        $message = $this->getProductApprovalTemplate($application_details->section_id, $application_details->brand_name, $application_details->sub_module_id, $application_details->reference_no, $certificate_no, $approval_date, $application_code);
+                        //sendMailNotification($application_details->applicant_name, $application_details->applicant_email,'Approval Recommendation',$message);
+
+                        if ($application_details->sub_module_id == 9) {
+                            //$file_path = public_path('/resources/uploads/ammendement_approval_letter.pdf');
+                            //generateAmmendementApprovalletter($reference_no, true, $file_path);                             
+                            //sendMailNotification($application_details->applicant_name, $application_details->applicant_email,'Approval Recommendation',$message,'','', $file_path,'Letter of approval for product ammendment','', array());
+
+                        } else {
+                            //sendMailNotification($application_details->applicant_name, $application_details->applicant_email,'Approval Recommendation',$message);
+
+                        }
+                    }
+                }
             }, 5);
         } catch (\Exception $exception) {
             $res = array(
@@ -2373,119 +2339,107 @@ $params['appvalidity_status_id'] =3;
         }
         return $res;
     }
-	public function getProductApprovalTemplate($section_id,$brand_name,$sub_module_id,$reference_no,$certificate_no,$registration_date,$application_code){
-			$template = "<div style='font-size:14px;font-weight: normal;text-align:justify;'>";
-						$brand_name = strtoupper($brand_name);
-						if($sub_module_id == 7){
-							$template .= "<p style= 'font-size:18px;font-weight: bold;font-style:underline;'>NOTICE OF APPROVAL OF YOUR APPLICATION FOR REGISTRATION OF ".$brand_name."</b></p>";
-							$template .= "<p>";
-							$template .= "Reference is made to the application for registration of the above mentioned product in Tanzania.";
-							$template .= "<p>";
-							$template .= "TMDA wishes to notify you that, your application with reference number ".$reference_no." has been granted registration with effect from ".$registration_date.". <br>";
-							$template .= "<p>";
-							$template .= "The product registration number is ".$certificate_no;
-							$template .= "<p>";
-							$template .= "The product particulars contained in the attachment to this notification, should be confirmed to TMDA within seven (7) days from the date of this notification.";
-							$template .= "<p>";
-							$template .= "Thereafter, registration certificate can be collected from TMDA offices within thirty (30) days from the date of this notification.";
-							
-							if($section_id == 2){
-								$template .= "<p>";
-								$template .= "Note that you are required to comply with the terms and conditions of registration as indicated in the certificate of drug registration.";
-								$template .= "<p>";
-								$template .= "You are further reminded to ensure that registration number is printed on the container label (outer packaging or, where there is no outer packaging, on the immediate packaging) prior to marketing of the product; pursuant to regulation number 25 (5) of the Tanzania Medicines and Medical Devices (Registration of Medicinal Products) Regulations, 2015.";
-								$template .= "<p>";
-							}
-							else{
-								$template .= "<p>";
-								$template .= "Note that you are required to comply with the terms and conditions of registration as indicated in the certificate of Medical Devices registration.";
-								$template .= "<p>";
-							}
-							
-							
-						}
-						else if($sub_module_id == 8){
-							$template .= "<p style= 'font-size:18px;font-weight: bold;font-style:underline;'>NOTICE OF APPROVAL OF YOUR APPLICATION FOR RENEWAL OF REGISTRATION OF ".$brand_name;
-							$template .= "<p>";
-							$template .= "Reference is made to the application for renewal of the above mentioned product in Tanzania.";
-							$template .= "<p>";
-							$template .= "TMDA wishes to notify you that, your application with reference number ".$reference_no." has been granted renewal with effect from ".$registration_date.". <br>";
-							$template .= "<p>";
-							$template .= "The product registration number is ".$certificate_no;
-							$template .= "<p>";
-							$template .= "The product particulars contained in the attachment to this notification, should be confirmed to TMDA within seven (7) days from the date of this notification.";
-							$template .= "<p>";
-							$template .= "Thereafter, registration certificate can be collected from TMDA offices within thirty (30) days from the date of this notification.";
-							$template .= "<p>";
-							
-							if($section_id == 2){
-								$template .= "Note that you are required to comply with the terms and conditions of registration as indicated in the certificate of drug registration.";
-							$template .= "<p>";
-								$template .= "You are further reminded to ensure that registration number is printed on the container label (outer packaging or, where there is no outer packaging, on the immediate packaging) prior to marketing of the product; pursuant to regulation number 25 (5) of the Tanzania Medicines and Medical Devices (Registration of Medicinal Products) Regulations, 2015.";
-								$template .= "<p>";
-							}
-							
-							else{
-								$template .= "Note that you are required to comply with the terms and conditions of registration as indicated in the certificate of Medical Devices registration.";
-							$template .= "<p>";
-							}
-						
-						}
-						else if($sub_module_id == 9){
-							$template .= "<p style= 'font-size:18px;font-weight: bold;font-style:underline;'>ACCEPTANCE OF CHANGE(S) TO ".$brand_name." OF CERTIFICATE NO ".$certificate_no;
-							
-							$template .= "<p>";
-							$template .= "This is in reference to your application to implement a change to the above named registered medicinal product. .";
-							$template .= "<p>";
-							$template .= "We are happy to inform you that the following requests have been accepted:";
-							$template .= "<p>";
-							$record = DB::table('tra_application_variationsdata as t1')
-							->select('t1.*')
-							->where(array('application_code'=>$application_code))
-							->get();
-							if($record ){
-								$i = 1;
-								foreach($record  as $rows){
-									$template .= $i.". ".$rows->proposed_variation;
-									$i++;
-								}
-							}
-							$template .= "<p>";
-							
-						}else if($sub_module_id == 17){
-							$template .= "<p style= 'font-size:18px;font-weight: bold;font-style:underline;'>WITHDRAWAL  OF  ".$brand_name." OF CERTIFICATE NO ".$certificate_no." FROM THE LIST OF REGISTERED PRODUCTS";
-							
-							$template .= "<p>";
-							$template .= "This is in reference to the request of the following named registered medicinal product. .";
-							$template .= "<p>";
-							$template .= "We are regret to inform you that the following product has been withdrawn from our register.";
-							$template .= "<p>";
-							
-							$template .= "<p>";
-							
-						}else if($sub_module_id == 20){
-							$template .= "<p style= 'font-size:18px;font-weight: bold;font-style:underline;'>REVERSAL OF THE WITHDRAWAL  OF  ".$brand_name." OF CERTIFICATE NO ".$certificate_no." FROM THE LIST OF REGISTERED PRODUCTS";
-							
-							$template .= "<p>";
-							$template .= "This is in reference to the request of the following named registered medicinal product.";
-							$template .= "<p>";
-							$template .= "We are happy to inform you reversal of the withdrawal the above mentioned product.";
-							$template .= "<p>";
-							
-							$template .= "<p>";
-							
-						}
-						$template .= "Thank you for your co-operation.";
-						return $template;
-			
-			
-		}
-    public function saveProductsonlineapplicationreceiceinvoiceDetails(Request $request){
+    public function getProductApprovalTemplate($section_id, $brand_name, $sub_module_id, $reference_no, $certificate_no, $registration_date, $application_code)
+    {
+        $template = "<div style='font-size:14px;font-weight: normal;text-align:justify;'>";
+        $brand_name = strtoupper($brand_name);
+        if ($sub_module_id == 7) {
+            $template .= "<p style= 'font-size:18px;font-weight: bold;font-style:underline;'>NOTICE OF APPROVAL OF YOUR APPLICATION FOR REGISTRATION OF " . $brand_name . "</b></p>";
+            $template .= "<p>";
+            $template .= "Reference is made to the application for registration of the above mentioned product in Tanzania.";
+            $template .= "<p>";
+            $template .= "TMDA wishes to notify you that, your application with reference number " . $reference_no . " has been granted registration with effect from " . $registration_date . ". <br>";
+            $template .= "<p>";
+            $template .= "The product registration number is " . $certificate_no;
+            $template .= "<p>";
+            $template .= "The product particulars contained in the attachment to this notification, should be confirmed to TMDA within seven (7) days from the date of this notification.";
+            $template .= "<p>";
+            $template .= "Thereafter, registration certificate can be collected from TMDA offices within thirty (30) days from the date of this notification.";
+
+            if ($section_id == 2) {
+                $template .= "<p>";
+                $template .= "Note that you are required to comply with the terms and conditions of registration as indicated in the certificate of drug registration.";
+                $template .= "<p>";
+                $template .= "You are further reminded to ensure that registration number is printed on the container label (outer packaging or, where there is no outer packaging, on the immediate packaging) prior to marketing of the product; pursuant to regulation number 25 (5) of the Tanzania Medicines and Medical Devices (Registration of Medicinal Products) Regulations, 2015.";
+                $template .= "<p>";
+            } else {
+                $template .= "<p>";
+                $template .= "Note that you are required to comply with the terms and conditions of registration as indicated in the certificate of Medical Devices registration.";
+                $template .= "<p>";
+            }
+        } else if ($sub_module_id == 8) {
+            $template .= "<p style= 'font-size:18px;font-weight: bold;font-style:underline;'>NOTICE OF APPROVAL OF YOUR APPLICATION FOR RENEWAL OF REGISTRATION OF " . $brand_name;
+            $template .= "<p>";
+            $template .= "Reference is made to the application for renewal of the above mentioned product in Tanzania.";
+            $template .= "<p>";
+            $template .= "TMDA wishes to notify you that, your application with reference number " . $reference_no . " has been granted renewal with effect from " . $registration_date . ". <br>";
+            $template .= "<p>";
+            $template .= "The product registration number is " . $certificate_no;
+            $template .= "<p>";
+            $template .= "The product particulars contained in the attachment to this notification, should be confirmed to TMDA within seven (7) days from the date of this notification.";
+            $template .= "<p>";
+            $template .= "Thereafter, registration certificate can be collected from TMDA offices within thirty (30) days from the date of this notification.";
+            $template .= "<p>";
+
+            if ($section_id == 2) {
+                $template .= "Note that you are required to comply with the terms and conditions of registration as indicated in the certificate of drug registration.";
+                $template .= "<p>";
+                $template .= "You are further reminded to ensure that registration number is printed on the container label (outer packaging or, where there is no outer packaging, on the immediate packaging) prior to marketing of the product; pursuant to regulation number 25 (5) of the Tanzania Medicines and Medical Devices (Registration of Medicinal Products) Regulations, 2015.";
+                $template .= "<p>";
+            } else {
+                $template .= "Note that you are required to comply with the terms and conditions of registration as indicated in the certificate of Medical Devices registration.";
+                $template .= "<p>";
+            }
+        } else if ($sub_module_id == 9) {
+            $template .= "<p style= 'font-size:18px;font-weight: bold;font-style:underline;'>ACCEPTANCE OF CHANGE(S) TO " . $brand_name . " OF CERTIFICATE NO " . $certificate_no;
+
+            $template .= "<p>";
+            $template .= "This is in reference to your application to implement a change to the above named registered medicinal product. .";
+            $template .= "<p>";
+            $template .= "We are happy to inform you that the following requests have been accepted:";
+            $template .= "<p>";
+            $record = DB::table('tra_application_variationsdata as t1')
+                ->select('t1.*')
+                ->where(array('application_code' => $application_code))
+                ->get();
+            if ($record) {
+                $i = 1;
+                foreach ($record  as $rows) {
+                    $template .= $i . ". " . $rows->proposed_variation;
+                    $i++;
+                }
+            }
+            $template .= "<p>";
+        } else if ($sub_module_id == 17) {
+            $template .= "<p style= 'font-size:18px;font-weight: bold;font-style:underline;'>WITHDRAWAL  OF  " . $brand_name . " OF CERTIFICATE NO " . $certificate_no . " FROM THE LIST OF REGISTERED PRODUCTS";
+
+            $template .= "<p>";
+            $template .= "This is in reference to the request of the following named registered medicinal product. .";
+            $template .= "<p>";
+            $template .= "We are regret to inform you that the following product has been withdrawn from our register.";
+            $template .= "<p>";
+
+            $template .= "<p>";
+        } else if ($sub_module_id == 20) {
+            $template .= "<p style= 'font-size:18px;font-weight: bold;font-style:underline;'>REVERSAL OF THE WITHDRAWAL  OF  " . $brand_name . " OF CERTIFICATE NO " . $certificate_no . " FROM THE LIST OF REGISTERED PRODUCTS";
+
+            $template .= "<p>";
+            $template .= "This is in reference to the request of the following named registered medicinal product.";
+            $template .= "<p>";
+            $template .= "We are happy to inform you reversal of the withdrawal the above mentioned product.";
+            $template .= "<p>";
+
+            $template .= "<p>";
+        }
+        $template .= "Thank you for your co-operation.";
+        return $template;
+    }
+    public function saveProductsonlineapplicationreceiceinvoiceDetails(Request $request)
+    {
         DB::beginTransaction();
         try {
 
             $res = $this->saveInitialNonSubmissionProdDetails($request);
-            
         } catch (\Exception $exception) {
             DB::rollBack();
             $res = array(
@@ -2499,10 +2453,10 @@ $params['appvalidity_status_id'] =3;
                 'message' => $throwable->getMessage()
             );
         }
-        
-        return   $res ; 
+
+        return   $res;
     }
-    
+
     public function saveInitialNonSubmissionProdDetails($request)
     {
         $application_id = $request->input('application_id');
@@ -2512,273 +2466,269 @@ $params['appvalidity_status_id'] =3;
         $status_type_id = $request->input('status_type_id');
         $application_code = $request->input('application_code');
         $sub_module_id = $request->input('sub_module_id');
-		
+
         $next_stage = $request->input('curr_stage_id');
 
         $user_id = $this->user_id;
-        
+
         $applications_table = 'tra_product_applications';
-       
-                $portal_db = DB::connection('portal_db');
-                            $qry = $portal_db->table('wb_product_applications as t1')
-                            ->join('wb_product_information as t2', 't1.product_id','=','t2.id')
-                            ->select('t1.*','t1.reg_product_id', 't2.classification_id','t1.assessment_procedure_id')
-                                ->where('t1.id', $application_id);
 
-                            $results = $qry->first();
-                
-                            if (is_null($results)) {
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
-                         
-                            $application_code = $results->application_code;
-                    
-                    $app_previousdata = DB::table($applications_table)
-                                        ->where('application_code',$application_code)
-                                        ->first();
-                     $results = $qry->first();
+        $portal_db = DB::connection('portal_db');
+        $qry = $portal_db->table('wb_product_applications as t1')
+            ->join('wb_product_information as t2', 't1.product_id', '=', 't2.id')
+            ->select('t1.*', 't1.reg_product_id', 't2.classification_id', 't1.assessment_procedure_id')
+            ->where('t1.id', $application_id);
 
-                    if(!$app_previousdata){
+        $results = $qry->first();
 
-                        $user_id = $this->user_id;
-                        $portal_db = DB::connection('portal_db');
+        if (is_null($results)) {
+            $res = array(
+                'success' => false,
+                'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
+            );
+            return $res;
+        }
 
-                        $qry = $portal_db->table('wb_product_applications as t1')
-                            ->join('wb_product_information as t2', 't1.product_id','=','t2.id')
-                            ->select('t1.*','t1.reg_product_id', 't2.classification_id','t1.assessment_procedure_id')
-                                ->where('t1.id', $application_id);
+        $application_code = $results->application_code;
 
-                           
-                            if (is_null($results)) {
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
-                            $tracking_no = $results->tracking_no;
-                            $sub_module_id = $results->sub_module_id;
-                            $module_id = $results->module_id;
-                            $zone_id = $results->zone_id;
-                            $section_id = $results->section_id;
-                            $classification_id = $results->classification_id;
-                            
-                            $assessment_procedure_id = $results->assessment_procedure_id;
-                            
-                            $portal_application_id = $results->id;
-                            $reg_product_id = $results->reg_product_id;
-                            $portal_product_id = $results->product_id;
-                            //process/workflow details
-                            $where = array(
-                                'module_id' => $results->module_id,
-                                'sub_module_id' => $results->sub_module_id,
-                                'section_id' => $results->section_id
-                            );
-                            $process_details = getTableData('wf_tfdaprocesses', $where);
-                            if (is_null($process_details)) {
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting process details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
-                            $process_id = $process_details->id;
+        $app_previousdata = DB::table($applications_table)
+            ->where('application_code', $application_code)
+            ->first();
+        $results = $qry->first();
 
-                            
-                            $workflow_details = getTableData('wf_workflow_stages', array('id' => $next_stage));
-                        
-                            if (is_null($workflow_details)) {
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting workflow details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
+        if (!$app_previousdata) {
 
-                            //$ref_no = $results->reference_no;
-                        
-                            $application_code = $results->application_code;;
-                            $is_fast_track = $results->is_fast_track;;
-                            $paying_currency_id = $results->paying_currency_id;;
+            $user_id = $this->user_id;
+            $portal_db = DB::connection('portal_db');
 
-                            $applicant_details = $portal_db->table('wb_trader_account')
-                                ->where('id', $results->trader_id)
-                                ->first();
-                            
-                                $localgent_details = $portal_db->table('wb_trader_account')
-                                ->where('id', $results->local_agent_id)
-                                ->first();
-                                
-                            if (is_null($applicant_details)) {
-                                DB::rollBack();
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting applicant details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
-                            $identification_no = $applicant_details->identification_no;
-                            $applicant_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $applicant_details->identification_no), 'id');
-                            if (!is_null($localgent_details)) {
-                                $local_agent_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $localgent_details->identification_no), 'id');
-                            }
-                            $applicant_email = $applicant_details->email;
-                            if (!is_null($localgent_details)) {
-                                $localagent_email = $localgent_details->email;
-                            }
-                            //premise main details
-                            $product_details = $portal_db->table('wb_product_information')
-                                ->where('id', $results->product_id)
-                                ->first();
+            $qry = $portal_db->table('wb_product_applications as t1')
+                ->join('wb_product_information as t2', 't1.product_id', '=', 't2.id')
+                ->select('t1.*', 't1.reg_product_id', 't2.classification_id', 't1.assessment_procedure_id')
+                ->where('t1.id', $application_id);
 
-                            if (is_null($product_details)) {
-                                DB::rollBack();
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting application details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
-                            $product_details->portal_id = $results->product_id;
-                            $product_details->created_by = $this->user_id;
-                            $product_details = convertStdClassObjToArray($product_details);
 
-                            unset($product_details['id']);
-                            $product_details['created_on'] = Carbon::now();
-                            $product_details['created_by'] = $user_id;
-                            
-                            $prod_insert = insertRecord('tra_product_information', $product_details, $user_id);
-                            
-                            if ($prod_insert['success'] == false) {
-                                DB::rollBack();
-                                return $prod_insert;
-                            }
-                            $product_id = $prod_insert['record_id'];
-                            //product other information other details
-                            //ingredients
-                            
-                            $app_status_id = 5;
-                            $application_status = getSingleRecordColValue('par_system_statuses', array('id' => $app_status_id), 'name');
+            if (is_null($results)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
+                );
+                return $res;
+            }
+            $tracking_no = $results->tracking_no;
+            $sub_module_id = $results->sub_module_id;
+            $module_id = $results->module_id;
+            $zone_id = $results->zone_id;
+            $section_id = $results->section_id;
+            $classification_id = $results->classification_id;
 
-                            $registration_data = array('tra_product_id' => $product_id,
-                                    'status_id' => $app_status_id,
-                                    'validity_status_id' => 1,
-                                    'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => (isset($local_agent_id))?$local_agent_id:null,
-                                    'registration_status_id' => 1
-                                );
-                            if($sub_module_id == 7){
-                                $where_statement = array('tra_product_id' => $product_id);
-                                $product_regresp = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, $where_statement, $user_id);
-                                
-                                if( $product_regresp['success']){
-                    
-                                    $reg_product_id = $product_regresp['record_id'];
-                                }   
+            $assessment_procedure_id = $results->assessment_procedure_id;
 
-                            }
-                            
-                            funcSaveOnlineProductOtherdetails($portal_product_id, $product_id,$reg_product_id, $user_id);
-                        
-                            $view_id = generateApplicationViewID();
-                            $application_details = array(
-                                //'reference_no' => $ref_no,
-                                'tracking_no' => $tracking_no,
-                                'applicant_id' => $applicant_id, 
-                                'local_agent_id' => (isset($local_agent_id))?$local_agent_id:null,
-                                'application_code' => $application_code,
-                                'product_id' => $product_id,
-                                'module_id' => $results->module_id,
-                                'sub_module_id' => $results->sub_module_id,
-                                'zone_id' => $results->zone_id,
-                                'section_id' => $results->section_id,
-                                'date_added'=>Carbon::now(),
-                                'view_id'=>$view_id,
-                                'reg_product_id'=>$reg_product_id,
-                                'assessment_procedure_id'=>$assessment_procedure_id ,
-                                'process_id' => $process_details->id,
-                                'workflow_stage_id' => $workflow_details->id,
-                                'application_status_id' => $app_status_id,
-                                'paying_currency_id'=>$paying_currency_id,
-                                'is_fast_track'=>$is_fast_track,
-                                'portal_id' => $portal_application_id,
-                                'dola' =>  Carbon::now(),
-                                'altered_by'=>$user_id
-                            );
-							if($sub_module_id != 7){
-								$application_details['reference_no'] = $tracking_no;
-								$application_details['refno_generated'] =1;
-							}
-                            $application_insert = insertRecord('tra_product_applications', $application_details, $user_id);
-                            if ($application_insert['success'] == false) {
-                                DB::rollBack();
-                                return $application_insert;
-                            }
-                            
-                            $mis_application_id = $application_insert['record_id'];
-                        
-                            
-							$rec = DB::table('wf_workflow_transitions as t1')
-                                        ->join('wf_workflow_actions as t2', 't1.action_id','t2.id')
-										->join('wf_workflow_stages as t3', 't1.stage_id','t3.id')
-                                        ->select('portal_status_id')
-                                        ->where(array('nextstage_id'=>$next_stage,'t3.stage_status'=>1) )
-                                        ->first();
-                            $portal_status_id = 3;
-                            if($rec){
-                                $portal_status_id = $rec->portal_status_id;
-                            }
-							 
-							$portal_params = array(
-								'application_status_id' => $portal_status_id 
-							);
-							
-                            $portal_where = array(
-                                'id' => $portal_application_id
-                            );
-                            
-                            DB::commit();
-                            //send email
-                            $vars = array(
-                                '{tracking_no}' => $tracking_no
-                            );
-                            if ($sub_module_id == 9) {//Alteration
-                                $this->syncApplicationOnlineVariationRequests($application_code);
-                            }
-                            if ($sub_module_id == 17) {//Withdrawal
-                                $this->syncApplicationOnlineWithdrawalReasons($application_code);
-                            }
-                        
-                            onlineApplicationNotificationMail(2, $applicant_email, $vars,$identification_no);
-							if($portal_status_id == 6 || $portal_status_id == 8){
-								$vars = array(
-									'{tracking_no}' => $tracking_no
-								);
-								onlineApplicationNotificationMail(3, $applicant_email, $vars,$identification_no);
-							}
-                            DB::commit();
+            $portal_application_id = $results->id;
+            $reg_product_id = $results->reg_product_id;
+            $portal_product_id = $results->product_id;
+            //process/workflow details
+            $where = array(
+                'module_id' => $results->module_id,
+                'sub_module_id' => $results->sub_module_id,
+                'section_id' => $results->section_id
+            );
+            $process_details = getTableData('wf_tfdaprocesses', $where);
+            if (is_null($process_details)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting process details, consult System Admin!!'
+                );
+                return $res;
+            }
+            $process_id = $process_details->id;
 
-                            $res = $this->saveApplicationInvoicingDetails($request,$mis_application_id,$application_code,$tracking_no,$is_fast_track);
 
-                            
-                    }
-                    else{
-                       
-                        $tracking_no = $results->tracking_no;
-                        $application_code = $results->application_code;
-                        $is_fast_track = $results->is_fast_track;
-                        $details = $this->updateOnlineProductDetails($results,$request,$app_previousdata,$is_portalupdate=0);
-                        $mis_application_id = $details['application_id'];
-                        $res = $this->saveApplicationInvoicingDetails($request,$mis_application_id,$application_code,$tracking_no,$is_fast_track);
+            $workflow_details = getTableData('wf_workflow_stages', array('id' => $next_stage));
 
-                    }
-                   
-                    
-                     return $res;
+            if (is_null($workflow_details)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting workflow details, consult System Admin!!'
+                );
+                return $res;
+            }
+
+            //$ref_no = $results->reference_no;
+
+            $application_code = $results->application_code;;
+            $is_fast_track = $results->is_fast_track;;
+            $paying_currency_id = $results->paying_currency_id;;
+
+            $applicant_details = $portal_db->table('wb_trader_account')
+                ->where('id', $results->trader_id)
+                ->first();
+
+            $localgent_details = $portal_db->table('wb_trader_account')
+                ->where('id', $results->local_agent_id)
+                ->first();
+
+            if (is_null($applicant_details)) {
+                DB::rollBack();
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting applicant details, consult System Admin!!'
+                );
+                return $res;
+            }
+            $identification_no = $applicant_details->identification_no;
+            $applicant_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $applicant_details->identification_no), 'id');
+            if (!is_null($localgent_details)) {
+                $local_agent_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $localgent_details->identification_no), 'id');
+            }
+            $applicant_email = $applicant_details->email;
+            if (!is_null($localgent_details)) {
+                $localagent_email = $localgent_details->email;
+            }
+            //premise main details
+            $product_details = $portal_db->table('wb_product_information')
+                ->where('id', $results->product_id)
+                ->first();
+
+            if (is_null($product_details)) {
+                DB::rollBack();
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting application details, consult System Admin!!'
+                );
+                return $res;
+            }
+            $product_details->portal_id = $results->product_id;
+            $product_details->created_by = $this->user_id;
+            $product_details = convertStdClassObjToArray($product_details);
+
+            unset($product_details['id']);
+            $product_details['created_on'] = Carbon::now();
+            $product_details['created_by'] = $user_id;
+
+            $prod_insert = insertRecord('tra_product_information', $product_details, $user_id);
+
+            if ($prod_insert['success'] == false) {
+                DB::rollBack();
+                return $prod_insert;
+            }
+            $product_id = $prod_insert['record_id'];
+            //product other information other details
+            //ingredients
+
+            $app_status_id = 5;
+            $application_status = getSingleRecordColValue('par_system_statuses', array('id' => $app_status_id), 'name');
+
+            $registration_data = array(
+                'tra_product_id' => $product_id,
+                'status_id' => $app_status_id,
+                'validity_status_id' => 1,
+                'reg_applicant_id' => $applicant_id,
+                'reg_local_agent_id' => (isset($local_agent_id)) ? $local_agent_id : null,
+                'registration_status_id' => 1
+            );
+            if ($sub_module_id == 7) {
+                $where_statement = array('tra_product_id' => $product_id);
+                $product_regresp = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, $where_statement, $user_id);
+
+                if ($product_regresp['success']) {
+
+                    $reg_product_id = $product_regresp['record_id'];
+                }
+            }
+
+            funcSaveOnlineProductOtherdetails($portal_product_id, $product_id, $reg_product_id, $user_id);
+
+            $view_id = generateApplicationViewID();
+            $application_details = array(
+                //'reference_no' => $ref_no,
+                'tracking_no' => $tracking_no,
+                'applicant_id' => $applicant_id,
+                'local_agent_id' => (isset($local_agent_id)) ? $local_agent_id : null,
+                'application_code' => $application_code,
+                'product_id' => $product_id,
+                'module_id' => $results->module_id,
+                'sub_module_id' => $results->sub_module_id,
+                'zone_id' => $results->zone_id,
+                'section_id' => $results->section_id,
+                'date_added' => Carbon::now(),
+                'view_id' => $view_id,
+                'reg_product_id' => $reg_product_id,
+                'assessment_procedure_id' => $assessment_procedure_id,
+                'process_id' => $process_details->id,
+                'workflow_stage_id' => $workflow_details->id,
+                'application_status_id' => $app_status_id,
+                'paying_currency_id' => $paying_currency_id,
+                'is_fast_track' => $is_fast_track,
+                'portal_id' => $portal_application_id,
+                'dola' =>  Carbon::now(),
+                'altered_by' => $user_id
+            );
+            if ($sub_module_id != 7) {
+                $application_details['reference_no'] = $tracking_no;
+                $application_details['refno_generated'] = 1;
+            }
+            $application_insert = insertRecord('tra_product_applications', $application_details, $user_id);
+            if ($application_insert['success'] == false) {
+                DB::rollBack();
+                return $application_insert;
+            }
+
+            $mis_application_id = $application_insert['record_id'];
+
+
+            $rec = DB::table('wf_workflow_transitions as t1')
+                ->join('wf_workflow_actions as t2', 't1.action_id', 't2.id')
+                ->join('wf_workflow_stages as t3', 't1.stage_id', 't3.id')
+                ->select('portal_status_id')
+                ->where(array('nextstage_id' => $next_stage, 't3.stage_status' => 1))
+                ->first();
+            $portal_status_id = 3;
+            if ($rec) {
+                $portal_status_id = $rec->portal_status_id;
+            }
+
+            $portal_params = array(
+                'application_status_id' => $portal_status_id
+            );
+
+            $portal_where = array(
+                'id' => $portal_application_id
+            );
+
+            DB::commit();
+            //send email
+            $vars = array(
+                '{tracking_no}' => $tracking_no
+            );
+            if ($sub_module_id == 9) { //Alteration
+                $this->syncApplicationOnlineVariationRequests($application_code);
+            }
+            if ($sub_module_id == 17) { //Withdrawal
+                $this->syncApplicationOnlineWithdrawalReasons($application_code);
+            }
+
+            onlineApplicationNotificationMail(2, $applicant_email, $vars, $identification_no);
+            if ($portal_status_id == 6 || $portal_status_id == 8) {
+                $vars = array(
+                    '{tracking_no}' => $tracking_no
+                );
+                onlineApplicationNotificationMail(3, $applicant_email, $vars, $identification_no);
+            }
+            DB::commit();
+
+            $res = $this->saveApplicationInvoicingDetails($request, $mis_application_id, $application_code, $tracking_no, $is_fast_track);
+        } else {
+
+            $tracking_no = $results->tracking_no;
+            $application_code = $results->application_code;
+            $is_fast_track = $results->is_fast_track;
+            $details = $this->updateOnlineProductDetails($results, $request, $app_previousdata, $is_portalupdate = 0);
+            $mis_application_id = $details['application_id'];
+            $res = $this->saveApplicationInvoicingDetails($request, $mis_application_id, $application_code, $tracking_no, $is_fast_track);
+        }
+
+
+        return $res;
     }
     public function saveProductOnlineApplicationDetails(Request $request)
     {
@@ -2787,7 +2737,6 @@ $params['appvalidity_status_id'] =3;
 
             $status_type_id = $request->input('status_type_id');
             $res = $this->saveInitialProductOnlineApplicationDetails($request);
-            
         } catch (\Exception $exception) {
             DB::rollBack();
             $res = array(
@@ -2801,12 +2750,12 @@ $params['appvalidity_status_id'] =3;
                 'message' => $throwable->getMessage()
             );
         }
-        
-        return   $res ;
+
+        return   $res;
     }
     //the details 
     //save
-    
+
 
     //the details 
     public function receiveProductEvaluationQueryResponse(Request $request)
@@ -2825,26 +2774,26 @@ $params['appvalidity_status_id'] =3;
         DB::beginTransaction();
         try {
             $portal_db = DB::connection('portal_db');
-                            $qry = $portal_db->table('wb_product_applications as t1')
-                            ->join('wb_product_information as t2', 't1.product_id','=','t2.id')
-                            ->select('t1.*','t1.reg_product_id', 't2.classification_id','t1.assessment_procedure_id')
-                                ->where('t1.id', $application_id);
-                            $results = $qry->first();
-                
-                            if (is_null($results)) {
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
-                         
-                            $application_code = $results->application_code;
+            $qry = $portal_db->table('wb_product_applications as t1')
+                ->join('wb_product_information as t2', 't1.product_id', '=', 't2.id')
+                ->select('t1.*', 't1.reg_product_id', 't2.classification_id', 't1.assessment_procedure_id')
+                ->where('t1.id', $application_id);
+            $results = $qry->first();
+
+            if (is_null($results)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
+                );
+                return $res;
+            }
+
+            $application_code = $results->application_code;
             //get application_details
             $application_details = DB::table($table_name)
                 ->where('application_code', $application_code)
                 ->first();
-                         
+
             if (is_null($application_details)) {
                 $res = array(
                     'success' => false,
@@ -2854,24 +2803,25 @@ $params['appvalidity_status_id'] =3;
                 exit();
             }
             $last_query_ref_id = $application_details->lastquery_ref_id;
-            $where_querydata = array('application_code'=>$application_code, 'id'=>$last_query_ref_id);
+            $where_querydata = array('application_code' => $application_code, 'id' => $last_query_ref_id);
 
             $query_app = DB::table('tra_application_query_reftracker as t1')
-                              ->where($where_querydata)
-                              ->first();
+                ->where($where_querydata)
+                ->first();
 
-             if (is_null($query_app)) {
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while fetching application query details!!'
-                                );
-                                echo json_encode($res);
-                                exit();
-             }
+            if (is_null($query_app)) {
+                $res = array(
+                    'success' => false,
+                    'message' => 'Problem encountered while fetching application query details!!'
+                );
+                echo json_encode($res);
+                exit();
+            }
 
-             //update details 
-             $query_data = array('response_received_on'=>Carbon::now(),
-                'response_received_by'=>$user_id,
+            //update details 
+            $query_data = array(
+                'response_received_on' => Carbon::now(),
+                'response_received_by' => $user_id,
                 'dola' => Carbon::now(),
                 'altered_by' => $user_id
             );
@@ -2915,11 +2865,11 @@ $params['appvalidity_status_id'] =3;
             $portal_where = array(
                 'application_code' => $application_code
             );
-         
+
             $portal_table = getPortalApplicationsTable($module_id);
             updatePortalParams($portal_table, $portal_params, $portal_where);
             //transitions
-          
+
             $transition_params = array(
                 'application_id' => $application_details->id,
                 'application_code' => $application_code,
@@ -2981,13 +2931,15 @@ $params['appvalidity_status_id'] =3;
         }
         return $res;
     }
-    public function getInitialStatus($stage_id){
+    public function getInitialStatus($stage_id)
+    {
 
-           // $rec = DB::table('wf_workflow_transitions')->where(array('nextstage_id'=>$stage_id))->first();
+        // $rec = DB::table('wf_workflow_transitions')->where(array('nextstage_id'=>$stage_id))->first();
 
 
     }
-    public function saveInitialDetails($request){
+    public function saveInitialDetails($request)
+    {
 
         $user_id = $this->user_id;
         $application_id = $request->input('application_id');
@@ -2995,265 +2947,265 @@ $params['appvalidity_status_id'] =3;
         $urgency = $request->input('urgency');
         $comment = $request->input('remarks');
         $status_type_id = $request->input('status_type_id');
-        
+
         $next_stage = $request->input('next_stage');
         $portal_db = DB::connection('portal_db');
 
         $qry = $portal_db->table('wb_product_applications as t1')
-            ->join('wb_product_information as t2', 't1.product_id','=','t2.id')
-            ->select('t1.*','t1.reg_product_id', 't2.classification_id','t1.assessment_procedure_id')
-                ->where('t1.id', $application_id);
+            ->join('wb_product_information as t2', 't1.product_id', '=', 't2.id')
+            ->select('t1.*', 't1.reg_product_id', 't2.classification_id', 't1.assessment_procedure_id')
+            ->where('t1.id', $application_id);
 
-            $results = $qry->first();
+        $results = $qry->first();
 
-            if (is_null($results)) {
-                $res = array(
-                    'success' => false,
-                    'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
-                );
-                return $res;
-            }
-            $tracking_no = $results->tracking_no;
-            $sub_module_id = $results->sub_module_id;
-            $module_id = $results->module_id;
-            $zone_id = $results->zone_id;
-            $section_id = $results->section_id;
-            $classification_id = $results->classification_id;
-            
-            $assessment_procedure_id = $results->assessment_procedure_id;
-            
-            $portal_application_id = $results->id;
-            $reg_product_id = $results->reg_product_id;
-            $portal_product_id = $results->product_id;
-            //process/workflow details
-            $where = array(
-                'module_id' => $results->module_id,
-                'sub_module_id' => $results->sub_module_id,
-                'section_id' => $results->section_id
+        if (is_null($results)) {
+            $res = array(
+                'success' => false,
+                'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
             );
-            $process_details = getTableData('wf_tfdaprocesses', $where);
-            if (is_null($process_details)) {
-                $res = array(
-                    'success' => false,
-                    'message' => 'Problem encountered while getting process details, consult System Admin!!'
-                );
-                return $res;
-            }
-            $process_id = $process_details->id;
+            return $res;
+        }
+        $tracking_no = $results->tracking_no;
+        $sub_module_id = $results->sub_module_id;
+        $module_id = $results->module_id;
+        $zone_id = $results->zone_id;
+        $section_id = $results->section_id;
+        $classification_id = $results->classification_id;
 
-            
-            $workflow_details = getTableData('wf_workflow_stages', array('id' => $next_stage));
-           
-            if (is_null($workflow_details)) {
-                $res = array(
-                    'success' => false,
-                    'message' => 'Problem encountered while getting workflow details, consult System Admin!!'
-                );
-                return $res;
-            }
+        $assessment_procedure_id = $results->assessment_procedure_id;
 
-            //$ref_no = $results->reference_no;
-        
-            $application_code = $results->application_code;;
-            $is_fast_track = $results->is_fast_track;;
-            $paying_currency_id = $results->paying_currency_id;;
-
-            $applicant_details = $portal_db->table('wb_trader_account')
-                ->where('id', $results->trader_id)
-                ->first();
-            
-                $localgent_details = $portal_db->table('wb_trader_account')
-                ->where('id', $results->local_agent_id)
-                ->first();
-                
-            if (is_null($applicant_details)) {
-                DB::rollBack();
-                $res = array(
-                    'success' => false,
-                    'message' => 'Problem encountered while getting applicant details, consult System Admin!!'
-                );
-                return $res;
-            }
-            
-            $identification_no = $applicant_details->identification_no;
-            $applicant_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $applicant_details->identification_no), 'id');
-            if (!is_null($localgent_details)) {
-                $local_agent_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $localgent_details->identification_no), 'id');
-            }            
-
-            $applicant_email = $applicant_details->email;
-            if (isset($localgent_details)){
-                $localagent_email = $localgent_details->email;
-            }
-            
-            //premise main details
-            $product_details = $portal_db->table('wb_product_information')
-                ->where('id', $results->product_id)
-                ->first();
-
-            if (is_null($product_details)) {
-                DB::rollBack();
-                $res = array(
-                    'success' => false,
-                    'message' => 'Problem encountered while getting application details, consult System Admin!!'
-                );
-                return $res;
-            }
-            $product_details->portal_id = $results->product_id;
-            $product_details->created_by = $this->user_id;
-            $product_details = convertStdClassObjToArray($product_details);
-
-            unset($product_details['id']);
-			unset($product_details['product_type_id']);
-            $product_details['created_on'] = Carbon::now();
-            $product_details['created_by'] = $user_id;
-            
-            
-            $prod_insert = insertRecord('tra_product_information', $product_details, $user_id);
-            
-            if ($prod_insert['success'] == false) {
-                DB::rollBack();
-                return $prod_insert;
-            }
-            $product_id = $prod_insert['record_id'];
-            //product other information other details
-            //ingredients
-            
-            $app_status_id = 5;
-            $application_status = getSingleRecordColValue('par_system_statuses', array('id' => $app_status_id), 'name');
-
-            $registration_data = array('tra_product_id' => $product_id,
-                    'status_id' => $app_status_id,
-                    'validity_status_id' => 1,
-					'reg_applicant_id' => $applicant_id,
-                                    'reg_local_agent_id' => (isset($local_agent_id))?$local_agent_id:null,
-                    'registration_status_id' => 1
-                );
-            if($sub_module_id == 7){
-                $where_statement = array('tra_product_id' => $product_id);
-                $product_regresp = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, $where_statement, $user_id);
-                
-                if( $product_regresp['success']){
-    
-                    $reg_product_id = $product_regresp['record_id'];
-                }   
-
-            }
-            
-            funcSaveOnlineProductOtherdetails($portal_product_id, $product_id,$reg_product_id, $user_id);
-         $zone_id = $results->zone_id;
-            $view_id = generateApplicationViewID();
-            $application_details = array(
-                //'reference_no' => $ref_no,
-                'tracking_no' => $tracking_no,
-                'applicant_id' => $applicant_id, 
-                'local_agent_id' => (isset($local_agent_id))?$local_agent_id:null,
-                'application_code' => $application_code,
-                'product_id' => $product_id,
-                'module_id' => $results->module_id,
-                'sub_module_id' => $results->sub_module_id,
-                'zone_id' => $results->zone_id,
-                'section_id' => $results->section_id,
-                'date_added'=>Carbon::now(),
-                'view_id'=>$view_id,
-                'reg_product_id'=>$reg_product_id,
-                'assessment_procedure_id'=>$assessment_procedure_id ,
-                'process_id' => $process_details->id,
-                'workflow_stage_id' => $workflow_details->id,
-                'application_status_id' => $app_status_id,
-                'paying_currency_id'=>$paying_currency_id,
-                'is_fast_track'=>$is_fast_track,
-                'portal_id' => $portal_application_id,
-                'dola' =>  Carbon::now(),
-                'altered_by'=>$user_id
+        $portal_application_id = $results->id;
+        $reg_product_id = $results->reg_product_id;
+        $portal_product_id = $results->product_id;
+        //process/workflow details
+        $where = array(
+            'module_id' => $results->module_id,
+            'sub_module_id' => $results->sub_module_id,
+            'section_id' => $results->section_id
+        );
+        $process_details = getTableData('wf_tfdaprocesses', $where);
+        if (is_null($process_details)) {
+            $res = array(
+                'success' => false,
+                'message' => 'Problem encountered while getting process details, consult System Admin!!'
             );
-            $application_insert = insertRecord('tra_product_applications', $application_details, $user_id);
-            if ($application_insert['success'] == false) {
-                DB::rollBack();
-                return $application_insert;
-            }
-            
-            $mis_application_id = $application_insert['record_id'];
-        
-            $portal_params = array(
-                'application_status_id' => 3,
-                //'reference_no' => $ref_no
-            );
-            $portal_where = array(
-                'application_code' => $application_code
-            );
-            
-       
-            $res = updatePortalParams('wb_product_applications', $portal_params, $portal_where);
-           
-            $details = array(
-                'application_id' => $application_insert['record_id'],
-                'application_code' => $application_code,
-                //'reference_no' => $ref_no,
-                'application_status' => $application_status,
-                'process_id' => $process_details->id,
-                'process_name' => $process_details->name,
-                'workflow_stage_id' => $workflow_details->id,
-                'application_status_id' => $app_status_id,
-                'workflow_stage' => $workflow_details->name,
-                'module_id' => $results->module_id,
-                'sub_module_id' => $results->sub_module_id,
-                'section_id' => $results->section_id,
-                'product_id' => $product_id,
-                'applicant_id' => $applicant_id
-            );
-            //submissions
-			$where = array(
-                                't1.module_id' => $results->module_id,
-                                't1.sub_module_id' => $results->sub_module_id,
-                                't1.section_id' => $results->section_id
-                            );
+            return $res;
+        }
+        $process_id = $process_details->id;
 
-                            $rec = DB::table('wf_tfdaprocesses as t1')
-                                            ->join('wf_workflow_stages as t2', 't1.workflow_id','=','t2.workflow_id')
-                                            ->where($where)
-                                            ->select('t2.id as current_stage','t1.id as process_id')
-                                            ->where('stage_status',1)
-                                            ->first();
-            $submission_params = array(
-                'application_id' => $application_insert['record_id'],
-                'process_id' => $process_details->id,
-                'application_code' => $application_code,
+
+        $workflow_details = getTableData('wf_workflow_stages', array('id' => $next_stage));
+
+        if (is_null($workflow_details)) {
+            $res = array(
+                'success' => false,
+                'message' => 'Problem encountered while getting workflow details, consult System Admin!!'
+            );
+            return $res;
+        }
+
+        //$ref_no = $results->reference_no;
+
+        $application_code = $results->application_code;;
+        $is_fast_track = $results->is_fast_track;;
+        $paying_currency_id = $results->paying_currency_id;;
+
+        $applicant_details = $portal_db->table('wb_trader_account')
+            ->where('id', $results->trader_id)
+            ->first();
+
+        $localgent_details = $portal_db->table('wb_trader_account')
+            ->where('id', $results->local_agent_id)
+            ->first();
+
+        if (is_null($applicant_details)) {
+            DB::rollBack();
+            $res = array(
+                'success' => false,
+                'message' => 'Problem encountered while getting applicant details, consult System Admin!!'
+            );
+            return $res;
+        }
+
+        $identification_no = $applicant_details->identification_no;
+        $applicant_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $applicant_details->identification_no), 'id');
+        if (!is_null($localgent_details)) {
+            $local_agent_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $localgent_details->identification_no), 'id');
+        }
+
+        $applicant_email = $applicant_details->email;
+        if (isset($localgent_details)) {
+            $localagent_email = $localgent_details->email;
+        }
+
+        //premise main details
+        $product_details = $portal_db->table('wb_product_information')
+            ->where('id', $results->product_id)
+            ->first();
+
+        if (is_null($product_details)) {
+            DB::rollBack();
+            $res = array(
+                'success' => false,
+                'message' => 'Problem encountered while getting application details, consult System Admin!!'
+            );
+            return $res;
+        }
+        $product_details->portal_id = $results->product_id;
+        $product_details->created_by = $this->user_id;
+        $product_details = convertStdClassObjToArray($product_details);
+
+        unset($product_details['id']);
+        unset($product_details['product_type_id']);
+        $product_details['created_on'] = Carbon::now();
+        $product_details['created_by'] = $user_id;
+
+
+        $prod_insert = insertRecord('tra_product_information', $product_details, $user_id);
+
+        if ($prod_insert['success'] == false) {
+            DB::rollBack();
+            return $prod_insert;
+        }
+        $product_id = $prod_insert['record_id'];
+        //product other information other details
+        //ingredients
+
+        $app_status_id = 5;
+        $application_status = getSingleRecordColValue('par_system_statuses', array('id' => $app_status_id), 'name');
+
+        $registration_data = array(
+            'tra_product_id' => $product_id,
+            'status_id' => $app_status_id,
+            'validity_status_id' => 1,
+            'reg_applicant_id' => $applicant_id,
+            'reg_local_agent_id' => (isset($local_agent_id)) ? $local_agent_id : null,
+            'registration_status_id' => 1
+        );
+        if ($sub_module_id == 7) {
+            $where_statement = array('tra_product_id' => $product_id);
+            $product_regresp = saveApplicationRegistrationDetails('tra_registered_products', $registration_data, $where_statement, $user_id);
+
+            if ($product_regresp['success']) {
+
+                $reg_product_id = $product_regresp['record_id'];
+            }
+        }
+
+        funcSaveOnlineProductOtherdetails($portal_product_id, $product_id, $reg_product_id, $user_id);
+        $zone_id = $results->zone_id;
+        $view_id = generateApplicationViewID();
+        $application_details = array(
+            //'reference_no' => $ref_no,
+            'tracking_no' => $tracking_no,
+            'applicant_id' => $applicant_id,
+            'local_agent_id' => (isset($local_agent_id)) ? $local_agent_id : null,
+            'application_code' => $application_code,
+            'product_id' => $product_id,
+            'module_id' => $results->module_id,
+            'sub_module_id' => $results->sub_module_id,
+            'zone_id' => $results->zone_id,
+            'section_id' => $results->section_id,
+            'date_added' => Carbon::now(),
+            'view_id' => $view_id,
+            'reg_product_id' => $reg_product_id,
+            'assessment_procedure_id' => $assessment_procedure_id,
+            'process_id' => $process_details->id,
+            'workflow_stage_id' => $workflow_details->id,
+            'application_status_id' => $app_status_id,
+            'paying_currency_id' => $paying_currency_id,
+            'is_fast_track' => $is_fast_track,
+            'portal_id' => $portal_application_id,
+            'dola' =>  Carbon::now(),
+            'altered_by' => $user_id
+        );
+        $application_insert = insertRecord('tra_product_applications', $application_details, $user_id);
+        if ($application_insert['success'] == false) {
+            DB::rollBack();
+            return $application_insert;
+        }
+
+        $mis_application_id = $application_insert['record_id'];
+
+        $portal_params = array(
+            'application_status_id' => 3,
+            //'reference_no' => $ref_no
+        );
+        $portal_where = array(
+            'application_code' => $application_code
+        );
+
+
+        $res = updatePortalParams('wb_product_applications', $portal_params, $portal_where);
+
+        $details = array(
+            'application_id' => $application_insert['record_id'],
+            'application_code' => $application_code,
+            //'reference_no' => $ref_no,
+            'application_status' => $application_status,
+            'process_id' => $process_details->id,
+            'process_name' => $process_details->name,
+            'workflow_stage_id' => $workflow_details->id,
+            'application_status_id' => $app_status_id,
+            'workflow_stage' => $workflow_details->name,
+            'module_id' => $results->module_id,
+            'sub_module_id' => $results->sub_module_id,
+            'section_id' => $results->section_id,
+            'product_id' => $product_id,
+            'applicant_id' => $applicant_id
+        );
+        //submissions
+        $where = array(
+            't1.module_id' => $results->module_id,
+            't1.sub_module_id' => $results->sub_module_id,
+            't1.section_id' => $results->section_id
+        );
+
+        $rec = DB::table('wf_tfdaprocesses as t1')
+            ->join('wf_workflow_stages as t2', 't1.workflow_id', '=', 't2.workflow_id')
+            ->where($where)
+            ->select('t2.id as current_stage', 't1.id as process_id')
+            ->where('stage_status', 1)
+            ->first();
+        $submission_params = array(
+            'application_id' => $application_insert['record_id'],
+            'process_id' => $process_details->id,
+            'application_code' => $application_code,
             //  'reference_no' => $ref_no,
-                'tracking_no' => $tracking_no,
-                'usr_from' => $user_id,
-                'usr_to' => $responsible_user,
-                'previous_stage' => $rec->current_stage,
-                'current_stage' => $workflow_details->id,
-                'module_id' => $results->module_id,
-                'sub_module_id' => $results->sub_module_id,
-                'section_id' => $results->section_id,
-                'application_status_id' => $app_status_id,
-                'urgency' => $urgency,
-                'view_id'=>$view_id,
-                'applicant_id' => $applicant_id,
-                'zone_id' => $zone_id,
-                'remarks' => $comment,
-                'date_received' => Carbon::now(),
-                'created_on' => Carbon::now(),
-                'created_by' => $user_id
-            );
-            DB::table('tra_submissions')
-                ->insert($submission_params);
-            DB::commit();
-            //send email
-            $vars = array(
-                '{tracking_no}' => $tracking_no
-            );
-            if ($sub_module_id == 9) {//Alteration
-                $this->syncApplicationOnlineVariationRequests($application_code);
-            }
-            if ($sub_module_id == 17) {//Withdrawal
-                $this->syncApplicationOnlineWithdrawalReasons($application_code);
-            }
-           
-            onlineApplicationNotificationMail(2, $applicant_email, $vars,$identification_no);
-          
+            'tracking_no' => $tracking_no,
+            'usr_from' => $user_id,
+            'usr_to' => $responsible_user,
+            'previous_stage' => $rec->current_stage,
+            'current_stage' => $workflow_details->id,
+            'module_id' => $results->module_id,
+            'sub_module_id' => $results->sub_module_id,
+            'section_id' => $results->section_id,
+            'application_status_id' => $app_status_id,
+            'urgency' => $urgency,
+            'view_id' => $view_id,
+            'applicant_id' => $applicant_id,
+            'zone_id' => $zone_id,
+            'remarks' => $comment,
+            'date_received' => Carbon::now(),
+            'created_on' => Carbon::now(),
+            'created_by' => $user_id
+        );
+        DB::table('tra_submissions')
+            ->insert($submission_params);
+        DB::commit();
+        //send email
+        $vars = array(
+            '{tracking_no}' => $tracking_no
+        );
+        if ($sub_module_id == 9) { //Alteration
+            $this->syncApplicationOnlineVariationRequests($application_code);
+        }
+        if ($sub_module_id == 17) { //Withdrawal
+            $this->syncApplicationOnlineWithdrawalReasons($application_code);
+        }
+
+        onlineApplicationNotificationMail(2, $applicant_email, $vars, $identification_no);
+
         return $details;
     }
     public function syncApplicationOnlineWithdrawalReasons($application_code)
@@ -3282,287 +3234,283 @@ $params['appvalidity_status_id'] =3;
         $variations = convertStdClassObjToArray($variations);
         DB::table('tra_application_variationsdata')
             ->insert($variations);
-            
     }
-    public function updateOnlineProductDetails($results,$request,$app_previousdata,$is_portalupdate=1){
+    public function updateOnlineProductDetails($results, $request, $app_previousdata, $is_portalupdate = 1)
+    {
         $user_id = $this->user_id;
         $curr_stage_id = $request->input('curr_stage_id');
-		$responsible_user = $request->input('responsible_user');
-        $comment = $request->input('comment');  $urgency = $request->input('urgency');
+        $responsible_user = $request->input('responsible_user');
+        $comment = $request->input('comment');
+        $urgency = $request->input('urgency');
         $portal_db = DB::connection('portal_db');
-        $next_stage = $request->input('next_stage');$applications_table = 'tra_product_applications';
-    
-							$product_id = $app_previousdata->product_id;
-                            $tracking_no = $results->tracking_no;
-                            $sub_module_id = $results->sub_module_id;
-                            $module_id = $results->module_id;
-                            $zone_id = $results->zone_id;
-                            $section_id = $results->section_id;
-                            $classification_id = $results->classification_id;
-                            
-                            $assessment_procedure_id = $results->assessment_procedure_id;
-                            
-                            $portal_application_id = $results->id;
-                            $reg_product_id = $results->reg_product_id;
-                            $portal_product_id = $results->product_id;
-                            //process/workflow details
-                            $where = array(
-                                'module_id' => $results->module_id,
-                                'sub_module_id' => $results->sub_module_id,
-                                'section_id' => $results->section_id
-                            );
-                            $process_details = getTableData('wf_tfdaprocesses', $where);
-                            if (is_null($process_details)) {
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting process details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
+        $next_stage = $request->input('next_stage');
+        $applications_table = 'tra_product_applications';
 
-                            $process_id = $process_details->id;
-                            $workflow_details = getTableData('wf_workflow_stages', array('id' => $curr_stage_id));
-                            $rec = DB::table('wf_workflow_transitions as t1')
-                                        ->join('wf_workflow_actions as t2', 't1.action_id','t2.id')
-										->join('wf_workflow_stages as t3', 't1.stage_id','t3.id')
-                                        ->select('portal_status_id','t1.application_status_id as app_status_id')
-										->where(array('nextstage_id'=>$curr_stage_id,'stage_status'=>1) )
-                                       ->first();
-								
-                            $portal_status_id = 3;
-                            $app_status_id = 1;
-                            if($rec){
-                                $portal_status_id = $rec->portal_status_id;
-                                $app_status_id = $rec->app_status_id;
-                            }
-                            if (is_null($workflow_details)) {
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting workflow details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
-                
-                            //$ref_no = $results->reference_no;
-                          
-                            $application_code = $results->application_code;;
-                
-                            $applicant_details = $portal_db->table('wb_trader_account')
-                                ->where('id', $results->trader_id)
-                                ->first();
-                            
-                                $localgent_details = $portal_db->table('wb_trader_account')
-                                ->where('id', $results->local_agent_id)
-                                ->first();
-                                
-                            if (is_null($applicant_details)) {
-                                DB::rollBack();
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting applicant details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
-                            $identification_no = $applicant_details->identification_no;
-                            $applicant_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $applicant_details->identification_no), 'id');
-                            if (!is_null($localgent_details)) {
-                                $local_agent_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $localgent_details->identification_no), 'id');
-                            }
-                            $applicant_email = $applicant_details->email;
-                            if (!is_null($localgent_details)) {
-                                $localagent_email = $localgent_details->email;
-                            }
-                            //premise main details
-                            $product_details = $portal_db->table('wb_product_information')
-                                ->where('id', $results->product_id)
-                                ->first();
-                
-                            if (is_null($product_details)) {
-                                DB::rollBack();
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting application details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
-                        
-                            $product_portal_id = $results->product_id;
-                            $product_details->portal_id = $results->product_id;
-                            $product_details->created_by = $this->user_id;
-                            $product_details = convertStdClassObjToArray($product_details);
-                
-                            unset($product_details['id']);
-                            $product_details['created_on'] = Carbon::now();
-                            $product_details['created_by'] = $user_id;
-                           
-                            $whereproduct_data = array('id'=>$product_id);
+        $product_id = $app_previousdata->product_id;
+        $tracking_no = $results->tracking_no;
+        $sub_module_id = $results->sub_module_id;
+        $module_id = $results->module_id;
+        $zone_id = $results->zone_id;
+        $section_id = $results->section_id;
+        $classification_id = $results->classification_id;
 
-                            $product_table = 'tra_product_information';
-                            $where = array('');
-                            $product_previousdata = getPreviousRecords($product_table, $whereproduct_data);
-                            $product_previousdata = $product_previousdata['results'];
-							
-                            $prod_update = updateRecord($product_table, $product_previousdata, $whereproduct_data, $product_details, $user_id, '');
-                           
-                            if ($prod_update['success'] == false) {
-                                DB::rollBack();
-                                return $prod_update;
-                            }
-                           
-                            $product_id = $prod_update['record_id'];
-                            $where = array(
-                                't1.module_id' => $results->module_id,
-                                't1.sub_module_id' => $results->sub_module_id,
-                                't1.section_id' => $results->section_id
-                            );
+        $assessment_procedure_id = $results->assessment_procedure_id;
 
-                            $rec = DB::table('wf_tfdaprocesses as t1')
-                                            ->join('wf_workflow_stages as t2', 't1.workflow_id','=','t2.workflow_id')
-                                            ->where($where)
-                                            ->select('t2.id as current_stage','t1.id as process_id')
-                                            ->where('stage_status',1)
-                                            ->first();
-									
-                            $app_status = getApplicationInitialStatus($results->module_id, $results->sub_module_id);
-                           // $app_status_id = $app_status->status_id;
+        $portal_application_id = $results->id;
+        $reg_product_id = $results->reg_product_id;
+        $portal_product_id = $results->product_id;
+        //process/workflow details
+        $where = array(
+            'module_id' => $results->module_id,
+            'sub_module_id' => $results->sub_module_id,
+            'section_id' => $results->section_id
+        );
+        $process_details = getTableData('wf_tfdaprocesses', $where);
+        if (is_null($process_details)) {
+            $res = array(
+                'success' => false,
+                'message' => 'Problem encountered while getting process details, consult System Admin!!'
+            );
+            return $res;
+        }
 
-                            $application_status = getSingleRecordColValue('par_system_statuses', array('id' => $app_status_id), 'name');
-                           
-                            $reg_product_id =  $app_previousdata->reg_product_id;
-                            
-                            funcSaveOnlineProductOtherdetails($portal_product_id, $product_id,$reg_product_id, $user_id);
-                           
-                            $view_id = generateApplicationViewID();
-                           $zone_id = $results->zone_id;
-                            $application_details = array(
-                                //'reference_no' => $ref_no,
-                                'tracking_no' => $tracking_no,
-                                'applicant_id' => $applicant_id, 
-                                'local_agent_id' => (isset($local_agent_id))?$local_agent_id:null,
-                                'application_code' => $application_code,
-                                'product_id' => $product_id,
-                                'module_id' => $results->module_id,
-                                'sub_module_id' => $results->sub_module_id,
-                                'zone_id' => $results->zone_id,
-                                'section_id' => $results->section_id,
-                                'date_added'=>Carbon::now(),
-                                'view_id'=>$view_id,
-                                'reg_product_id'=>$reg_product_id,
-                                'assessment_procedure_id'=>$assessment_procedure_id ,
-                                'process_id' => $process_details->id,
-                                'workflow_stage_id' => $workflow_details->id,
-                                'application_status_id' => $app_status_id,
-                                'portal_id' => $portal_application_id,
-                                'dola' =>  Carbon::now(),
-                                'altered_by'=>$user_id
-                            );
-                            //update the details 
-                            if($sub_module_id != 7){
+        $process_id = $process_details->id;
+        $workflow_details = getTableData('wf_workflow_stages', array('id' => $curr_stage_id));
+        $rec = DB::table('wf_workflow_transitions as t1')
+            ->join('wf_workflow_actions as t2', 't1.action_id', 't2.id')
+            ->join('wf_workflow_stages as t3', 't1.stage_id', 't3.id')
+            ->select('portal_status_id', 't1.application_status_id as app_status_id')
+            ->where(array('nextstage_id' => $curr_stage_id, 'stage_status' => 1))
+            ->first();
 
-                                $application_details['reference_no'] = $tracking_no;
+        $portal_status_id = 3;
+        $app_status_id = 1;
+        if ($rec) {
+            $portal_status_id = $rec->portal_status_id;
+            $app_status_id = $rec->app_status_id;
+        }
+        if (is_null($workflow_details)) {
+            $res = array(
+                'success' => false,
+                'message' => 'Problem encountered while getting workflow details, consult System Admin!!'
+            );
+            return $res;
+        }
 
-                            }
-                            $where_data = array('application_code'=>$application_code);
-                           
-                             $app_previousdata = getPreviousRecords($applications_table, $where_data);
-                             $app_previousdata = $app_previousdata['results'];
-                            $application_update =  updateRecord($applications_table, $app_previousdata, $where_data, $application_details, $user_id, '');
-                          
-                            if ($application_update['success'] == false) {
-                                DB::rollBack();
-                                return $application_update;
-                            }
-                          
-                            $mis_application_id = $application_update['record_id'];
-                           
-                            $portal_params = array(
-                                'application_status_id' => $portal_status_id,
-                                //'reference_no' => $ref_no
-                            );
-                            if($sub_module_id != 7){
+        //$ref_no = $results->reference_no;
 
-                                $portal_params['reference_no'] = $tracking_no;
-                                
-                            }
-                            $portal_where = array(
-                                'application_code' => $application_code
-                            );
-                            if($is_portalupdate ==1){
-                                updatePortalParams('wb_product_applications', $portal_params, $portal_where);
-								
-                            }
+        $application_code = $results->application_code;;
 
-                            $details = array(
-                                'application_id' => $application_update['record_id'],
-                                'application_code' => $application_code,
-                                //'reference_no' => $ref_no,
-                                'application_status' => $application_status,
-                                'process_id' => $process_details->id,
-                                'process_name' => $process_details->name,
-                                'workflow_stage_id' => $workflow_details->id,
-                                'application_status_id' => $app_status_id,
-                                'workflow_stage' => $workflow_details->name,
-                                'module_id' => $results->module_id,
-                                'sub_module_id' => $results->sub_module_id,
-                                'section_id' => $results->section_id,
-                                'product_id' => $product_id,
-                                'applicant_id' => $applicant_id,
-                                'localagent_email' => (isset($localagent_email))?$localagent_email:null,
-                                'identification_no' => $identification_no,
-                                'applicant_email'=>$applicant_email
-                            );
-                            //submissions
-							
-                            $submission_params = array(
-                                'application_id' => $application_update['record_id'],
-                                'process_id' => $process_details->id,
-                                'application_code' => $application_code,
-                                'tracking_no' => $tracking_no,
-                                'usr_from' => $user_id,
-                                //'released_by' => $user_id,
-                                'usr_to' => $responsible_user,
-                                'previous_stage' => $rec->current_stage,
-                                'current_stage' => $workflow_details->id,
-                                'module_id' => $results->module_id,
-                                'sub_module_id' => $results->sub_module_id,
-                                'section_id' => $results->section_id,
-                                'application_status_id' => $app_status_id,
-                                'urgency' => $urgency,
-                                'view_id'=>$view_id,
-                                'applicant_id' => $applicant_id,
-                                'zone_id' => $zone_id,
-                                'remarks' => $comment,
-                                'date_received' => Carbon::now(),
-                                
-                                'created_on' => Carbon::now(),
-                                'created_by' => $user_id
-                            );
+        $applicant_details = $portal_db->table('wb_trader_account')
+            ->where('id', $results->trader_id)
+            ->first();
 
-                            if($sub_module_id != 7){
+        $localgent_details = $portal_db->table('wb_trader_account')
+            ->where('id', $results->local_agent_id)
+            ->first();
 
-                                $submission_params['reference_no'] = $tracking_no;
-                                
-                            }
-                            if($is_portalupdate ==1){
-                                    DB::table('tra_submissions')
-                                    ->insert($submission_params);
-                            }
-			$vars = array(
+        if (is_null($applicant_details)) {
+            DB::rollBack();
+            $res = array(
+                'success' => false,
+                'message' => 'Problem encountered while getting applicant details, consult System Admin!!'
+            );
+            return $res;
+        }
+        $identification_no = $applicant_details->identification_no;
+        $applicant_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $applicant_details->identification_no), 'id');
+        if (!is_null($localgent_details)) {
+            $local_agent_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $localgent_details->identification_no), 'id');
+        }
+        $applicant_email = $applicant_details->email;
+        if (!is_null($localgent_details)) {
+            $localagent_email = $localgent_details->email;
+        }
+        //premise main details
+        $product_details = $portal_db->table('wb_product_information')
+            ->where('id', $results->product_id)
+            ->first();
+
+        if (is_null($product_details)) {
+            DB::rollBack();
+            $res = array(
+                'success' => false,
+                'message' => 'Problem encountered while getting application details, consult System Admin!!'
+            );
+            return $res;
+        }
+
+        $product_portal_id = $results->product_id;
+        $product_details->portal_id = $results->product_id;
+        $product_details->created_by = $this->user_id;
+        $product_details = convertStdClassObjToArray($product_details);
+
+        unset($product_details['id']);
+        $product_details['created_on'] = Carbon::now();
+        $product_details['created_by'] = $user_id;
+
+        $whereproduct_data = array('id' => $product_id);
+
+        $product_table = 'tra_product_information';
+        $where = array('');
+        $product_previousdata = getPreviousRecords($product_table, $whereproduct_data);
+        $product_previousdata = $product_previousdata['results'];
+
+        $prod_update = updateRecord($product_table, $product_previousdata, $whereproduct_data, $product_details, $user_id, '');
+
+        if ($prod_update['success'] == false) {
+            DB::rollBack();
+            return $prod_update;
+        }
+
+        $product_id = $prod_update['record_id'];
+        $where = array(
+            't1.module_id' => $results->module_id,
+            't1.sub_module_id' => $results->sub_module_id,
+            't1.section_id' => $results->section_id
+        );
+
+        $rec = DB::table('wf_tfdaprocesses as t1')
+            ->join('wf_workflow_stages as t2', 't1.workflow_id', '=', 't2.workflow_id')
+            ->where($where)
+            ->select('t2.id as current_stage', 't1.id as process_id')
+            ->where('stage_status', 1)
+            ->first();
+
+        $app_status = getApplicationInitialStatus($results->module_id, $results->sub_module_id);
+        // $app_status_id = $app_status->status_id;
+
+        $application_status = getSingleRecordColValue('par_system_statuses', array('id' => $app_status_id), 'name');
+
+        $reg_product_id =  $app_previousdata->reg_product_id;
+
+        funcSaveOnlineProductOtherdetails($portal_product_id, $product_id, $reg_product_id, $user_id);
+
+        $view_id = generateApplicationViewID();
+        $zone_id = $results->zone_id;
+        $application_details = array(
+            //'reference_no' => $ref_no,
+            'tracking_no' => $tracking_no,
+            'applicant_id' => $applicant_id,
+            'local_agent_id' => (isset($local_agent_id)) ? $local_agent_id : null,
+            'application_code' => $application_code,
+            'product_id' => $product_id,
+            'module_id' => $results->module_id,
+            'sub_module_id' => $results->sub_module_id,
+            'zone_id' => $results->zone_id,
+            'section_id' => $results->section_id,
+            'date_added' => Carbon::now(),
+            'view_id' => $view_id,
+            'reg_product_id' => $reg_product_id,
+            'assessment_procedure_id' => $assessment_procedure_id,
+            'process_id' => $process_details->id,
+            'workflow_stage_id' => $workflow_details->id,
+            'application_status_id' => $app_status_id,
+            'portal_id' => $portal_application_id,
+            'dola' =>  Carbon::now(),
+            'altered_by' => $user_id
+        );
+        //update the details 
+        if ($sub_module_id != 7) {
+
+            $application_details['reference_no'] = $tracking_no;
+        }
+        $where_data = array('application_code' => $application_code);
+
+        $app_previousdata = getPreviousRecords($applications_table, $where_data);
+        $app_previousdata = $app_previousdata['results'];
+        $application_update =  updateRecord($applications_table, $app_previousdata, $where_data, $application_details, $user_id, '');
+
+        if ($application_update['success'] == false) {
+            DB::rollBack();
+            return $application_update;
+        }
+
+        $mis_application_id = $application_update['record_id'];
+
+        $portal_params = array(
+            'application_status_id' => $portal_status_id,
+            //'reference_no' => $ref_no
+        );
+        if ($sub_module_id != 7) {
+
+            $portal_params['reference_no'] = $tracking_no;
+        }
+        $portal_where = array(
+            'application_code' => $application_code
+        );
+        if ($is_portalupdate == 1) {
+            updatePortalParams('wb_product_applications', $portal_params, $portal_where);
+        }
+
+        $details = array(
+            'application_id' => $application_update['record_id'],
+            'application_code' => $application_code,
+            //'reference_no' => $ref_no,
+            'application_status' => $application_status,
+            'process_id' => $process_details->id,
+            'process_name' => $process_details->name,
+            'workflow_stage_id' => $workflow_details->id,
+            'application_status_id' => $app_status_id,
+            'workflow_stage' => $workflow_details->name,
+            'module_id' => $results->module_id,
+            'sub_module_id' => $results->sub_module_id,
+            'section_id' => $results->section_id,
+            'product_id' => $product_id,
+            'applicant_id' => $applicant_id,
+            'localagent_email' => (isset($localagent_email)) ? $localagent_email : null,
+            'identification_no' => $identification_no,
+            'applicant_email' => $applicant_email
+        );
+        //submissions
+
+        $submission_params = array(
+            'application_id' => $application_update['record_id'],
+            'process_id' => $process_details->id,
+            'application_code' => $application_code,
+            'tracking_no' => $tracking_no,
+            'usr_from' => $user_id,
+            //'released_by' => $user_id,
+            'usr_to' => $responsible_user,
+            'previous_stage' => $rec->current_stage,
+            'current_stage' => $workflow_details->id,
+            'module_id' => $results->module_id,
+            'sub_module_id' => $results->sub_module_id,
+            'section_id' => $results->section_id,
+            'application_status_id' => $app_status_id,
+            'urgency' => $urgency,
+            'view_id' => $view_id,
+            'applicant_id' => $applicant_id,
+            'zone_id' => $zone_id,
+            'remarks' => $comment,
+            'date_received' => Carbon::now(),
+
+            'created_on' => Carbon::now(),
+            'created_by' => $user_id
+        );
+
+        if ($sub_module_id != 7) {
+
+            $submission_params['reference_no'] = $tracking_no;
+        }
+        if ($is_portalupdate == 1) {
+            DB::table('tra_submissions')
+                ->insert($submission_params);
+        }
+        $vars = array(
+            '{tracking_no}' => $tracking_no
+        );
+        onlineApplicationNotificationMail(2, $applicant_email, $vars, $identification_no);
+        //email 4 localagent_email
+        if ($portal_status_id == 6 || $portal_status_id == 8) {
+            $vars = array(
                 '{tracking_no}' => $tracking_no
             );
-            onlineApplicationNotificationMail(2, $applicant_email, $vars,$identification_no);
-            //email 4 localagent_email
-			if($portal_status_id == 6 || $portal_status_id == 8){
-								$vars = array(
-									'{tracking_no}' => $tracking_no
-								);
-								onlineApplicationNotificationMail(3, $applicant_email, $vars,$identification_no);
-							}
-                           
-                            DB::commit();
-                            return  $details;
+            onlineApplicationNotificationMail(3, $applicant_email, $vars, $identification_no);
+        }
 
-
+        DB::commit();
+        return  $details;
     }
     public function saveInitialProductOnlineApplicationDetails($request)
     {
@@ -3574,68 +3522,65 @@ $params['appvalidity_status_id'] =3;
         $status_type_id = $request->input('status_type_id');
         $application_code = $request->input('application_code');
         $sub_module_id = $request->input('sub_module_id');
-		
+
         $curr_stage_id = $request->input('curr_stage_id');
 
         $next_stage = $request->input('next_stage');
         $user_id = $this->user_id;
-        
+
         $applications_table = 'tra_product_applications';
-       
-                $portal_db = DB::connection('portal_db');
-                            $qry = $portal_db->table('wb_product_applications as t1')
-                            ->join('wb_product_information as t2', 't1.product_id','=','t2.id')
-                            ->select('t1.*','t1.reg_product_id', 't2.classification_id','t1.assessment_procedure_id')
-                                ->where('t1.id', $application_id);
-                            $results = $qry->first();
-                
-                            if (is_null($results)) {
-                                $res = array(
-                                    'success' => false,
-                                    'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
-                                );
-                                return $res;
-                            }
-                         
-                            $application_code = $results->application_code;
-                    
-                    $app_previousdata = DB::table($applications_table)
-                                        ->where('application_code',$application_code)
-                                        ->first();
-                    if($app_previousdata){
-                        $tracking_no = $app_previousdata->tracking_no;
 
-                            $details = $this->updateOnlineProductDetails($results,$request,$app_previousdata);
-                            //send email
-                            $identification_no = $details['identification_no'];
-                            $localagent_email = $details['localagent_email'];
-                            $applicant_email = $details['applicant_email'];
-                            $vars = array(
-                                '{tracking_no}' => $tracking_no,
-                                'identification_no'=>$identification_no,
-                                'localagent_email'=>$localagent_email
-                            );
-                            onlineApplicationNotificationMail(2, $applicant_email, $vars,$identification_no);
-                           
-                    }
-                    else{
-                       
-                        $details = $this->saveInitialDetails($request);
+        $portal_db = DB::connection('portal_db');
+        $qry = $portal_db->table('wb_product_applications as t1')
+            ->join('wb_product_information as t2', 't1.product_id', '=', 't2.id')
+            ->select('t1.*', 't1.reg_product_id', 't2.classification_id', 't1.assessment_procedure_id')
+            ->where('t1.id', $application_id);
+        $results = $qry->first();
 
-                    }
-
-       //email 4 localagent_email
+        if (is_null($results)) {
             $res = array(
-                'success' => true,
-                'details' => $details,
-                'message' => 'Application saved successfully in the MIS!!'
+                'success' => false,
+                'message' => 'Problem encountered while getting portal application details, consult System Admin!!'
             );
-			return $res;
+            return $res;
+        }
+
+        $application_code = $results->application_code;
+
+        $app_previousdata = DB::table($applications_table)
+            ->where('application_code', $application_code)
+            ->first();
+        if ($app_previousdata) {
+            $tracking_no = $app_previousdata->tracking_no;
+
+            $details = $this->updateOnlineProductDetails($results, $request, $app_previousdata);
+            //send email
+            $identification_no = $details['identification_no'];
+            $localagent_email = $details['localagent_email'];
+            $applicant_email = $details['applicant_email'];
+            $vars = array(
+                '{tracking_no}' => $tracking_no,
+                'identification_no' => $identification_no,
+                'localagent_email' => $localagent_email
+            );
+            onlineApplicationNotificationMail(2, $applicant_email, $vars, $identification_no);
+        } else {
+
+            $details = $this->saveInitialDetails($request);
+        }
+
+        //email 4 localagent_email
+        $res = array(
+            'success' => true,
+            'details' => $details,
+            'message' => 'Application saved successfully in the MIS!!'
+        );
+        return $res;
     }
-    public function getProductInvoiceDetails($application_id,$application_code)
+    public function getProductInvoiceDetails($application_id, $application_code)
     {
-        $where = array('t1.application_code'=>$application_code);
-        
+        $where = array('t1.application_code' => $application_code);
+
         $qry = DB::table('tra_product_applications as t1')
             ->leftJoin('wf_tfdaprocesses as t2', 't1.process_id', '=', 't2.id')
             ->leftJoin('tra_product_information as t3', 't1.product_id', '=', 't3.id')
@@ -3646,8 +3591,7 @@ $params['appvalidity_status_id'] =3;
                      CONCAT_WS(', ',t3.brand_name,t5.name) as module_desc"))
             ->where($where);
         $invoice_details = $qry->first();
-       
+
         return $invoice_details;
-        
     }
 }
