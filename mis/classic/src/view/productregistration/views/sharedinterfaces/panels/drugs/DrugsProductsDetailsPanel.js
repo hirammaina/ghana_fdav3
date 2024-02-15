@@ -1,28 +1,35 @@
 /**
  * Created by Kip on 11/12/2018.
  */
-Ext.define('Admin.view.productregistration.views.sharedinterfaces.panels.drugs.DrugsProductsDetailsPanel', {
-    extend: 'Admin.view.productregistration.views.sharedinterfaces.panels.drugs.DrugsProductsDetailsPnl',
-    xtype: 'drugsProductsDetailsPanel',
-    controller: 'productregistrationvctr',
-    itemId:'product_detailspanel',
+Ext.define(
+  "Admin.view.productregistration.views.sharedinterfaces.panels.drugs.DrugsProductsDetailsPanel",
+  {
+    extend:
+      "Admin.view.productregistration.views.sharedinterfaces.panels.drugs.DrugsProductsDetailsPnl",
+    xtype: "drugsProductsDetailsPanel",
+    controller: "productregistrationvctr",
+    itemId: "product_detailspanel",
     autoScroll: true,
     layout: {
-        type: 'fit'
+      type: "card", //from fit Job 14.02.24
     },
-    defaults:{
-        margin: 3
+    defaults: {
+      margin: 3,
     },
     viewModel: {
-        type: 'productregistrationvm'
+      type: "productregistrationvm",
     },
     height: 550,
-    bbar:['->',{
-        text: 'Update Product Application Details',
-        ui: 'soft-purple',
-        iconCls: 'fa fa-save',
-        name: 'save_btn',
-        action_url: 'productregistration/onSaveProductinformation',
-        handler: 'saveProductInformation'
-    }]
-});
+    bbar: [
+      "->",
+      {
+        text: "Update Product Application Details",
+        ui: "soft-purple",
+        iconCls: "fa fa-save",
+        name: "save_btn",
+        action_url: "productregistration/onSaveProductinformation",
+        handler: "saveProductInformation",
+      },
+    ],
+  }
+);

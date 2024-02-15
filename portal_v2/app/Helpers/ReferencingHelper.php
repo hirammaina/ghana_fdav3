@@ -203,13 +203,13 @@ class ReferencingHelper
 
     static function generateRefNumber($codes_array, $ref_id, $con)
     {
-        //$serial_format = DB::connection($con)->table('refnumbers_formats')
-        $serial_format = DB::table("$con.refnumbers_formats")
+        $serial_format = DB::connection($con)->table('refnumbers_formats')
+            //$serial_format = DB::table("$con.refnumbers_formats")
             ->where('id', $ref_id)
             ->value('ref_format');
         $arr = explode("|", $serial_format);
-        // $serial_variables = $serial_format = DB::connection($con)->table('refnumbers_variables')
-        $serial_variables = $serial_format = DB::connection($con)->table("$con.refnumbers_variables")
+        $serial_variables = $serial_format = DB::connection($con)->table('refnumbers_variables')
+            // $serial_variables = $serial_format = DB::connection($con)->table("$con.refnumbers_variables")
             ->select('identifier')
             ->get();
         $serial_variables = convertStdClassObjToArray($serial_variables);

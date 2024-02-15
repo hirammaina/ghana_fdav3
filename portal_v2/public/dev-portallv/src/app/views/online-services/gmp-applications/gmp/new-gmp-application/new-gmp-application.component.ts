@@ -80,6 +80,8 @@ export class NewGmpApplicationComponent extends SharedGmpapplicationclassCompone
   }
   onSaveGMPApplication() {
 
+   
+
     const controls = this.gmpapplicationGeneraldetailsfrm.controls;
     for (const name in controls) {
         if (controls[name].invalid) {
@@ -91,13 +93,13 @@ export class NewGmpApplicationComponent extends SharedGmpapplicationclassCompone
       return;
     }
    
-   this.spinner.show();
+  this.spinner.show();
     this.appService.onSaveGmpApplication(this.manufacturing_site_id, this.gmpapplicationGeneraldetailsfrm.value, this.tracking_no,'')
       .subscribe(
         response => {
           this.gmp_resp = response.json();
           //the details 
-          this.spinner.hide();
+         this.spinner.hide();
           this.tracking_no = this.gmp_resp.tracking_no;
           this.manufacturing_site_id = this.gmp_resp.manufacturing_site_id;
           this.application_code =  this.gmp_resp.application_code;

@@ -615,7 +615,7 @@ class CommonParameterController extends BaseController
             if ($table_name == 'par_business_types') {
                 $qry = DB::connection($db_con)
                     ->table($table_name . ' as t1')
-                    ->whereIn('id', [1, 2, 4])
+                    // ->whereIn('id', [1, 2, 4])// Job to reinstate on 06/02/2024
                     ->select('t1.*');
             } else if ($table_name == 'par_premise_districts') {
                 $qry = DB::connection($db_con)

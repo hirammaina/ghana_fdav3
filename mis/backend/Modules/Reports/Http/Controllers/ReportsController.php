@@ -264,7 +264,7 @@ class ReportsController extends Controller
 			->leftJoin('par_currencies as t7', 't1.currency_id', 't7.id')
 			->leftJoin('par_payment_modes as t8', 't1.payment_mode_id', 't8.id')
 			->leftJoin('users as t9', 't1.usr_id', 't9.id')
-			->select('t1.*', 't2.name as applicant_name', 't8.name as payment_mode', 't7.name as currency_name', 't2.postal_address', 't2.email', 't3.name as country_name', 't4.name as region_name', 't5.name as module_name', 't6.name as sub_module', DB::raw(" CONCAT_WS(' ',decryptval(t9.first_name),decryptval(t9.last_name)) as payment_receivedby"))
+			->select('t1.*', 't2.name as applicant_name', 't8.name as payment_mode', 't7.name as currency_name', 't2.postal_address', 't2.email', 't3.name as country_name', 't4.name as region_name', 't5.name as module_name', 't6.name as sub_module', DB::raw(" CONCAT_WS(' ',decrypt(t9.first_name),decrypt(t9.last_name)) as payment_receivedby"))
 			->where(array('t1.id' => $payment_id))->first();
 		if ($rec) {
 			$payment_type_id = $rec->payment_type_id;
@@ -333,6 +333,8 @@ class ReportsController extends Controller
 					->where(array('t1.receipt_id' => $payment_id))
 					->get();
 
+
+
 				if ($inv_rec) {
 					$i = 1;
 					$total_amount = 0;
@@ -343,7 +345,7 @@ class ReportsController extends Controller
 						$currency_name = $inv->currency_name;
 						$cost_item = $inv->fee_type . " " . $inv->cost_category . " " . $inv->cost_element;
 						//$pdf::SetFont('times','',11);
-						$rowcount = max($pdf->getNumLines($cost_item, 92), $pdf->getNumLines($inv->amount_paid, 40));
+						$rowcount = max($pdf::getNumLines($cost_item, 92), $pdf::getNumLines($inv->amount_paid, 40));
 						$pdf::MultiCell(15, 7 * $rowcount, $i, 1, '', 0, 0);
 						$pdf::MultiCell(140, 7 * $rowcount, $cost_item, 1, '', 0, 0);
 						$pdf::MultiCell(0, 7 * $rowcount, formatMoney($inv->amount_paid), 1, 'R', 0, 1);
@@ -1243,7 +1245,7 @@ class ReportsController extends Controller
 
 
 
-	public function generateProductRegCertificate(Request $request)
+	public function generateProductRegCertificateMySQL(Request $request)
 	{
 		$product_id = $request->input('product_id');
 		$application_code = $request->application_code;
@@ -1344,7 +1346,7 @@ class ReportsController extends Controller
 					't13.name as manufacturer',
 					't5.certificate_issue_date',
 					't16.name as distribution_category',
-					DB::raw("concat(decryptval(t17.first_name),' ',decryptval(t17.last_name)) as permit_signatoryname, t19.certificate_title")
+					DB::raw("concat(decrypt(t17.first_name),' ',decrypt(t17.last_name)) as permit_signatoryname, t19.certificate_title")
 				)
 
 				->leftJoin('tra_approval_recommendations as t5', 't1.application_code', '=', 't5.application_code')
@@ -1388,6 +1390,160 @@ class ReportsController extends Controller
 			print_r("<center>Save the Approval Recommendation and print the Approval Document</center>");
 		}
 	}
+
+	public function generateProductRegCertificate(Request $request)
+	{
+
+		$product_id = $request->input('product_id');
+		$application_code = $request->application_code;
+
+		if (validateIsNumeric($application_code)) {
+
+			//get the section id 
+			$rec = DB::table('tra_product_information as t1')
+				->leftJoin('par_device_types as t2', 't1.device_type_id', '=', 't2.id')
+				->join('tra_product_applications as t3', 't1.id', 't3.product_id')
+				->select('t1.section_id', 'application_code', 't2.description as device_type', 't3.product_id')
+				->where(array('t3.application_code' => $application_code))
+				->first();
+		} else {
+			//get the section id 
+			$rec = DB::table('tra_product_information as t1')
+				->leftJoin('par_device_types as t2', 't1.device_type_id', '=', 't2.id')
+				->select('t1.section_id', 't2.description as device_type', 't1.id as product_id')
+				->where(array('t1.id' => $product_id))
+				->first();
+		}
+
+
+		$approvalGrant = DB::table('tra_approval_recommendations as t1')
+			->join('tra_product_applications as t2', 't1.application_code', 't2.application_code')
+			->where('t1.application_code', $application_code)
+			->select('t2.product_id', 't1.decision_id', 't2.sub_module_id')
+			->first();
+
+
+
+		if (empty($approvalGrant) ||  ($approvalGrant->decision_id == 1 || $approvalGrant->decision_id == 2)) {
+			$section_id = $rec->section_id;
+			$device_type = $rec->device_type;
+			$product_id = $rec->product_id;
+			$sub_module_id = $approvalGrant->sub_module_id;
+
+			if ($section_id == 2) {
+				$document_number = 'BVS/099/45';
+				$certificate_name = 'DRUGS CERTIFICATE';
+				$report_name = 'DrugsCertificateReport';
+			} else {
+
+				$document_number = 'BVS/099/45';
+				$certificate_name = 'CERTIFICATE OF ' . $device_type . ' REGISTRATION';
+				$report_name = 'medicalDevicesCertificate';
+			}
+			$params = array(
+				'product_id' => $product_id,
+				'application_code' => $application_code,
+				'document_number' => $document_number,
+				'certificate_name' => $certificate_name,
+				'certificate_regulation' => '(Made under Section 21(3) of the Ghana Food, Drugs and Cosmetics Act, Cap 219)',
+				'base_Url' => $this->base_url,
+				'sign_Url' => $this->sign_url
+			);
+
+			//$report = generateJasperReport($report_name, 'permit_' . time(), 'pdf', $params);
+			if ($sub_module_id == 17) {
+				echo "Issue Letter of Withdrawal";
+				return;
+			}
+			// return $report;
+			$qry = DB::table('tra_product_applications as t1')
+				->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
+				->leftJoin('par_system_statuses as t4', 't1.application_status_id', '=', 't4.id')
+				->leftJoin('tra_product_information as t7', 't1.product_id', '=', 't7.id')
+				->leftJoin('par_common_names as t8', 't7.common_name_id', '=', 't8.id')
+				->leftJoin('par_classifications as t14', 't7.classification_id', '=', 't14.id')
+				->select(
+					't1.*',
+					't18.name as dosage_form',
+					't3.name as trader_name',
+					't3.physical_address as trader_address',
+					't10.name as region_name',
+					't9.name as country_name',
+					't4.name as application_status',
+					't6.name as dg_recommendation',
+					't5.decision_id as recommendation_id',
+					't7.gmdn_term as gmdn_name',
+					't7.gmdn_code',
+					't7.physical_description',
+					't7.shelf_life',
+					'description_ofpackagingmaterial',
+					't1.id as active_application_id',
+					't5.permit_signatory',
+					't7.contraindication',
+					't7.storage_condition',
+					't7.brand_name as brandName',
+					't8.name as common_names',
+					't14.name as classification',
+					't5.expiry_date',
+					't11.name as localAgentName',
+					't7.intended_use',
+					't20.name as classification_name',
+					't7.indication',
+					't7.product_strength',
+					't11.physical_address as local_agent_address',
+					't5.certificate_no',
+					't5.approval_date',
+					't13.name as manufacturer',
+					't5.certificate_issue_date',
+					't16.name as distribution_category',
+					DB::raw("concat(decrypt(t17.first_name),' ',decrypt(t17.last_name)) as permit_signatoryname, t19.certificate_title")
+				)
+
+				->leftJoin('tra_approval_recommendations as t5', 't1.application_code', '=', 't5.application_code')
+				->leftJoin('par_approval_decisions as t6', 't5.decision_id', '=', 't6.id')
+				->leftJoin('par_regions as t10', 't3.region_id', '=', 't8.id')
+				->leftJoin('par_countries as t9', 't3.country_id', '=', 't9.id')
+				->leftJoin('tra_premises as t11', 't1.local_agent_id', '=', 't11.id')
+				->leftJoin('tra_product_manufacturers as t12', 't1.product_id', '=', 't12.product_id')
+				->leftJoin('tra_manufacturers_information as t13', 't12.manufacturer_id', '=', 't13.id')
+				->leftJoin('par_storage_conditions as t15', 't7.storage_condition_id', '=', 't15.id')
+				->leftJoin('par_distribution_categories as t16', 't7.distribution_category_id', '=', 't16.id')
+				->leftJoin('par_dosage_forms as t18', 't7.dosage_form_id', '=', 't18.id')
+				->leftJoin('par_sections as t19', 't1.section_id', '=', 't19.id')
+				->leftJoin('par_classifications as t20', 't7.classification_id', '=', 't20.id')
+				->leftJoin('users as t17', 't5.permit_signatory', '=', 't17.id')
+
+				->where(array('t1.application_code' => $application_code));
+
+
+
+
+			$record = $qry->first();
+			$module_id = $record->module_id;
+
+
+			if ($section_id == 2 || $section_id == 7) {
+				$this->medicinesProductRegistration($application_code, $record);
+			} else if ($section_id == 1 || $section_id == 8 || $section_id == 9) {
+				$this->foodProductRegistrationCertificate($application_code, $record);
+			} else if ($section_id == 4 && $module_id == 1) {
+				$this->medicalDevicesProductRegistration($application_code, $record);
+			} else if ($section_id == 4 && $module_id == 28) {
+				$this->medicalDevicesProductNotifications($application_code, $record);
+			} else if ($section_id == 3 || $section_id == 15 || $section_id == 17  || $section_id == 18 || $section_id == 19  || $section_id == 20 || $section_id == 21) {
+				$this->cosmeticssProductRegistrationCertficiate($application_code, $record);
+			}
+		} else if (!empty($approvalGrant) &&  ($approvalGrant->decision_id == 3)) {
+
+			$module_id = $approvalGrant->module_id;
+			$res = $this->generateLetterOfREjection($application_code, $request, $module_id);
+		} else {
+			print_r("<center>Save the Approval Recommendation and print the Approval Document</center>");
+		}
+	}
+
+
+
 
 
 	public function generateGMPCertificate(Request $request)
@@ -1541,7 +1697,7 @@ class ReportsController extends Controller
 				}
 				PDF::SetFont('', 'B', 14);
 
-				PDF::Cell(0, 7, $org_info->org_name, 0, 1, 'C');
+				PDF::Cell(0, 7, $org_info->org_name ?? $org_info->name, 0, 1, 'C');
 
 				PDF::Image($logo, 85, 30, 43, 19);
 				PDF::Cell(0, 25, '', 0, 1);
@@ -1834,8 +1990,8 @@ class ReportsController extends Controller
 				PDF::Cell(0, 5, '', 0, 1);
 				PDF::SetFont('', '', 11);
 
-				$text1 = "Reference is made to the above captioned subject and the audit which was conducted at your pharmaceutical plant on " . $inspection_date . " by the ZAMBIA Medicines & Medical Devices Authority (ZMR). The audit was conducted as a result of your application(s) for registration of pharmaceutical products in ZAMBIA.\n";
-				$text2 = "Based on the audit findings, (production lines which were inspected and complied) have been found to comply with the minimum requirements of the ZAMBIA Good Manufacturing Practice (GMP) Guidelines.\n ";
+				$text1 = "Reference is made to the above captioned subject and the audit which was conducted at your pharmaceutical plant on " . $inspection_date . " by the Ghana Food and Drugs Authority. The audit was conducted as a result of your application(s) for registration of pharmaceutical products in Ghana.\n";
+				$text2 = "Based on the audit findings, (production lines which were inspected and complied) have been found to comply with the minimum requirements of the Ghana Good Manufacturing Practice (GMP) Guidelines.\n ";
 				$text3 = "The basis for reaching this decision has also been enumerated in the summary of basis for classifying non conformances and the detailed audit report attached to this letter.\n";
 
 				PDF::Cell(5, 2, '1. ', 0, 0);
@@ -1864,10 +2020,10 @@ class ReportsController extends Controller
 				PDF::MultiCell(0, 5,	$letter_title, 0, '', 0, 1);
 				PDF::Cell(0, 5, '', 0, 1);
 				PDF::SetFont('', '', 11);
-				$text1 = "Reference is made to the above captioned subject and the audit which was conducted at your pharmaceutical plant on " . $inspection_date . " by the ZAMBIA Medicines & Medical Devices Authority (ZMR). The audit was conducted as a result of your application(s) for registration of pharmaceutical products in ZAMBIA.\n";
-				$text2 = "Based on the audit findings, your pharmaceutical plant did not comply with the minimum requirements of the ZAMBIA Good Manufacturing Practice (GMP) Guidelines. \n";
+				$text1 = "Reference is made to the above captioned subject and the audit which was conducted at your pharmaceutical plant on " . $inspection_date . " by the Ghana Food and drugs Authority. The audit was conducted as a result of your application(s) for registration of pharmaceutical products in Ghana.\n";
+				$text2 = "Based on the audit findings, your pharmaceutical plant did not comply with the minimum requirements of the Ghana Good Manufacturing Practice (GMP) Guidelines. \n";
 				$text3 = "The basis for reaching this decision has also been enumerated in the summary of basis for classifying non compliances and the detailed audit report attached to this letter.\n";
-				$text4 = "In view of the above, your products cannot be registered until such time when ZMR is satisfied with GMP status of your facility. If you wish to continue with the registration of your products in ZAMBIA, you are required to rectify the non conformances stated in the report and pay GMP Inspection fee for re-auditing of the facility.\n";
+				$text4 = "In view of the above, your products cannot be registered until such time when GFDA is satisfied with GMP status of your facility. If you wish to continue with the registration of your products in Ghana, you are required to rectify the non conformances stated in the report and pay GMP Inspection fee for re-auditing of the facility.\n";
 
 				PDF::Cell(5, 2, '1. ', 0, 0);
 				PDF::MultiCell(0, 10, $text1, 0, 'J', 0, 1);
@@ -1900,8 +2056,8 @@ class ReportsController extends Controller
 				PDF::Cell(0, 5,	$letter_title, 0, 1);
 				PDF::Cell(0, 5, '', 0, 1);
 				PDF::SetFont('', '', 11);
-				$text1 = "Reference is made to the above captioned subject and the audit which was conducted at your pharmaceutical plant on " . $inspection_date . ", by the ZAMBIA Medicines & Medical Devices Authority (ZMR). The audit was conducted as a result of your application(s) for registration of pharmaceutical products in ZAMBIA.\n";
-				$text2 = "Based on the audit findings, a decision on the compliance of your pharmaceutical plant with the minimum requirements of the ZAMBIA Good Manufacturing Practice (GMP) Guidelines will be made after the submission of a compliance report for major and minor non conformances enumerated in the GMP audit report. The compliance report shall be verified by the Authority for compliance with GMP.\n";
+				$text1 = "Reference is made to the above captioned subject and the audit which was conducted at your pharmaceutical plant on " . $inspection_date . ", by the Ghana Food and Drugs Authority. The audit was conducted as a result of your application(s) for registration of pharmaceutical products in Ghana.\n";
+				$text2 = "Based on the audit findings, a decision on the compliance of your pharmaceutical plant with the minimum requirements of the Ghana Good Manufacturing Practice (GMP) Guidelines will be made after the submission of a compliance report for major and minor non conformances enumerated in the GMP audit report. The compliance report shall be verified by the Authority for compliance with GMP.\n";
 				$text3 = "The basis for reaching this decision has also been enumerated in the summary of basis for classifying non conformances and the detailed audit report attached to this letter.\n";
 
 				PDF::Cell(5, 2, '1. ', 0, 0);
@@ -2112,7 +2268,7 @@ class ReportsController extends Controller
 					->leftJoin('par_ports_information as t6', 't1.port_id', '=', 't6.id')
 					->leftJoin('users as t7', 't2.inspected_by', '=', 't7.id')
 					->leftJoin('par_poeinspection_recommendation as t8', 't2.inspection_recommendation_id', '=', 't8.id')
-					->select(DB::raw("DISTINCT t2.custom_declaration_no as custom_declaration_no, t1.reference_no,t1.tracking_no, t4.permit_no,if(t2.inspection_status_id >0,t3.name, 'Not Inspected') as inspection_status, t1.proforma_invoice_no,t5.name as permit_section, t6.name as port_ofentryexit,CONCAT_WS(' ',decryptval(t7.first_name),decryptval(t7.last_name)) as inspection_by, t8.name as inspection_recommendation,date_format(t2.created_on,'%Y-%m-%d') as Inspected_on,tansad_no,tra_reg_date,remarks"));
+					->select(DB::raw("DISTINCT t2.custom_declaration_no as custom_declaration_no, t1.reference_no,t1.tracking_no, t4.permit_no,if(t2.inspection_status_id >0,t3.name, 'Not Inspected') as inspection_status, t1.proforma_invoice_no,t5.name as permit_section, t6.name as port_ofentryexit,CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as inspection_by, t8.name as inspection_recommendation,date_format(t2.created_on,'%Y-%m-%d') as Inspected_on,tansad_no,tra_reg_date,remarks"));
 				//,
 				if (validateIsNumeric($port_id)) {
 
@@ -2398,7 +2554,7 @@ class ReportsController extends Controller
 				->leftJoin('par_common_names as t12', 't11.common_name_id', '=', 't12.id')
 				->leftJoin('par_packaging_units as t14', 't9.packaging_unit_id', '=', 't14.id')
 
-				->select(DB::raw("DISTINCT t2.tra_reg_number, t1.reference_no,t1.tracking_no, t4.permit_no,if(t2.inspection_status_id >0,t3.name, 'Not Inspected') as inspection_status, t1.proforma_invoice_no,t5.name as permit_section, t6.name as port_ofentryexit,CONCAT_WS(' ',decryptval(t7.first_name),decryptval(t7.last_name)) as inspection_by, t8.name as inspection_recommendation,date_format(t2.created_on,'%Y-%m-%d') as Inspected_on,tansad_no,tra_reg_date,t2.remarks as Inspected_permits_remarks, t9.quantity as permit_quantity , t13.poe_prod_quantity,t13.batch_numbers,t11.brand_name,t12.name as common_name, t9.prodcertificate_no, t14.name as packaging_units, t9.unit_price, (t9.unit_price * t9.quantity) as total_value,t13.remarks as Inspected_Products_Remarks "));
+				->select(DB::raw("DISTINCT t2.tra_reg_number, t1.reference_no,t1.tracking_no, t4.permit_no,if(t2.inspection_status_id >0,t3.name, 'Not Inspected') as inspection_status, t1.proforma_invoice_no,t5.name as permit_section, t6.name as port_ofentryexit,CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as inspection_by, t8.name as inspection_recommendation,date_format(t2.created_on,'%Y-%m-%d') as Inspected_on,tansad_no,tra_reg_date,t2.remarks as Inspected_permits_remarks, t9.quantity as permit_quantity , t13.poe_prod_quantity,t13.batch_numbers,t11.brand_name,t12.name as common_name, t9.prodcertificate_no, t14.name as packaging_units, t9.unit_price, (t9.unit_price * t9.quantity) as total_value,t13.remarks as Inspected_Products_Remarks "));
 			//,
 			if (validateIsNumeric($port_id)) {
 
@@ -5806,7 +5962,7 @@ class ReportsController extends Controller
 				->leftJoin('users as t14', 't6.prepared_by_id', 't14.id')
 				->leftJoin('users as t15', 't5.screened_by', 't15.id')
 				->leftJoin('par_permit_category as t17', 't1.permit_category_id', 't17.id')
-				->select(DB::raw("t1.*,t17.name as permit_category, CONCAT_WS(' ',decryptval(t13.first_name),decryptval(t13.last_name)) as approved_by, CONCAT_WS(' ',decryptval(t14.first_name),decryptval(t14.last_name)) as reviewed_by,CONCAT_WS(' ',decryptval(t15.first_name),decrypt(t15.last_name)) as screened_byname, t1.reference_no,t5.created_on as screened_on, t5.remarks as screening_remarks,t10.name as screening_recom, t4.comment as approval_comment, t6.comment as review_comment,t6.approval_date as review_date, t4.approval_date,t12.name as approval_recommendation, t11.name as review_recommendation, t7.name as request_from,t8.name as country_name, t9.name as region_name, t7.physical_address, t7.postal_address"))
+				->select(DB::raw("t1.*,t17.name as permit_category, CONCAT_WS(' ',decrypt(t13.first_name),decrypt(t13.last_name)) as approved_by, CONCAT_WS(' ',decrypt(t14.first_name),decrypt(t14.last_name)) as reviewed_by,CONCAT_WS(' ',decrypt(t15.first_name),decrypt(t15.last_name)) as screened_byname, t1.reference_no,t5.created_on as screened_on, t5.remarks as screening_remarks,t10.name as screening_recom, t4.comment as approval_comment, t6.comment as review_comment,t6.approval_date as review_date, t4.approval_date,t12.name as approval_recommendation, t11.name as review_recommendation, t7.name as request_from,t8.name as country_name, t9.name as region_name, t7.physical_address, t7.postal_address"))
 				->where('t1.application_code', $application_code)
 				//dd($rec->toSql());
 				->first();
@@ -6517,7 +6673,7 @@ class ReportsController extends Controller
 
 					->leftJoin('par_checklist_categories as t5', 't3.checklist_category_id', '=', 't5.id')
 					->leftJoin('users as t7', 't2.responses_by', '=', 't7.id')
-					->select(DB::raw("t1.*,t1.id as checklist_item_id, t2.id as item_resp_id,t2.pass_status,CONCAT_WS(' ',decryptval(t7.first_name),decryptval(t7.last_name)) as screened_by,t2.comment,t2.observation, t2.auditor_comment, t3.name as checklist_type, t2.auditorpass_status, t2.comment as observation"))
+					->select(DB::raw("t1.*,t1.id as checklist_item_id, t2.id as item_resp_id,t2.pass_status,CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as screened_by,t2.comment,t2.observation, t2.auditor_comment, t3.name as checklist_type, t2.auditorpass_status, t2.comment as observation"))
 					->groupBy('t1.id');
 				$qry->where('t3.sub_module_id', $sub_module_id);
 

@@ -82,7 +82,7 @@ class ProductRegistrationController extends Controller
                 ->leftJoin('par_system_statuses as t6', 't1.application_status_id', '=', 't6.id')
                 ->leftJoin('users as t8', 't7.usr_from', '=', 't8.id')
                 ->leftjoin('users as t9', 't7.usr_to', '=', 't9.id')
-                ->select(DB::raw("t7.date_received, CONCAT_WS(' ',decryptval(t8.first_name),decryptval(t8.last_name)) as from_user,CONCAT_WS(' ',decryptval(t9.first_name),decryptval(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id, t2.brand_name as product_name,
+                ->select(DB::raw("t7.date_received, CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as from_user,CONCAT_WS(' ',decrypt(t9.first_name),decrypt(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id, t2.brand_name as product_name,
                 t6.name as application_status, t3.name as applicant_name, t4.name as process_name, t5.name as workflow_stage, t5.is_general, t3.contact_person,
                 t3.tin_no, t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t3.physical_address as app_physical_address,
                 t3.postal_address as app_postal_address, t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email as app_email, t3.website as app_website,
@@ -102,6 +102,7 @@ class ProductRegistrationController extends Controller
             }
 
             $qry->where('t7.isDone', 0);
+            $qry->where("t1.date_added", ">", "2024-02-12");
             $results = $qry->get();
 
             $res = array(
@@ -253,8 +254,8 @@ class ProductRegistrationController extends Controller
                 $res['product_id'] = $product_id;
                 $res['ref_no'] = $ref_number;
                 $doc_record = DB::table('tra_application_documentsdefination')->where('application_code', $application_code)->first();
-                if (!$doc_record) {
-                    initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number . rand(10, 100), $user_id);
+                if (!$doc_record) { //to return Job
+                    // initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number . rand(10, 100), $user_id);
                 }
             } else {
                 //check for previous applicaitons 
@@ -359,8 +360,8 @@ class ProductRegistrationController extends Controller
                 $res['ref_no'] = $ref_number;
                 //dms function
 
-                //dms function
-                initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number . rand(10, 100), $user_id);
+                //dms function to return Job
+                //initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number . rand(10, 100), $user_id);
                 /*
                 } else {
                     $res = array(
@@ -552,7 +553,6 @@ class ProductRegistrationController extends Controller
                 $res['product_id'] = $product_id;
                 $res['ref_no'] = $ref_number;
             } else {
-
 
                 $prod_data['created_by'] = \Auth::user()->id;
                 $prod_data['created_on'] = Carbon::now();
@@ -1216,7 +1216,7 @@ class ProductRegistrationController extends Controller
                 ->where('t2.id', $tra_product_id);
 
             $qry1 = clone $main_qry;
-            $qry1->join('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
+            $qry1->leftjoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
                 ->select(
                     't1.*',
                     't2.brand_name as brand_name',
@@ -1287,8 +1287,8 @@ class ProductRegistrationController extends Controller
         $application_id = $req->input('application_id');
         $application_code = $req->input('application_code');
         $table_name = $req->input('table_name');
-        //$mis_db = DB::connection('mysql')->getDatabaseName();
-        $mis_db = "mis_db";
+        $mis_db = DB::connection('mysql')->getDatabaseName();
+        //$mis_db = "mis_db";
         try {
             $main_qry = DB::connection('portal_db')->table('wb_product_applications as t1')
                 ->join('wb_product_information as t2', 't1.product_id', '=', 't2.id')
@@ -1322,7 +1322,10 @@ class ProductRegistrationController extends Controller
             $results = $qry1->first();
 
             $product_id = $results->product_id;
-            $qry = DB::table('wb_prod_routeofadministrations')
+            // $qry = DB::table('wb_prod_routeofadministrations')
+            //     ->where('product_id', $product_id)
+            //     ->select('route_of_administration_id');
+            $qry = DB::connection('portal_db')->table('wb_prod_routeofadministrations') //job 14/02/24
                 ->where('product_id', $product_id)
                 ->select('route_of_administration_id');
             $routeofadministrations = $qry->get();
@@ -1331,7 +1334,10 @@ class ProductRegistrationController extends Controller
                 $route_of_administration_id = convertAssArrayToSimpleArray($routeofadministrations, 'route_of_administration_id');
                 $results->route_of_administration_id = $route_of_administration_id;
             }
-            $qry = DB::table('wb_prod_targetspecies')
+            // $qry = DB::table('wb_prod_targetspecies')
+            //     ->where('product_id', $product_id)
+            //     ->select('target_species_id');
+            $qry = DB::connection('portal_db')->table('wb_prod_targetspecies')
                 ->where('product_id', $product_id)
                 ->select('target_species_id');
             $prod_targetspecies = $qry->get();
@@ -3948,8 +3954,8 @@ class ProductRegistrationController extends Controller
         $sub_module_id = $request->input('sub_module_id');
         try {
 
-            // $mis_db = DB::connection('mysql')->getDatabaseName();
-            $mis_db = "mis_db";
+            $mis_db = DB::connection('mysql')->getDatabaseName();
+            //$mis_db = "mis_db";
             $data = array();
             $portal_db = DB::connection('portal_db');
             //get process details
@@ -3983,6 +3989,7 @@ class ProductRegistrationController extends Controller
                     't4.status_type_id',
                     't4.is_manager_query'
                 )
+                ->where("t1.date_added", ">", "2024-02-12")
                 ->whereIn('application_status_id', array(2, 13, 14, 15, 16));
 
             $modulesData = getParameterItems('modules', '', '');

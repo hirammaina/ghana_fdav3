@@ -1864,17 +1864,19 @@ class RevenuemanagementController extends Controller
             'sub_module_id' => $rec->sub_module_id, 'section_id' => $rec->section_id
         );
 
+
         $module_data = getTableData('tra_applicationinvoicedata_queries', $data_check);
+
+
+
         $fees_data = array();
 
         if ($module_data) {
             $data_query = $module_data->data_query;
-
-
-
             //changed associated records of data query ie put double quotes in section_id
             //$invoice_feessql = DB::select(DB::raw($data_query.' where t1.application_code= '.$application_code));
             $invoice_feessql = DB::select(($data_query . ' where t1.application_code= ' . $application_code)); //Job 25.06.24
+
 
 
 
@@ -1892,7 +1894,12 @@ class RevenuemanagementController extends Controller
                         $fees_data = $import_data['results'];
                     }
                 } else {
-                    //$invoice_appfeearray['assessmentprocedure_type_id'] = 1; //to remove test puproses Job 25..01.2024
+                    if ($section_id == 2) { //all of this
+                        $invoice_appfeearray['assessmentprocedure_type_id'] = 3; //to remove test puproses Job 25..01.2024
+
+
+                    }
+
 
                     $fees_data = DB::table('tra_appmodules_feesconfigurations as t1')
                         ->join('tra_element_costs as t2', 't1.element_costs_id', 't2.id')
@@ -1946,7 +1953,6 @@ class RevenuemanagementController extends Controller
             ->first();
 
 
-
         $sub_module_id = $rec->sub_module_id;
         $currency_id = $rec->currency_id;
         $fasttrack_option_id = 1;
@@ -1976,6 +1982,7 @@ class RevenuemanagementController extends Controller
             $data_query = $module_data->data_query;
             $exchange_ratedata = getSingleRecordColValue('par_exchange_rates', array('currency_id' => $currency_id), 'exchange_rate');
 
+
             if (!validateIsNumeric($exchange_ratedata)) {
 
                 $res = array(
@@ -1985,7 +1992,8 @@ class RevenuemanagementController extends Controller
                 echo json_encode($res);
                 exit();
             }
-            $invoice_feessql = DB::select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
+            //$invoice_feessql = DB::select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
+            $invoice_feessql = DB::select(($data_query . ' where t1.application_code= ' . $application_code));
 
             if (is_array($invoice_feessql) && count((array)$invoice_feessql) > 0) {
                 $invoice_appfeearray = (array)$invoice_feessql[0];
@@ -2006,6 +2014,7 @@ class RevenuemanagementController extends Controller
                     ->select(DB::raw("t1.id,$local_currency_id as currency_id, 'Quotation' as invoice_description,t10.name as sub_category, t9.name as cost_type,  '' as invoice_number,t5.name as fee_type,t6.name as cost_category,t7.name as element,t2.id as element_costs_id, concat(t5.name,'-', t6.name, '-', t7.name) as element_costs, (t2.cost/100*$fob_value*$exchange_ratedata) as cost,(t2.cost/100*$fob_value*$exchange_ratedata) as costs ,formula_rate,$exchange_ratedata as exhange_rate, formula,$fob_value as fob,t8.name as currency,$currency_id as permit_currency_id"))
                     ->where($invoice_appfeearray)
                     ->get();
+
 
                 $res = array('success' => true, 'results' => $fees_data);
 
@@ -2248,7 +2257,9 @@ class RevenuemanagementController extends Controller
             if ($module_data) {
                 $data_query = $module_data->data_query;
 
-                $invoice_feessql = DB::connection('portal_db')->select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
+                //$invoice_feessql = DB::connection('portal_db')->select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
+                $invoice_feessql = DB::connection('portal_db')->select(($data_query . ' where t1.application_code= ' . $application_code)); //Job on 14.02.24
+
 
                 if (is_array($invoice_feessql) && count($invoice_feessql) > 0) {
                     $invoice_appfeearray = (array)$invoice_feessql[0];
@@ -2369,7 +2380,7 @@ class RevenuemanagementController extends Controller
                 $module_data = getTableData('wb_applicationinvoicedata_queries', $data_check);
                 $data_query = $module_data->data_query;
 
-                $invoice_feessql = DB::connection('portal_db')->select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
+                $invoice_feessql = DB::connection('portal_db')->select(($data_query . ' where t1.application_code= ' . $application_code));
                 if (is_array($invoice_feessql) && count($invoice_feessql) > 0) {
 
                     $invoice_appfeearray = (array)$invoice_feessql[0];
@@ -2500,7 +2511,11 @@ class RevenuemanagementController extends Controller
                             $fees_data = array();
                         }
                     } else {
-                        // $invoice_appfeearray['assessmentprocedure_type_id'] = 1; //to remove test puproses Job 25..01.2024
+                        if ($rec->section_id == 2) { //all of this
+                            $invoice_appfeearray['assessmentprocedure_type_id'] = 3; //to remove test puproses Job 25..01.2024
+                        }
+
+
                         $fees_data = DB::table('tra_appmodules_feesconfigurations as t1')
                             ->join('tra_element_costs as t2', 't1.element_costs_id', 't2.id')
                             ->select(DB::raw("t1.element_costs_id,t2.id, t2.*,(cost *$quantity)  as costs"))

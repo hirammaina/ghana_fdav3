@@ -76,6 +76,7 @@ class DocumentManagementController extends Controller
             $qry = DB::table('tra_proc_applicable_doctypes as t1')
                 ->join('par_document_types as t2', 't1.doctype_id', '=', 't2.id')
                 ->join('tra_documentupload_requirements as t3', 't2.id', '=', 't3.document_type_id')
+                ->distinct('t2.id') //Job 31.01.2024
                 ->select('t2.id', 't2.name', 't2.is_assessment_doc');
             /*-------------------------------------------------------
                 For Document originating from query window identified by
@@ -294,15 +295,18 @@ class DocumentManagementController extends Controller
             'module_id' => $module_id,
             'sub_module_id' => $sub_module_id
         );
-        if (validateIsNumeric($prodclass_category_id)) {
-            $where['prodclass_category_id'] = $prodclass_category_id;
-        }
+        // if (validateIsNumeric($prodclass_category_id)) {
+        //     $where['prodclass_category_id'] = $prodclass_category_id; //Job moved down since wf_tddaprovess does not have the mentioned column Job
+        // }
         if (validateIsNumeric($section_id)) {
             $where['section_id'] = $section_id;
         }
 
         if (!validateIsNumeric($process_id)) {
             $process_id = getSingleRecordColValue('wf_tfdaprocesses', $where, 'id');
+        }
+        if (validateIsNumeric($prodclass_category_id)) {
+            $where['prodclass_category_id'] = $prodclass_category_id;
         }
         if ($module_id == 12) {
             //$process_id = 140;
@@ -358,16 +362,8 @@ class DocumentManagementController extends Controller
         }
 
 
+
         if (validateIsNumeric($parent_id)) {
-            // $qry = DB::table('tra_application_uploadeddocuments as t1')
-            //     ->leftJoin('tra_application_documents as t2', 't1.application_document_id', 't2.id')
-            //     ->leftJoin('tra_documentupload_requirements as t4', 't2.document_requirement_id', 't4.id')
-            //     ->leftJoin('par_document_types as t3', 't4.document_type_id', 't3.id')
-            //     ->leftJoin('users as t5', 't2.uploaded_by', '=', 't5.id')
-            //     ->select(DB::raw("t2.*, t1.*,t1.initial_file_name as file_name, t2.remarks, t4.module_id, t4.sub_module_id,t4.section_id,t1.file_type, t2.uploaded_on,CONCAT_WS(' ',decrypt(t5.first_name),decrypt(t5.last_name)) as uploaded_by,t4.is_mandatory, t4.document_type_id,t3.name as document_type, t4.name as document_requirement, case when (select count(id) from tra_application_uploadeddocuments q where q.parent_id = t1.id) = 0 then false else true end leaf"))
-            //     ->where('t1.parent_id', $parent_id)
-            //     ->where('t4.is_enabled', 1)
-            //     ->orderBy('t4.order_no');
             $qry = DB::table('tra_application_uploadeddocuments as t1')
                 ->leftJoin('tra_application_documents as t2', 't1.application_document_id', 't2.id')
                 ->leftJoin('tra_documentupload_requirements as t4', 't2.document_requirement_id', 't4.id')
@@ -376,8 +372,18 @@ class DocumentManagementController extends Controller
                 ->select(DB::raw("t2.*, t1.*,t1.initial_file_name as file_name, t2.remarks, t4.module_id, t4.sub_module_id,t4.section_id,t1.file_type, t2.uploaded_on,CONCAT_WS(' ',decrypt(t5.first_name),decrypt(t5.last_name)) as uploaded_by,t4.is_mandatory, t4.document_type_id,t3.name as document_type, t4.name as document_requirement, case when (select count(id) from tra_application_uploadeddocuments q where q.parent_id = t1.id) = 0 then false else true end leaf"))
                 ->where('t1.parent_id', $parent_id)
                 ->where('t4.is_enabled', 1)
-                ->orderBy('t4.order_no')
-                ->groupBy('t1.id', 't2.id', 't1.initial_file_name', 't2.remarks', 't4.module_id', 't4.sub_module_id', 't4.section_id', 't1.file_type', 't2.uploaded_on', 'uploaded_by', 't4.is_mandatory', 't4.document_type_id', 't3.name', 't4.name', 'leaf'); // Add all non-aggregated columns to groupBy
+                ->orderBy('t4.order_no');
+            //below postgres
+            // $qry = DB::table('tra_application_uploadeddocuments as t1')
+            //     ->leftJoin('tra_application_documents as t2', 't1.application_document_id', 't2.id')
+            //     ->leftJoin('tra_documentupload_requirements as t4', 't2.document_requirement_id', 't4.id')
+            //     ->leftJoin('par_document_types as t3', 't4.document_type_id', 't3.id')
+            //     ->leftJoin('users as t5', 't2.uploaded_by', '=', 't5.id')
+            //     ->select(DB::raw("t2.*, t1.*,t1.initial_file_name as file_name, t2.remarks, t4.module_id, t4.sub_module_id,t4.section_id,t1.file_type, t2.uploaded_on,CONCAT_WS(' ',decrypt(t5.first_name),decrypt(t5.last_name)) as uploaded_by,t4.is_mandatory, t4.document_type_id,t3.name as document_type, t4.name as document_requirement, case when (select count(id) from tra_application_uploadeddocuments q where q.parent_id = t1.id) = 0 then false else true end leaf"))
+            //     ->where('t1.parent_id', $parent_id)
+            //     ->where('t4.is_enabled', 1)
+            //     ->orderBy('t4.order_no')
+            //     ->groupBy('t1.id', 't2.id', 't1.initial_file_name', 't2.remarks', 't4.module_id', 't4.sub_module_id', 't4.section_id', 't1.file_type', 't2.uploaded_on', 'uploaded_by', 't4.is_mandatory', 't4.document_type_id', 't3.name', 't4.name', 'leaf'); // Add all non-aggregated columns to groupBy
 
             $results = $qry->get();
         } else {
@@ -412,7 +418,7 @@ class DocumentManagementController extends Controller
                     ->leftJoin('users as t5', 't1.uploaded_by', '=', 't5.id')
                     ->select(DB::raw("t1.*,t4.remarks,t4.application_document_id,
                         t4.node_ref,t4.initial_file_name,t4.file_name,t4.initial_file_name as file_name, t4.id as uploadeddocuments_id,t2.module_id,t2.sub_module_id,t2.section_id,t4.file_type,t1.uploaded_on,CONCAT_WS(' ',decrypt(t5.first_name),decrypt(t5.last_name)) as uploaded_by,t2.is_mandatory,
-                         t2.document_type_id,t3.name as document_type, t2.name as document_requirement, t4.id,t4.is_directory, case when (select count(id) from tra_application_uploadeddocuments q where q.parent_id = t4.id) = 0 then false else true end leaf"))
+                         t2.document_type_id,t3.name as document_type, t2.name as document_requirement,t2.id as document_requirement_id, t4.id,t4.is_directory, case when (select count(id) from tra_application_uploadeddocuments q where q.parent_id = t4.id) = 0 then false else true end leaf"))
                     ->where('t2.id', $doc_req->id)
                     ->where(['t1.application_code' => $application_code]);
 
@@ -427,7 +433,7 @@ class DocumentManagementController extends Controller
                     $res = DB::table('tra_documentupload_requirements as t1')
                         ->join('par_document_types as t3', 't1.document_type_id', 't3.id')
                         ->where('t1.id', $doc_req->id)
-                        ->selectRaw("t1.name as file_name,t1.id as req_id, true as leaf, t1.name as document_requirement, t3.name as document_type")
+                        ->selectRaw("t1.name as file_name,t1.id as req_id, true as leaf, t1.name as document_requirement, t3.name as document_type,t3.id as document_type_id,t1.document_requirement_id")
                         ->get();
                 }
                 $results = $results->merge($res);
@@ -442,6 +448,7 @@ class DocumentManagementController extends Controller
     public function onLoadApplicationPrevDocumentsUploads(Request $req)
     {
 
+
         try {
 
             $results = $this->getApplicationDocumentsUploads($req);
@@ -452,6 +459,7 @@ class DocumentManagementController extends Controller
                 'message' => 'All is well'
             );
         } catch (\Exception $exception) {
+
             $results = sys_error_handler($exception->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), explode('\\', __CLASS__), \Auth::user()->id);
         } catch (\Throwable $throwable) {
             $results = sys_error_handler($throwable->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), explode('\\', __CLASS__), \Auth::user()->id);
@@ -460,6 +468,16 @@ class DocumentManagementController extends Controller
     }
     public function onLoadApplicationDocumentsUploads(Request $req)
     {
+        return array([
+            "req_id" => 2,
+            "leaf" => true,
+            'initial_file_name' => "EvaluationReport",
+            "file_name" => "EvaluationReport",
+            "uploadeddocuments_id" => 2333,
+            "module_id" => 1,
+            "document_requirement" => "Evaluation Report",
+            "document_type" => "1st Assessment Documents"
+        ]); //to remove after demo
 
         //$uploaded_by = 25;
 
@@ -509,7 +527,7 @@ class DocumentManagementController extends Controller
                     ->leftJoin('tra_documentupload_requirements as t4', 't2.document_requirement_id', 't4.id')
                     ->leftJoin('par_document_types as t3', 't4.document_type_id', 't3.id')
                     ->leftJoin('users as t5', 't2.uploaded_by', '=', 't5.id')
-                    ->select(DB::raw("t1.*,t2.remarks, t4.module_id, t4.sub_module_id,t4.section_id,t1.file_type, t2.uploaded_on, CONCAT(decryptval(t5.first_name," . getDecryptFunParams() . "),' ',decryptval(t5.last_name," . getDecryptFunParams() . ")) as uploaded_by,t4.is_mandatory, t2.document_type_id,t3.name as document_type, t4.name as document_requirement, case when (select count(id) from tra_application_uploadeddocuments q where q.parent_id = t1.id) = 0 then true else false end leaf"))
+                    ->select(DB::raw("t1.*,t2.remarks, t4.module_id, t4.sub_module_id,t4.section_id,t1.file_type, t2.uploaded_on, CONCAT(decrypt(t5.first_name," . getDecryptFunParams() . "),' ',decrypt(t5.last_name," . getDecryptFunParams() . ")) as uploaded_by,t4.is_mandatory, t2.document_type_id,t3.name as document_type, t4.name as document_requirement, case when (select count(id) from tra_application_uploadeddocuments q where q.parent_id = t1.id) = 0 then true else false end leaf"))
                     ->where('t1.parent_id', $parent_id);
 
                 if (validateIsNumeric($is_original_dossier)) {
@@ -526,7 +544,7 @@ class DocumentManagementController extends Controller
                     })
                     ->leftJoin('users as t5', 't1.uploaded_by', '=', 't5.id')
                     ->select(DB::raw("t1.*, t1.id as application_document_id, t4.remarks,
-                        t4.node_ref,t4.initial_file_name,t4.file_name,t2.module_id,t2.sub_module_id,t2.section_id,t4.file_type,t1.uploaded_on,CONCAT(decryptval(t5.first_name," . getDecryptFunParams() . "),' ',decryptval(t5.last_name," . getDecryptFunParams() . ")) as uploaded_by,t2.is_mandatory,
+                        t4.node_ref,t4.initial_file_name,t4.file_name,t2.module_id,t2.sub_module_id,t2.section_id,t4.file_type,t1.uploaded_on,CONCAT(decrypt(t5.first_name," . getDecryptFunParams() . "),' ',decrypt(t5.last_name," . getDecryptFunParams() . ")) as uploaded_by,t2.is_mandatory,
                          t2.document_type_id,t3.name as document_type, t2.name as document_requirement, t4.id, case when (select count(id) from tra_application_uploadeddocuments q where q.parent_id = t4.id) = 0 then true else false end leaf"))
                     //->where('t1.application_code', $application_code)
                     ->where('t4.parent_id', 0);
@@ -581,7 +599,7 @@ class DocumentManagementController extends Controller
                 ->join('tra_documentupload_requirements as t2', 't1.id', '=', 't2.document_type_id')
                 ->select(DB::raw("t4.remarks, t1.id as document_type_id, t4.product_id, t2.id as document_requirement_id,
                  t1.name as document_type,t2.name as document_requirement, t4.id,t4.initial_file_name,t4.file_name,t4.document_folder as document_folder,concat('mis/','',t4.thumbnail_folder) as thumbnail_folder,
-                t4.filetype,t4.uploaded_on,CONCAT_WS(' ',decryptVal(t5.first_name),decryptVal(t5.last_name)) as uploaded_by"))
+                t4.filetype,t4.uploaded_on,CONCAT_WS(' ',decrypt(t5.first_name),decrypt(t5.last_name)) as uploaded_by"))
                 ->leftJoin('tra_uploadedproduct_images as t4', function ($join) use ($product_id) {
                     $join->on("t2.id", "=", "t4.document_requirement_id");
                     // ->where("t4.product_id", "=", $product_id);
@@ -632,7 +650,7 @@ class DocumentManagementController extends Controller
                 ->join('tra_documentupload_requirements as t2', 't1.id', '=', 't2.document_type_id')
                 ->select(DB::raw("t4.remarks, t1.id as document_type_id, t4.product_id, t2.id as document_requirement_id,
                          t1.name as document_type,t2.name as document_requirement, t4.id,t4.initial_file_name,t4.file_name,t4.document_folder,thumbnail_folder,
-                        t4.filetype,t4.uploaded_on,CONCAT_WS(' ',decryptval(t5.first_name),decryptval(t5.last_name)) as uploaded_by"))
+                        t4.filetype,t4.uploaded_on,CONCAT_WS(' ',decrypt(t5.first_name),decrypt(t5.last_name)) as uploaded_by"))
                 ->join('tra_uploadedproduct_images as t4', function ($join) use ($product_id) {
                     $join->on("t2.id", "=", "t4.document_requirement_id")
                         ->where("t4.portal_product_id", "=", $product_id);

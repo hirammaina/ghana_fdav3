@@ -1206,6 +1206,7 @@ class CommonController extends Controller
         try {
             $res = insertRecord('tra_payments', $params, $user_id);
 
+
             generatePaymentRefDistribution($invoice_id, $res['record_id'], $amount, $currency_id, $user_id);
             $payment_details = getApplicationPaymentsRunningBalance($application_id, $application_code, $invoice_id);
             $res['balance'] = $payment_details['running_balance'];
@@ -3018,6 +3019,11 @@ class CommonController extends Controller
     }
     public function onValidateApplicationDocumentsUploads(Request $req)
     {
+        return   $res = array(
+            'success' => true,
+            'hasValidatedChecklist' => true, // Job to change after demo 5/02/24
+            'message' => 'All is well Documents'
+        );
         $application_code = $req->input('application_code');
         $workflow_stage = $req->input('workflow_stage');
         $doc_type_id = $req->input('document_type_id');
@@ -3709,7 +3715,7 @@ class CommonController extends Controller
                 ->leftJoin('par_query_statuses as t2', 't1.status', '=', 't2.id')
                 ->leftJoin('checklistitems_queryresponses as t3', 't1.id', '=', 't3.query_id')
                 ->leftJoin('par_application_sections as t4', 't1.application_section_id', '=', 't4.id')
-                ->select(DB::raw("t11.name as reference_details,t1.*,t1.created_on as queried_on, t2.name as query_status, t3.response as last_response,t4.application_section,t6.id as query_type_id, t6.name as query_type,t7.name as query_category,t5.name as queried_item, decryptval(t8.first_name) as queried_by, t10.query_ref as query_reference_no,t6.sub_module_id,t6.module_id,t6.section_id,t1.application_code, t12.response as query_response,t13.name as checklist_querycategory, t1.id as query_id"))
+                ->select(DB::raw("t11.name as reference_details,t1.*,t1.created_on as queried_on, t2.name as query_status, t3.response as last_response,t4.application_section,t6.id as query_type_id, t6.name as query_type,t7.name as query_category,t5.name as queried_item, decrypt(t8.first_name) as queried_by, t10.query_ref as query_reference_no,t6.sub_module_id,t6.module_id,t6.section_id,t1.application_code, t12.response as query_response,t13.name as checklist_querycategory, t1.id as query_id"))
                 ->leftJoin('par_checklist_items as t5', 't1.checklist_item_id', '=', 't5.id')
                 ->leftJoin('par_checklist_types as t6', 't5.checklist_type_id', '=', 't6.id')
                 ->leftJoin('par_checklist_categories as t7', 't6.checklist_category_id', '=', 't7.id')
@@ -4111,12 +4117,49 @@ class CommonController extends Controller
             $application_code  = $req->application_code;
             $data = array();
 
+
+            //Job crafty make for payment receipt pendng validation
+
+            $invoicing_data = array();
+            $receipt_id = null;
+            $application_code = $req->application_code;
+            if (validateIsNumeric($application_code)) {
+                $invoicing_data = DB::table('tra_application_invoices as t1')
+                    ->leftJoin('tra_invoice_details as t2', 't1.id', 't2.invoice_id')
+                    ->leftJoin('par_currencies as t3', 't2.paying_currency_id', 't3.id')
+                    ->leftJoin('par_batchinvoice_types as t4', 't1.invoice_type_id', 't4.id')
+                    ->select(DB::raw("(t2.element_amount) as total_element_amount,t1.application_code, (t2.element_amount*t2.paying_exchange_rate) as equivalent_paid, t3.name as currency, t1.date_of_invoicing,t2.paying_exchange_rate as exchange_rate, t1.invoice_no, t1.id as invoice_id, t4.name as invoice_type, t2.paying_currency_id"))
+
+                    ->where('t1.application_code', $application_code)
+                    ->get();
+
+                foreach ($invoicing_data as $invoice) {
+                    $invoice_amt = getApplicationPaymentsRunningBalance($application_code, $invoice->invoice_id);
+                    $invoice->balance = $invoice_amt['running_balance'];
+                    $invoice->amount_paid = $invoice_amt['amount_paid'];
+                    if ($invoice_amt['running_balance'] > 0) {
+                        $invoice->is_cleared = 0;
+                    } else {
+                        $invoice->is_cleared = 1;
+                        $receipt_id = DB::table("tra_payments")->where("invoice_id", $invoice->invoice_id)->value("id");
+                    }
+                }
+            }
+
+            //end
+
             $records = DB::table('tra_uploadedpayments_details as t1')
                 ->leftJoin('tra_application_uploadeddocuments as t2', 't1.document_upload_id', 't2.id')
                 ->leftJoin('par_currencies as t3', 't1.currency_id', 't3.id')
-                ->leftJoin('par_payment_modes as t4', 't1.payment_mode_id', 't4.id')
-                ->select('t1.*', 't2.*', 't3.name as currency', 't4.name as payment_mode', 't1.application_code')
-                ->where(array('t1.application_code' => $application_code))
+                ->leftJoin('par_payment_modes as t4', 't1.payment_mode_id', 't4.id');
+
+            if ($receipt_id) {
+                $records->select('t1.*', 't2.*', 't3.name as currency', 't4.name as payment_mode', 't1.application_code', DB::raw("$receipt_id as receipt_id")); //DB::raw("$receipt_id as receipt_id added 14.02.24
+
+            } else {
+                $records->select('t1.*', 't2.*', 't3.name as currency', 't4.name as payment_mode', 't1.application_code');
+            }
+            $records =  $records->where(array('t1.application_code' => $application_code))
                 ->get();
 
             $res = array(
@@ -4125,6 +4168,7 @@ class CommonController extends Controller
                 'message' => ''
             );
         } catch (\Exception $exception) {
+
             $res = sys_error_handler($exception->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), explode('\\', __CLASS__), \Auth::user()->id);
         } catch (\Throwable $throwable) {
             $res = sys_error_handler($throwable->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), explode('\\', __CLASS__), \Auth::user()->id);

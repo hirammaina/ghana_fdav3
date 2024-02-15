@@ -100,6 +100,8 @@ class VerifyCsrfToken extends Middleware
         'promotionadverts/OnSavePromotionalProductParticulars',
         'utilities/onsaveProductConfigData',
         'productregistration/onSaveGroupedApplicationdetails',
-        "utilities/onGroupedApplicationInvoiceGeneration"
+        "utilities/onGroupedApplicationInvoiceGeneration",
+        "gmpinspection/onSaveGmpOtherDetails",
+        "utilities/onApplicationInvoiceGeneration"
     ];
 }

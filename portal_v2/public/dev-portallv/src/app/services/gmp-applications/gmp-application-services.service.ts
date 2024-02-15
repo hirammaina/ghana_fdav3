@@ -230,7 +230,7 @@ export class GmpApplicationServicesService {
       }));
   }
   onSaveGmpApplication(manufacturing_site_id,premisesData,tracking_no,registrant_details) {
-    
+    console.log(premisesData)
     var headers = new Headers({
       "Accept": "application/json",
       "Authorization": "Bearer " + this.authService.getAccessToken(),

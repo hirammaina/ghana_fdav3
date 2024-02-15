@@ -177,6 +177,7 @@ trait ProductsRegistrationTrait
         $action_type = $action_details->action_type_id;
         $approval_submission = $action_details->is_approval_submission;
 
+
         if ($approval_submission == 1) {
             $this->processNewApprovalApplicationSubmission($request, $keep_status);
         } else if ($action_type == 4) { //manager query to customer

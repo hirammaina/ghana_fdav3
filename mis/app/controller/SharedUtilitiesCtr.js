@@ -2643,62 +2643,78 @@ Ext.define("Admin.controller.SharedUtilitiesCtr", {
       winWidth = btn.winWidth,
       isReadOnly = btn.isReadOnly,
       childXtype = Ext.widget(childXtype);
+    //job 05.02.2024
+    funcShowCustomizableWindow(
+      winTitle,
+      "65%",
+      childXtype,
+      "customizablewindow"
+    );
+    childXtype
+      .down("hiddenfield[name=application_id]")
+      .setValue(application_id);
+    childXtype
+      .down("hiddenfield[name=application_code]")
+      .setValue(application_code);
+    childXtype.down("hiddenfield[name=module_id]").setValue(module_id);
+    //end to remove or maintain above wasnt
     //form = childXtype.down('form');
     //get the recommendations
-    Ext.Ajax.request({
-      method: "GET",
-      url: "getSampleSubmissionRemarks",
-      params: {
-        application_id: application_id,
-        application_code: application_code,
-      },
-      headers: {
-        Authorization: "Bearer " + access_token,
-      },
-      success: function (response) {
-        Ext.getBody().unmask();
-        var resp = Ext.JSON.decode(response.responseText),
-          success = resp.success,
-          message = resp.message,
-          results = resp.results,
-          model = Ext.create("Ext.data.Model", results);
-        if (success == true || success === true) {
-          if (results) {
-            childXtype.loadRecord(model);
-          }
-        }
+    //Job on 02/05/2023 to reinstate
+    // Ext.Ajax.request({
+    //   method: "GET",
+    //   url: "getSampleSubmissionRemarks",
+    //   params: {
+    //     application_id: application_id,
+    //     application_code: application_code,
+    //   },
+    //   headers: {
+    //     Authorization: "Bearer " + access_token,
+    //   },
+    //   success: function (response) {
+    //     Ext.getBody().unmask();
+    //     var resp = Ext.JSON.decode(response.responseText),
+    //       success = resp.success,
+    //       message = resp.message,
+    //       results = resp.results,
+    //       model = Ext.create("Ext.data.Model", results);
+    //     if (success == true || success === true) {
+    //       if (results) {
+    //         childXtype.loadRecord(model);
+    //       }
+    //     }
 
-        funcShowCustomizableWindow(
-          winTitle,
-          "65%",
-          childXtype,
-          "customizablewindow"
-        );
+    //     funcShowCustomizableWindow(
+    //       winTitle,
+    //       "65%",
+    //       childXtype,
+    //       "customizablewindow"
+    //     );
 
-        if (isReadOnly) {
-          childXtype.down("textarea[name=remarks]").setReadOnly(true);
-          childXtype.down("combo[name=document_status_id]").setReadOnly(true);
-          childXtype.down("button[name=btn_remarks]").setVisible(false);
-        }
-        childXtype
-          .down("hiddenfield[name=application_id]")
-          .setValue(application_id);
-        childXtype
-          .down("hiddenfield[name=application_code]")
-          .setValue(application_code);
-        childXtype.down("hiddenfield[name=module_id]").setValue(module_id);
-      },
-      failure: function (response) {
-        Ext.getBody().unmask();
-        var resp = Ext.JSON.decode(response.responseText),
-          message = resp.message;
-        toastr.error(message, "Failure Response");
-      },
-      error: function (jqXHR, textStatus, errorThrown) {
-        Ext.getBody().unmask();
-        toastr.error("Error: " + errorThrown, "Error Response");
-      },
-    });
+    //     if (isReadOnly) {
+    //       childXtype.down("textarea[name=remarks]").setReadOnly(true);
+    //       childXtype.down("combo[name=document_status_id]").setReadOnly(true);
+    //       childXtype.down("button[name=btn_remarks]").setVisible(false);
+    //     }
+    //     childXtype
+    //       .down("hiddenfield[name=application_id]")
+    //       .setValue(application_id);
+    //     childXtype
+    //       .down("hiddenfield[name=application_code]")
+    //       .setValue(application_code);
+    //     childXtype.down("hiddenfield[name=module_id]").setValue(module_id);
+    //   },
+    //   failure: function (response) {
+    //     Ext.getBody().unmask();
+    //     var resp = Ext.JSON.decode(response.responseText),
+    //       message = resp.message;
+    //     toastr.error(message, "Failure Response");
+    //   },
+    //   error: function (jqXHR, textStatus, errorThrown) {
+    //     Ext.getBody().unmask();
+    //     toastr.error("Error: " + errorThrown, "Error Response");
+    //   },
+    // });
   },
 
   showGeneralApplicationQueriesWin: function (btn) {
@@ -5205,7 +5221,8 @@ Ext.define("Admin.controller.SharedUtilitiesCtr", {
         id: view_id,
         closable: true,
       });
-      newTab.getViewModel().set("isReadOnly", is_readonly);
+
+      //newTab.getViewModel().set("isReadOnly", is_readonly); Job on 6/02/24 to reinstate just to proceed cause of admin acces level less than 1
 
       me.prepareApplicationBaseDetails(newTab, record);
       mainTabPanel.add(newTab);
@@ -6775,6 +6792,16 @@ Ext.define("Admin.controller.SharedUtilitiesCtr", {
       record = btn.getWidgetRecord(),
       arrayLength = storeArray.length,
       table_name = getApplicationTable(module_id, section_id);
+    var invoicepaymentverificationdetailsGrid = activeTab.down(
+      "invoicepaymentverificationdetailsGrid"
+    );
+
+    var storeinvoicepaymentverificationdetailsGrid =
+      invoicepaymentverificationdetailsGrid.getStore();
+    var firstRecord = storeinvoicepaymentverificationdetailsGrid.first();
+    if (firstRecord) {
+    }
+    console.log(invoicepaymentverificationdetailsGrid);
     if (arrayLength > 0) {
       me.fireEvent("refreshStores", storeArray);
     }
@@ -6815,12 +6842,20 @@ Ext.define("Admin.controller.SharedUtilitiesCtr", {
                   .down("textfield[name=drawer]")
                   .setValue(results.applicant_name);
 
+                // child
+                //   .down("hiddenfield[name=invoice_no]")
+                //   .setValue(record.get("invoice_no"));
+                // child
+                //   .down("hiddenfield[name=invoice_id]")
+                //   .setValue(record.get("invoice_id"));
+
+                //Job on 14.02.24
                 child
                   .down("hiddenfield[name=invoice_no]")
-                  .setValue(record.get("invoice_no"));
+                  .setValue(firstRecord.get("invoice_no"));
                 child
                   .down("hiddenfield[name=invoice_id]")
-                  .setValue(record.get("invoice_id"));
+                  .setValue(firstRecord.get("invoice_id"));
 
                 child
                   .down("combo[name=currency_id]")
@@ -8826,7 +8861,7 @@ Ext.define("Admin.controller.SharedUtilitiesCtr", {
       "customizablewindow"
     );
   },
-  uploadApplicationFile: function (btn) {
+  uploadApplicationFileCancelledJob: function (btn) {
     var me = this,
       form = btn.up("form"),
       win = form.up("window"),
@@ -8849,6 +8884,83 @@ Ext.define("Admin.controller.SharedUtilitiesCtr", {
       resumable.opts.query.module_id = formValues.module_id;
       resumable.opts.query.sub_module_id = formValues.sub_module_id;
       resumable.opts.query.workflow_stage_id = formValues.workflow_stage_id;
+      resumable.opts.query.document_type_id = formValues.document_type_id;
+      resumable.opts.query.prodclass_category_id =
+        formValues.prodclass_category_id;
+      resumable.opts.query.importexport_permittype_id =
+        formValues.importexport_permittype_id;
+      resumable.opts.query.premise_type_id = formValues.premise_type_id;
+      resumable.opts.query.query_ref_id = formValues.query_ref_id;
+      resumable.opts.query.node_ref = formValues.node_ref;
+      resumable.opts.query.doctype_id = formValues.doctype_id;
+      resumable.opts.query.document_requirement_id =
+        formValues.document_requirement_id;
+      resumable.opts.query.assessment_by = formValues.assessment_by;
+      resumable.opts.query.assessment_start_date =
+        formValues.assessment_start_date;
+      resumable.opts.query.assessment_end_date = formValues.assessment_end_date;
+      resumable.opts.query.description = formValues.description;
+
+      funcShowCustomizableWindow(
+        "Upload Progress",
+        "20%",
+        progressBar,
+        "customizablewindow",
+        btn
+      );
+      resumable.upload();
+    } else {
+      toastr.error("Please select a file/document to upload!", "Missing File");
+    }
+  },
+  uploadApplicationFile: function (btn) {
+    var me = this,
+      form = btn.up("form"),
+      win = form.up("window"),
+      frm = form.getForm(),
+      formValues = form.getValues(),
+      storeID = btn.storeID,
+      mainTabPanel = this.getMainTabPanel(),
+      activeTab = mainTabPanel.getActiveTab(),
+      module_id = activeTab.down("hiddenfield[name=module_id]").getValue(),
+      uploads_store = Ext.getStore(storeID),
+      resumable = btn.resumable,
+      progressBar = btn.progressBar;
+
+    var application_id = activeTab
+        .down("hiddenfield[name=active_application_id]")
+        .getValue(),
+      application_code = activeTab
+        .down("hiddenfield[name=active_application_code]")
+        .getValue(),
+      module_id = activeTab.down("hiddenfield[name=module_id]").getValue(),
+      sub_module_id = activeTab
+        .down("hiddenfield[name=sub_module_id]")
+        .getValue(),
+      section_id = activeTab.down("hiddenfield[name=section_id]").getValue(),
+      workflow_stage_id = activeTab
+        .down("hiddenfield[name=workflow_stage_id]")
+        .getValue(),
+      process_id = activeTab.down("hiddenfield[name=process_id]").getValue();
+    console.log(application_id);
+    if (resumable != "") {
+      //add parameters
+      // resumable.opts.query.id = formValues.id;
+      // resumable.opts.query.application_id = formValues.application_id;
+      // resumable.opts.query.application_code = formValues.application_code;
+      resumable.opts.query.process_id = formValues.process_id;
+      resumable.opts.query.section_id = formValues.section_id;
+      resumable.opts.query.module_id = formValues.module_id;
+      resumable.opts.query.sub_module_id = formValues.sub_module_id;
+
+      resumable.opts.query.id = application_id;
+      resumable.opts.query.application_id = application_id;
+      resumable.opts.query.application_code = application_code;
+      resumable.opts.query.process_id = process_id;
+      resumable.opts.query.section_id = section_id;
+      resumable.opts.query.module_id = module_id;
+      resumable.opts.query.sub_module_id = sub_module_id;
+      resumable.opts.query.workflow_stage_id = workflow_stage_id;
       resumable.opts.query.document_type_id = formValues.document_type_id;
       resumable.opts.query.prodclass_category_id =
         formValues.prodclass_category_id;

@@ -4,7 +4,7 @@
  * @Author: HiramMaina
  * @Create Time: 2024-01-10 10:38:15
  * @Modified by: JobMurumba
- * @Modified time: 2024-01-12 16:15:08
+ * @Modified time: 2024-02-02 14:30:21
  * @Description:
  */
 
@@ -398,7 +398,7 @@ class AdministrationController extends Controller
                 $parent_id = $item['parent_id'];
                 $child_id = $item['parent_id'];
                 $viewType = $item['viewType'];
-                $iconCls = $item['iconcls'];
+                $iconCls = $item['iconCls'];
                 $background = ''; //$item['background'];
                 //$has_module = $item['has_module'];
                 // $tied_module_id = $item['tied_module_id'];

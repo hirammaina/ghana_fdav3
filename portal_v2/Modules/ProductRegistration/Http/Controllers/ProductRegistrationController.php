@@ -411,11 +411,11 @@ class ProductRegistrationController extends Controller
                 }
 
                 if ($resp['success']) {
-                    //$sql = DB::connection('mis_db')->table('tra_application_documentsdefination')->where(array('application_code' => $application_code))->first();
-                    $sql = DB::table('mis_db.tra_application_documentsdefination')->where(array('application_code' => $application_code))->first();
+                    $sql = DB::connection('mis_db')->table('tra_application_documentsdefination')->where(array('application_code' => $application_code))->first();
+                    // $sql = DB::table('mis_db.tra_application_documentsdefination')->where(array('application_code' => $application_code))->first();
                     if (!$sql) {
-                        //print_r('test');
-                        initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no . rand(0, 100), $trader_id);
+                        //print_r('test');//to reisntate dms not working at the moment since its down and folders not set well Job
+                        //initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no . rand(0, 100), $trader_id);
                     }
                     $res = array(
                         'tracking_no' => $tracking_no,
@@ -1632,6 +1632,7 @@ class ProductRegistrationController extends Controller
 
     public function getProductApplications(Request $req)
     {
+
         try {
             $trader_id = $req->trader_id;
             $application_status_id = $req->application_status_id;
@@ -1660,6 +1661,7 @@ class ProductRegistrationController extends Controller
                     $join->on('t1.group_application_code', '=', 't8.group_application_code')
                         ->on('t1.application_status_id', '!=', DB::raw(1));
                 })
+                ->where("t1.date_added", ">", "2024-02-12") //Job to remove
                 ->leftJoin('wb_statuses_actions as t7', 't6.action_id', 't7.id');
 
             // ->whereRaw("if(t1.group_application_code >0,t1.application_status_id >1,1)");
@@ -1688,6 +1690,7 @@ class ProductRegistrationController extends Controller
                 $records =  $records->whereIn('t1.application_status_id', explode(',', $application_status));
             }
             $records = $records->orderby('t1.date_added', 'desc')->get();
+
 
             $actionColumnData = returnContextMenuActions();
             $sectionsData = getParameterItems('par_sections', '', 'mis_db');
@@ -1725,6 +1728,8 @@ class ProductRegistrationController extends Controller
 
                 );
             }
+
+
             if (!validateIsNumeric($group_application_code)) {
                 $recordData = DB::table('wb_appsubmissions_typedetails as t1')
                     ->select(DB::raw("t7.name as action_name,t7.iconcls,t7.action,  t1.group_tracking_no as tracking_no,t1.group_tracking_no as reference_no,t1.group_application_code, t1.section_id,t5.name as local_agent,t1.id as application_id, t4.name as applicant_name, 'Grouped Application' as brand_name,t3.name as status_name,t1.application_status_id as status_id,t1.appsubmissions_type_id, t1.date_added,  t1.sub_module_id, t1.trader_id,t1.trader_id as applicant_id, t1.application_status_id"))
@@ -1735,6 +1740,7 @@ class ProductRegistrationController extends Controller
                         $join->on('t1.application_status_id', '=', 't6.status_id')
                             ->on('t6.is_default_action', '=', DB::raw(1));
                     })
+                    ->where("t1.date_added", ">", "2024-02-12") //Job to remove just for demo
                     ->leftJoin('wb_statuses_actions as t7', 't6.action_id', 't7.id');
 
                 if ($trader_id != 25) {
@@ -1786,6 +1792,7 @@ class ProductRegistrationController extends Controller
                 }
             }
 
+
             $res = array(
                 'success' => true,
                 'data' => $data
@@ -1809,8 +1816,8 @@ class ProductRegistrationController extends Controller
         try {
             $application_code = $req->application_code;
             $data = array();
-            $mis_db = "mis_db";
-            // $mis_db = DB::connection('mis_db')->getDatabaseName();
+            // $mis_db = "mis_db";
+            $mis_db = DB::connection('mis_db')->getDatabaseName();
             //get the records ,date_format(manufacturing_date, '%m/%d/%Y') as manufacturing_date, date_format(expiry_date, '%m/%d/%Y') as expiry_date
             $records = DB::table('wb_product_applications as t1')
                 ->select(DB::raw("t1.*,t5.name as local_agent_name,t5.name as local_agent,  t2.*,t1.application_status_id as status_id, t3.name as status_name,t6.manufacturer_id, t4.router_link,t1.trader_id as applicant_id, t4.name as process_title"))
@@ -2547,20 +2554,6 @@ class ProductRegistrationController extends Controller
             if ($is_local_agent == 1) {
 
 
-                // $data = DB::connection('mis_db')->table('tra_premises_applications as t6')
-                //     ->join('tra_premises as t1', 't6.premise_id', '=', 't1.id')
-                //     ->leftJoin('tra_approval_recommendations as t2', 't6.application_code', '=', 't2.application_code')
-                //     ->leftJoin('wb_trader_account as t3', 't6.applicant_id', '=', 't3.id')
-                //     ->leftJoin('registered_premises as t4', 't1.id', '=', 't4.tra_premise_id')
-                //     ->leftJoin('par_validity_statuses as t5', 't2.appvalidity_status_id', '=', 't5.id')
-                //     ->leftJoin('par_regions as t7', 't1.region_id', '=', 't7.id')
-                //     ->leftJoin('par_registration_statuses as t8', 't2.appregistration_status_id', '=', 't8.id')
-                //     ->select(DB::raw(" DISTINCT t4.tra_premise_id,t1.id as premise_id, t1.name as manufacturing_site_name,t1.name as trader_name, t1.*, t2.permit_no, t3.name as applicant_name,t4.id as registered_id,
-                // 				t3.id as applicant_id, t3.name as applicant_name,'Rwanda' as country, t3.contact_person, t3.tin_no,
-                // 				t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id,t7.name as region_name,
-                // 				t3.physical_address, t3.postal_address,validity_status as validity_status_id,t8.name as registration_status,
-                // 				t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email, t3.website as app_website,if(t2.appvalidity_status_id >0, t5.name, 'Not Licensed') as validity_status, t2.appvalidity_status_id as validity_status_id, t1.id")); //change to status
-
                 $data = DB::connection('mis_db')->table('tra_premises_applications as t6')
                     ->join('tra_premises as t1', 't6.premise_id', '=', 't1.id')
                     ->leftJoin('tra_approval_recommendations as t2', 't6.application_code', '=', 't2.application_code')
@@ -2569,40 +2562,54 @@ class ProductRegistrationController extends Controller
                     ->leftJoin('par_validity_statuses as t5', 't2.appvalidity_status_id', '=', 't5.id')
                     ->leftJoin('par_regions as t7', 't1.region_id', '=', 't7.id')
                     ->leftJoin('par_registration_statuses as t8', 't2.appregistration_status_id', '=', 't8.id')
-                    ->select(DB::raw("DISTINCT ON (t4.tra_premise_id) t4.tra_premise_id, t1.id as premise_id, t1.name as manufacturing_site_name, t1.name as trader_name, t1.*, t2.permit_no, t3.name as applicant_name, t4.id as registered_id,
-                        t3.id as applicant_id, t3.name as applicant_name, 'Rwanda' as country, t3.contact_person, t3.tin_no,
-                        t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t7.name as region_name,
-                        t3.physical_address, t3.postal_address, t5.name as validity_status, t2.appvalidity_status_id as validity_status_id, t8.name as registration_status,
-                        t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email, t3.website as app_website"))
-                    ->groupBy(
-                        't4.tra_premise_id',
-                        't1.id',
-                        't1.name',
-                        't6.id',
-                        't1.name',
-                        't1.*',
-                        't2.permit_no',
-                        't3.name',
-                        't4.id',
-                        't3.id',
-                        't3.name',
-                        't3.contact_person',
-                        't3.tin_no',
-                        't3.country_id',
-                        't3.region_id',
-                        't3.district_id',
-                        't7.name',
-                        't3.physical_address',
-                        't3.postal_address',
-                        't5.name',
-                        't2.appvalidity_status_id',
-                        't8.name',
-                        't3.telephone_no',
-                        't3.fax',
-                        't3.email',
-                        't3.website'
-                    )
-                    ->orderBy('t4.tra_premise_id', 'desc');
+                    ->select(DB::raw(" DISTINCT t4.tra_premise_id,t1.id as premise_id, t1.name as manufacturing_site_name,t1.name as trader_name, t1.*, t2.permit_no, t3.name as applicant_name,t4.id as registered_id,
+                				t3.id as applicant_id, t3.name as applicant_name,'Ghana' as country, t3.contact_person, t3.tin_no,
+                				t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id,t7.name as region_name,
+                				t3.physical_address, t3.postal_address,validity_status as validity_status_id,t8.name as registration_status,
+                				t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email, t3.website as app_website,if(t2.appvalidity_status_id >0, t5.name, 'Not Licensed') as validity_status, t2.appvalidity_status_id as validity_status_id, t1.id")); //change to status
+
+                // $data = DB::connection('mis_db')->table('tra_premises_applications as t6')
+                //     ->join('tra_premises as t1', 't6.premise_id', '=', 't1.id')
+                //     ->leftJoin('tra_approval_recommendations as t2', 't6.application_code', '=', 't2.application_code')
+                //     ->leftJoin('wb_trader_account as t3', 't6.applicant_id', '=', 't3.id')
+                //     ->leftJoin('registered_premises as t4', 't1.id', '=', 't4.tra_premise_id')
+                //     ->leftJoin('par_validity_statuses as t5', 't2.appvalidity_status_id', '=', 't5.id')
+                //     ->leftJoin('par_regions as t7', 't1.region_id', '=', 't7.id')
+                //     ->leftJoin('par_registration_statuses as t8', 't2.appregistration_status_id', '=', 't8.id')
+                //     ->select(DB::raw("DISTINCT ON (t4.tra_premise_id) t4.tra_premise_id, t1.id as premise_id, t1.name as manufacturing_site_name, t1.name as trader_name, t1.*, t2.permit_no, t3.name as applicant_name, t4.id as registered_id,
+                //         t3.id as applicant_id, t3.name as applicant_name, 'Rwanda' as country, t3.contact_person, t3.tin_no,
+                //         t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t7.name as region_name,
+                //         t3.physical_address, t3.postal_address, t5.name as validity_status, t2.appvalidity_status_id as validity_status_id, t8.name as registration_status,
+                //         t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email, t3.website as app_website"))
+                //     ->groupBy(
+                //         't4.tra_premise_id',
+                //         't1.id',
+                //         't1.name',
+                //         't6.id',
+                //         't1.name',
+                //         't1.*',
+                //         't2.permit_no',
+                //         't3.name',
+                //         't4.id',
+                //         't3.id',
+                //         't3.name',
+                //         't3.contact_person',
+                //         't3.tin_no',
+                //         't3.country_id',
+                //         't3.region_id',
+                //         't3.district_id',
+                //         't7.name',
+                //         't3.physical_address',
+                //         't3.postal_address',
+                //         't5.name',
+                //         't2.appvalidity_status_id',
+                //         't8.name',
+                //         't3.telephone_no',
+                //         't3.fax',
+                //         't3.email',
+                //         't3.website'
+                //     )
+                //     ->orderBy('t4.tra_premise_id', 'desc');
 
 
 
@@ -2624,47 +2631,47 @@ class ProductRegistrationController extends Controller
                 }
                 $data = $data->get();
                 //get the data from the rdb registered lists 
-                // $rdb_data = DB::connection('mis_db')->table('tra_rdbbusiness_applications as t6')
-                //     ->join('tra_premises as t1', 't6.premise_id', '=', 't1.id')
-                //     ->leftJoin('wb_trader_account as t3', 't6.applicant_id', '=', 't3.id')
-                //     ->leftJoin('par_regions as t7', 't1.region_id', '=', 't7.id')
-                //     ->select(DB::raw(" DISTINCT t1.id as premise_id, t1.name as manufacturing_site_name,t1.name as trader_name, t1.*, t1.company_registration_no as permit_no, t3.name as applicant_name,
-                // 				t3.id as applicant_id, t3.name as applicant_name,'Rwanda' as country, t3.contact_person, t3.tin_no,
-                // 				t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id,t7.name as region_name,
-                // 				t3.physical_address, t3.postal_address,
-                // 				t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email, t3.website as app_website,'Registered RDB Premises' as validity_status,t1.id")); //change to status
-
                 $rdb_data = DB::connection('mis_db')->table('tra_rdbbusiness_applications as t6')
                     ->join('tra_premises as t1', 't6.premise_id', '=', 't1.id')
                     ->leftJoin('wb_trader_account as t3', 't6.applicant_id', '=', 't3.id')
                     ->leftJoin('par_regions as t7', 't1.region_id', '=', 't7.id')
-                    ->select(DB::raw("DISTINCT ON (t1.id) t1.id as premise_id, t1.name as manufacturing_site_name, t1.name as trader_name, t1.*, t1.company_registration_no as permit_no, t3.name as applicant_name,
-            t3.id as applicant_id, t3.name as applicant_name, 'Rwanda' as country, t3.contact_person, t3.tin_no,
-            t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t7.name as region_name,
-            t3.physical_address, t3.postal_address,
-            t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email, t3.website as app_website, 'Registered RDB Premises' as validity_status"))
-                    ->groupBy(
-                        't1.id',
-                        't1.name',
-                        't1.name',
-                        't1.*',
-                        't3.name',
-                        't3.id',
-                        't3.name',
-                        't3.contact_person',
-                        't3.tin_no',
-                        't3.country_id',
-                        't3.region_id',
-                        't3.district_id',
-                        't7.name',
-                        't3.physical_address',
-                        't3.postal_address',
-                        't3.telephone_no',
-                        't3.fax',
-                        't3.email',
-                        't3.website'
-                    )
-                    ->orderBy('t1.id', 'desc');
+                    ->select(DB::raw(" DISTINCT t1.id as premise_id, t1.name as manufacturing_site_name,t1.name as trader_name, t1.*, t1.company_registration_no as permit_no, t3.name as applicant_name,
+                				t3.id as applicant_id, t3.name as applicant_name,'Ghana' as country, t3.contact_person, t3.tin_no,
+                				t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id,t7.name as region_name,
+                				t3.physical_address, t3.postal_address,
+                				t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email, t3.website as app_website,'Registered RDB Premises' as validity_status,t1.id")); //change to status
+
+                //     $rdb_data = DB::connection('mis_db')->table('tra_rdbbusiness_applications as t6')
+                //         ->join('tra_premises as t1', 't6.premise_id', '=', 't1.id')
+                //         ->leftJoin('wb_trader_account as t3', 't6.applicant_id', '=', 't3.id')
+                //         ->leftJoin('par_regions as t7', 't1.region_id', '=', 't7.id')
+                //         ->select(DB::raw("DISTINCT ON (t1.id) t1.id as premise_id, t1.name as manufacturing_site_name, t1.name as trader_name, t1.*, t1.company_registration_no as permit_no, t3.name as applicant_name,
+                // t3.id as applicant_id, t3.name as applicant_name, 'Rwanda' as country, t3.contact_person, t3.tin_no,
+                // t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t7.name as region_name,
+                // t3.physical_address, t3.postal_address,
+                // t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email, t3.website as app_website, 'Registered RDB Premises' as validity_status"))
+                //         ->groupBy(
+                //             't1.id',
+                //             't1.name',
+                //             't1.name',
+                //             't1.*',
+                //             't3.name',
+                //             't3.id',
+                //             't3.name',
+                //             't3.contact_person',
+                //             't3.tin_no',
+                //             't3.country_id',
+                //             't3.region_id',
+                //             't3.district_id',
+                //             't7.name',
+                //             't3.physical_address',
+                //             't3.postal_address',
+                //             't3.telephone_no',
+                //             't3.fax',
+                //             't3.email',
+                //             't3.website'
+                //         )
+                //         ->orderBy('t1.id', 'desc');
 
 
                 if ($search_value != '') {
@@ -3024,8 +3031,8 @@ class ProductRegistrationController extends Controller
 
 
             $product_id = getSingleRecordColValue('wb_product_applications', array('application_code' => $req->application_code), 'product_id');
-            // $mis_db = DB::connection('mis_db')->getDatabaseName();
-            $mis_db = "mis_db";
+            $mis_db = DB::connection('mis_db')->getDatabaseName();
+            // $mis_db = "mis_db";
             $records = DB::table('wb_sample_information as t1')
                 ->select('t1.*', 't2.name as quantity_unit', 't3.name as pack_unit', 't4.name as sample_status', 't5.name as sample_storage')
                 ->leftjoin($mis_db . '.par_packaging_units as t2', 't1.quantity_unit_id', '=', 't2.id')

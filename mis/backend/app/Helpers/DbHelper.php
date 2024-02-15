@@ -912,6 +912,8 @@ class DbHelper
         $results1 = $qry1->first();
         $invoice_amount = $results1->invoice_amount;
 
+
+
         $qry2 = clone $shared_qry;
         $qry2->select(DB::raw("(exchange_rate*total_element_amount) as element_cost,element_costs_id"));
         $elements = $qry2->get();
@@ -931,6 +933,7 @@ class DbHelper
                 'created_by' => $user_id
             );
         }
+        // dd($params);
         DB::table('payments_references')->insert($params);
     }
 

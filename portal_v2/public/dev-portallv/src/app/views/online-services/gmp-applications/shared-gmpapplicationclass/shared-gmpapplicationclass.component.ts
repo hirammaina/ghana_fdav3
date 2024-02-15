@@ -462,6 +462,7 @@ registered_id: number;
     if (this.gmpapplicationGeneraldetailsfrm.invalid) {
       return;
     }
+    
    
    this.spinner.show();
     this.appService.onSaveGmpApplication(this.manufacturing_site_id, this.gmpapplicationGeneraldetailsfrm.value, this.tracking_no,'')
@@ -476,6 +477,7 @@ registered_id: number;
           this.application_code =  this.gmp_resp.application_code;
           
           this.gmpapplicationGeneraldetailsfrm.get('manufacturing_site_id').setValue(this.manufacturing_site_id);
+          console.log(this.gmpapplicationGeneraldetailsfrm.get('manufacturing_site_id'))
 
           if (this.gmp_resp.success) {
             this.toastr.success(this.gmp_resp.message, 'Response');

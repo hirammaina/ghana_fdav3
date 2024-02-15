@@ -110,7 +110,7 @@ class DashboardController extends Controller
                 ->leftJoin('par_zones as t10', 't1.zone_id', '=', 't10.id')
                 ->select(DB::raw("t1.*, t1.current_stage as workflow_stage_id,t1.zone_id, t1.application_id as active_application_id, t2.name as process_name,t10.name as zone_name,t1.application_status_id,
                 t3.name as prev_stage, t4.name as workflow_stage,t4.is_general,t5.name as application_status,t6.name as urgencyName,t6.name as urgency_name,if(fasttrack_option_id =1,'Fast Track Application', t6.name) as urgency_name,
-                    CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user,
+                    CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user,
                 t9.name as applicant_name, '' as sample_analysis_status"))
                 ->where('t4.stage_status', '<>', 3)
                 ->where('fasttrack_option_id', 1)
@@ -223,7 +223,7 @@ class DashboardController extends Controller
     {
         $limsusr_id = 0;
         $record = DB::table("users")
-            ->select(DB::raw("decryptVal(t1.email) as email"))
+            ->select(DB::raw("decrypt(t1.email) as email"))
             ->where('id', $usr_id)
             ->first();
         $email = $record->email;
@@ -303,7 +303,7 @@ class DashboardController extends Controller
                 ->leftJoin('sub_modules as t13', 't1.sub_module_id', '=', 't13.id')
                 ->select(DB::raw("t1.*, t1.current_stage as workflow_stage_id,t13.name as sub_module, t1.zone_id, t1.application_id as active_application_id, t2.name as process_name,t10.name as zone_name,t4.is_receipting_stage,t1.application_status_id,
                     t3.name as prev_stage, CASE WHEN t4.is_receipting_stage=1 THEN concat(t4.name,' :',t5.name) ELSE t4.name end  as workflow_stage,t4.is_general,t5.name as application_status,t6.name as urgencyName,t6.name as urgency_name,
-                    CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user,t4.servicedelivery_timeline,  TOTAL_WEEKDAYS('now()', t1.date_received) as time_span,(t4.servicedelivery_timeline -TOTAL_WEEKDAYS('now()', t1.date_received)) as deliverytimeline_reminder,
+                    CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user,t4.servicedelivery_timeline,  TOTAL_WEEKDAYS('now()', t1.date_received) as time_span,(t4.servicedelivery_timeline -TOTAL_WEEKDAYS('now()', t1.date_received)) as deliverytimeline_reminder,
                     CASE WHEN t1.module_id= 2 THEN  t12.name ELSE  t9.name end  as applicant_name,t12.name as premises_name, '' as sample_analysis_status"))
                 ->whereRaw("(t4.servicedelivery_timeline <= TOTAL_WEEKDAYS('now()', t1.date_received))")
                 ->where('isDone', 0);
@@ -447,7 +447,7 @@ class DashboardController extends Controller
                 ->leftJoin('sub_modules as t13', 't1.sub_module_id', '=', 't13.id')
                 ->select(DB::raw("t1.sub_module_id, t1.process_id, t1.current_stage as workflow_stage_id,t13.name as sub_module, t1.zone_id, t1.application_id as active_application_id, t2.name as process_name,t10.name as zone_name,t4.is_receipting_stage,t1.application_status_id,
                     t3.name as prev_stage, if(t4.is_receipting_stage=1,concat(t4.name,' :',t5.name), t4.name ) as workflow_stage,
-                    CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user, count(t1.id) as number_of_applications"))
+                    CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user, count(t1.id) as number_of_applications"))
                 ->whereRaw("(t4.servicedelivery_timeline <= TOTAL_WEEKDAYS(now(), t1.date_received))")
                 ->groupBy('t1.current_stage', 't1.usr_to', 't2.id')
                 ->where('isDone', 0);
@@ -606,7 +606,7 @@ class DashboardController extends Controller
 
                 ->select(DB::raw("t1.*,t16.name as product_category,t18.name as port_of_entry,t17.name as permit_category,t14.proforma_invoice_date as proforma_invoice, t14.proposed_inspection_date,t4.has_assessmentassignment_check,  t1.current_stage as workflow_stage_id,t13.name as sub_module, t1.zone_id, t1.application_id as active_application_id, t2.name as process_name,t10.name as zone_name,t4.is_receipting_stage,t1.application_status_id,
                  t3.name as prev_stage,CASE  WHEN t4.is_receipting_stage = 1 THEN concat(t4.name,' :',t5.name)  ELSE t4.name END  as workflow_stage,t4.is_general,t5.name as application_status,t6.name as urgencyName,t6.name as urgency_name,
-                 CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user,t4.servicedelivery_timeline,  TOTAL_WEEKDAYS('now', t1.date_received) as time_span,(t4.servicedelivery_timeline -TOTAL_WEEKDAYS('now', t1.date_received)) as deliverytimeline_reminder,
+                 CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user,t4.servicedelivery_timeline,  TOTAL_WEEKDAYS('now', t1.date_received) as time_span,(t4.servicedelivery_timeline -TOTAL_WEEKDAYS('now', t1.date_received)) as deliverytimeline_reminder,
               CASE WHEN t1.module_id= 2 THEN  t12.name ELSE  t9.name END as applicant_name, CASE WHEN  t1.module_id= 4  THEN  t15.name WHEN t1.module_id=12 THEN t15.name END AS premises_name, '' as sample_analysis_status"))
                 ->selectRaw("t1.*")
                 ->where('isDone', 0);
@@ -705,12 +705,11 @@ class DashboardController extends Controller
             }
             if ($received_from != '') {
                 $received_from = formatDate($received_from);
-
-                $qry->whereRAW("TO_CHAR(t1.date_received, 'YYYY-MM-DD')  >= '" . $received_from . "'");
+                $qry->whereRAW("DATE_FORMAT(t1.date_received, '%Y-%m-%d')  >= '" . $received_from . "'");
             }
             if ($received_to != '') {
                 $received_to = formatDate($received_to);
-                $qry->whereRAW("TO_CHAR(t1.date_received, 'YYYY-MM-DD')  <= '" . $received_to . "'");
+                $qry->whereRAW("DATE_FORMAT(t1.date_received, '%Y-%m-%d') <= '" . $received_to . "'");
             }
             if ($filter_string != '') {
                 $qry->whereRAW($filter_string);
@@ -825,7 +824,7 @@ class DashboardController extends Controller
                 ->leftJoin('par_ports_information as t18', 't14.port_id', '=', 't18.id')
                 ->select(DB::raw("t1.*,t16.name as product_category,t18.name as port_of_entry,t17.name as permit_category,t14.proforma_invoice_date as proforma_invoice, t14.proposed_inspection_date,t4.has_assessmentassignment_check,  t1.current_stage as workflow_stage_id,t13.name as sub_module, t1.zone_id, t1.application_id as active_application_id, t2.name as process_name,t10.name as zone_name,t4.is_receipting_stage,t1.application_status_id,
                     t3.name as prev_stage, CASE WHEN  t4.is_receipting_stage=1 THEN concat(t4.name,' :',t5.name) ELSE    t4.name  END  as workflow_stage,t4.is_general,t5.name as application_status,t6.name as urgencyName,t6.name as urgency_name,
-                    CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user,t4.servicedelivery_timeline,  TOTAL_WEEKDAYS('now', t1.date_received) as time_span,(t4.servicedelivery_timeline -TOTAL_WEEKDAYS('now', t1.date_received)) as deliverytimeline_reminder,
+                    CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user,t4.servicedelivery_timeline,  TOTAL_WEEKDAYS('now', t1.date_received) as time_span,(t4.servicedelivery_timeline -TOTAL_WEEKDAYS('now', t1.date_received)) as deliverytimeline_reminder,
                  CASE WHEN t1.module_id= 2 THEN t12.name ELSE t9.name  end as applicant_name,CASE WHEN t1.module_id= 4  THEN t15.name WHEN t1.module_id= 12 THEN t15.name ELSE  t9.name end  as premises_name, '' as sample_analysis_status"))
 
                 ->where('isDone', 0);
@@ -876,11 +875,11 @@ class DashboardController extends Controller
             if ($received_from != '') {
                 $received_from = formatDate($received_from);
 
-                $qry->whereRAW("TO_CHAR(t1.date_received, 'YYYY-MM-DD') >= '" . $received_from . "'");
+                $qry->whereRAW("DATE_FORMAT(t1.date_received, '%Y-%m-%d') >= '" . $received_from . "'");
             }
             if ($received_to != '') {
                 $received_to = formatDate($received_to);
-                $qry->whereRAW("TO_CHAR(t1.date_received, 'YYYY-MM-DD')  <= '" . $received_to . "'");
+                $qry->whereRAW("DATE_FORMAT(t1.date_received, '%Y-%m-%d') <= '" . $received_to . "'");
             }
             if ($filter_string != '') {
                 $qry->whereRAW($filter_string);
@@ -920,7 +919,7 @@ class DashboardController extends Controller
     function getLimsUserDetails($usr_id)
     {
         $record = DB::table("users")
-            ->select(DB::raw("decryptVal(email) as email"))
+            ->select(DB::raw("decrypt(email) as email"))
             ->where('id', $usr_id)
             ->first();
         $limsusr_email = $record->email;
@@ -1263,7 +1262,7 @@ class DashboardController extends Controller
                 ->leftJoin('wb_trader_account as t9', 't1.applicant_id', '=', 't9.id')
                 ->select(DB::raw("t1.*, t1.current_stage as workflow_stage_id, t1.application_id as active_application_id, t2.name as process_name,
                     t3.name as prev_stage, t4.name as workflow_stage,t5.name as application_status,t6.name as urgencyName,t6.name as urgency_name,
-                    CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user,
+                    CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user,
                     t9.name as applicant_name"))
                 ->where('isComplete', 0);
             if ($is_internaluser) {
@@ -1693,7 +1692,7 @@ class DashboardController extends Controller
                 ->leftJoin('sub_modules as t4', 't1.sub_module_id', 't4.id')
                 ->select(DB::raw("t1.*, t3.name as process, t4.name as sub_process, (select count(id) from tc_meeting_applications q where q.meeting_id = t1.id) as no_of_applications"))
                 ->where(array('user_id' => $user_id))
-                ->whereRaw(" TO_CHAR(date_requested, '%Y-%m-%d') >= '" . $data_today . "'")
+                ->whereRaw("DATE_FORMAT(date_requested, '%Y-%m-%d') >= '" . $data_today . "'")
                 ->groupBy('t1.id')
                 ->get();
 
@@ -1793,7 +1792,7 @@ class DashboardController extends Controller
                 ->leftJoin('wb_trader_account as t9', 't1.applicant_id', '=', 't9.id')
                 ->select(DB::raw("t1.*, t1.current_stage as workflow_stage_id, t1.application_id as active_application_id, t2.name as process_name,
                     t3.name as prev_stage, t4.name as workflow_stage,t4.is_general,t5.name as application_status,t6.name as urgencyName,t6.name as urgency_name,
-                    CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user, TOTAL_WEEKDAYS('now', date_received) as time_span, 
+                    CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user, TOTAL_WEEKDAYS('now', date_received) as time_span, 
                     t9.name as applicant_name"));
 
             $qry->WhereIn('t1.process_id', $process_array);
@@ -1894,7 +1893,7 @@ class DashboardController extends Controller
                 ->join('wf_workflow_stages as t4', 't1.current_stage', '=', 't4.id')
                 ->join('par_system_statuses as t5', 't1.application_status_id', '=', 't5.id')
                 ->leftJoin('users as t9', 't1.usr_to', '=', 't9.id')
-                ->select(DB::raw("t2.name as process_name, t4.name as stage_name, CONCAT_WS(' ',decryptVal(t9.first_name),decryptVal(t9.last_name)) as user_name, t5.name as application_status, count(t1.id) as application_counter, t1.usr_to as user_id, t1.process_id, t1.current_stage as stage_id"))
+                ->select(DB::raw("t2.name as process_name, t4.name as stage_name, CONCAT_WS(' ',decrypt(t9.first_name),decrypt(t9.last_name)) as user_name, t5.name as application_status, count(t1.id) as application_counter, t1.usr_to as user_id, t1.process_id, t1.current_stage as stage_id"))
                 ->groupBy(DB::raw("t2.name , t4.name , t9.first_name,t9.last_name, t5.name , t1.usr_to , t1.process_id, t1.current_stage"));
             $qry->WhereIn('t1.process_id', $process_array);
 
@@ -1949,7 +1948,7 @@ class DashboardController extends Controller
                 ->leftJoin('wb_trader_account as t9', 't1.applicant_id', '=', 't9.id')
                 ->select(DB::raw("t1.*, t2.name as process_name,
                     t3.name as prev_stage, t4.name as workflow_stage,t4.is_general,t5.name as application_status,t6.name as urgencyName,t6.name as urgency_name,
-                    CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user, TOTAL_WEEKDAYS(now(), date_received) as time_span, 
+                    CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user, TOTAL_WEEKDAYS(now(), date_received) as time_span, 
                     t9.name as applicant_name"));
 
 
@@ -2140,7 +2139,7 @@ class DashboardController extends Controller
                 ->leftJoin('par_sections as t14', 't2.section_id', '=', 't14.id')
                 ->select(DB::raw("t1.sub_module_id, t1.process_id, t1.current_stage as workflow_stage_id,concat(t14.name,' ', t13.name) as sub_modulesection,t13.name as sub_module, t1.zone_id, t1.application_id as active_application_id, t2.name as process_name,t10.name as zone_name,t4.is_receipting_stage,t1.application_status_id,
                     t3.name as prev_stage, CASE WHEN t4.is_receipting_stage=1 THEN concat(t4.name,' :',t5.name) ELSE  t4.name end as workflow_stage,
-                    CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user, count(t1.id) as number_of_applications"))
+                    CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user, count(t1.id) as number_of_applications"))
                 ->groupBy(
                     't1.current_stage',
                     't2.id',
@@ -2318,7 +2317,7 @@ class DashboardController extends Controller
                 ->leftJoin('par_ports_information as t16', 't15.port_id', '=', 't16.id')
                 ->select(DB::raw("t1.sub_module_id,t16.id as port_id, t16.name as port_of_entry, t1.process_id, t1.current_stage as workflow_stage_id,concat(t14.name,' ', t13.name) as sub_modulesection,t13.name as sub_module, t1.zone_id, t1.application_id as active_application_id, t2.name as process_name,t10.name as zone_name,t4.is_receipting_stage,t1.application_status_id,
                     t3.name as prev_stage, CASE WHEN t4.is_receipting_stage=1 THEN concat(t4.name,' :',t5.name) ELSE  t4.name END  as workflow_stage,
-                    CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user, count(t1.id) as number_of_applications"))
+                    CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user, count(t1.id) as number_of_applications"))
                 ->groupBy(
                     't1.current_stage',
                     't2.id',
@@ -2489,7 +2488,7 @@ class DashboardController extends Controller
                 ->leftJoin('sub_modules as t10', 't2.sub_module_id', '=', 't10.id')
                 ->leftJoin('par_sections as t11', 't2.section_id', '=', 't11.id')
 
-                ->select(DB::raw("t2.name as process_name,released_by,t10.name as sub_module,t11.name as section_name, t4.name as stage_name, CONCAT_WS(' ',decryptVal(t9.first_name),decryptVal(t9.last_name)) as user_name, t5.name as application_status, count(t1.id) as application_counter, t1.usr_to as user_id, t1.process_id,t1.released_by, t1.current_stage as stage_id"))
+                ->select(DB::raw("t2.name as process_name,released_by,t10.name as sub_module,t11.name as section_name, t4.name as stage_name, CONCAT_WS(' ',decrypt(t9.first_name),decrypt(t9.last_name)) as user_name, t5.name as application_status, count(t1.id) as application_counter, t1.usr_to as user_id, t1.process_id,t1.released_by, t1.current_stage as stage_id"))
                 ->where('isDone', 1)
                 ->groupBy('t10.name', 't11.name', 't4.name', 't9.first_name', 't9.last_name', 't5.name', 't1.usr_to', 't1.process_id');
 
@@ -2567,7 +2566,7 @@ class DashboardController extends Controller
                 ->leftJoin('wb_trader_account as t9', 't1.applicant_id', '=', 't9.id')
                 ->select(DB::raw("t1.*, t2.name as process_name,
                     t3.name as prev_stage, t4.name as workflow_stage,t4.is_general,t5.name as application_status,t6.name as urgencyName,t6.name as urgency_name,
-                    CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user, TOTAL_WEEKDAYS(now(), date_received) as time_span, 
+                    CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user, TOTAL_WEEKDAYS(now(), date_received) as time_span, 
                     t9.name as applicant_name"));
             if (validateIsNumeric($stage_id)) {
                 $qry->where('t1.current_stage', $stage_id);
@@ -2669,7 +2668,7 @@ class DashboardController extends Controller
                 ->leftJoin('wb_trader_account as t9', 't1.applicant_id', '=', 't9.id')
                 ->select(DB::raw("t1.*, t2.name as process_name,
                 t3.name as prev_stage, t4.name as workflow_stage,t4.is_general,t5.name as application_status,t6.name as urgencyName,t6.name as urgency_name,
-                CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as to_user, CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as released_by,TOTAL_WEEKDAYS(t1.date_released, date_received) as time_span, 
+                CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as from_user,CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as to_user, CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as released_by,TOTAL_WEEKDAYS(t1.date_released, date_received) as time_span, 
                 t9.name as applicant_name"));
             if (validateIsNumeric($process_id)) {
                 $qry->where('t1.process_id', $process_id);

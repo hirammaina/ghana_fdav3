@@ -593,6 +593,7 @@ Ext.define("Admin.controller.ProductRegistrationCtr", {
     controller: {
       "*": {
         setProductRegGridsStore: "setProductRegGridsStore",
+        showSampleSubmissionRemarksFrm: "showSampleSubmissionRemarksFrm",
         setProductRegCombosStore: "setProductRegCombosStore",
         showProductRegWorkflow: "showProductRegWorkflow",
         onNewProductRegApplication: "onNewProductRegApplication",
@@ -648,6 +649,38 @@ Ext.define("Admin.controller.ProductRegistrationCtr", {
       "customizablewindow"
     );
   },
+  showSampleSubmissionRemarksFrm: function (btn) {
+    var mainTabPnl = btn.up("#contentPanel"),
+      containerPnl = mainTabPnl.getActiveTab(),
+      application_id = containerPnl
+        .down("hiddenfield[name=active_application_id]")
+        .getValue(),
+      application_code = containerPnl
+        .down("hiddenfield[name=active_application_code]")
+        .getValue();
+    module_id = containerPnl.down("hiddenfield[name=module_id]").getValue();
+
+    var childXtype = btn.childXtype,
+      winTitle = btn.winTitle,
+      winWidth = btn.winWidth,
+      isReadOnly = btn.isReadOnly,
+      childXtype = Ext.widget(childXtype);
+    //job 05.02.2024
+    funcShowCustomizableWindow(
+      winTitle,
+      "65%",
+      childXtype,
+      "customizablewindow"
+    );
+    childXtype
+      .down("hiddenfield[name=application_id]")
+      .setValue(application_id);
+    childXtype
+      .down("hiddenfield[name=application_code]")
+      .setValue(application_code);
+    childXtype.down("hiddenfield[name=module_id]").setValue(module_id);
+  },
+
   onChangeProdClassCategoryDetails: function (cbo, value) {
     var record = cbo.store.findRecord("id", value);
     (frm = cbo.up("form")),
@@ -830,7 +863,12 @@ Ext.define("Admin.controller.ProductRegistrationCtr", {
         if (category_id == 16) {
           //  frm.down('combo[name=pesticide_type_id]').setVisible(true);
         } else {
-          frm.down("combo[name=pesticide_type_id]").setVisible(false);
+          var pesticide_type_id_field = frm.down(
+            "combo[name=pesticide_type_id]"
+          );
+          if (pesticide_type_id_field) {
+            frm.down("combo[name=pesticide_type_id]").setVisible(false);
+          }
         }
 
         frm.down("textarea[name=contraindication]").setVisible(false);

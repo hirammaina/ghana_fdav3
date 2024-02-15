@@ -615,6 +615,169 @@ Ext.define("Admin.view.commoninterfaces.viewControllers.CommoninterfacesVctr", {
         .getValue(),
       process_id = activeTab.down("hiddenfield[name=process_id]").getValue(),
       form = Ext.widget(childXtype);
+    console.log(application_code);
+    if (application_code < 1) {
+      toastr.error(
+        "Missing document to update, Click on the Upload Button and Proceed",
+        "Failure Response"
+      );
+      return;
+    }
+
+    form.loadRecord(record);
+    funcShowCustomizableWindow(winTitle, winWidth, form, "customizablewindow");
+    var store = Ext.getStore("document_requirementsStr");
+    form.down("button[name=upload_file_btn]").upload_tab = upload_tab;
+    form.down("button[name=upload_file_btn]").storeID =
+      "applicationDocumentsUploadsStr";
+    var doctype_id = form.down("combo[name=doctype_id]");
+    doctype_id.store.load({
+      params: {
+        process_id: process_id,
+        workflow_stage: workflow_stage_id,
+      },
+    });
+
+    var document_requirement_id = form.down(
+      "combo[name=document_requirement_id]"
+    );
+    doctype_id.setValue(document_type_id);
+    document_requirement_id.setValue(document_requirement);
+    // doctype_id.setReadOnly(true);//Job to reisntate after sorting out data miss on document_requirement_id
+    // document_requirement_id.setReadOnly(true);
+
+    var application_id = activeTab
+        .down("hiddenfield[name=active_application_id]")
+        .getValue(),
+      application_code = activeTab
+        .down("hiddenfield[name=active_application_code]")
+        .getValue(),
+      module_id = activeTab.down("hiddenfield[name=module_id]").getValue(),
+      uploads_store = Ext.getStore("applicationDocumentsUploadsStr"),
+      progressBar = Ext.widget("progress");
+    var fileInput = form.down("filefield");
+
+    let resumable = new Resumable({
+      target: "documentmanagement/resumableuploadApplicationDocumentFile",
+      query: {
+        _token: token,
+        view_module_id: module_id,
+        id: application_id,
+        application_id: application_id,
+        application_code: application_code,
+        process_id: "",
+        section_id: "",
+        module_id: "",
+        sub_module_id: "",
+        workflow_stage_id: "",
+        document_type_id: "",
+        prodclass_category_id: "",
+        importexport_permittype_id: "",
+        premise_type_id: "",
+        query_ref_id: "",
+        node_ref: "",
+        doctype_id: "",
+        document_requirement_id: "",
+        assessment_by: "",
+        assessment_start_date: "",
+        assessment_end_date: "",
+        description: "",
+      },
+      fileType: [],
+      chunkSize: 10 * 1024 * 1024, // 10mbs
+      headers: {
+        Authorization: "Bearer " + access_token,
+        Accept: "application/json",
+      },
+      testChunks: false,
+      throttleProgressCallbacks: 1,
+    });
+
+    resumable.assignBrowse(fileInput.fileInputEl.dom);
+
+    resumable.on("fileAdded", function (file) {
+      var fileNameField = form.down("[name=fileName]");
+
+      fileNameField.setValue(file.relativePath);
+
+      var uploadButton = form.down("button[name=upload_file_btn]");
+
+      uploadButton.resumable = resumable;
+      uploadButton.progressBar = progressBar;
+      //resumable.upload() // to actually start uploading.
+    });
+
+    resumable.on("fileProgress", function (file) {
+      // trigger when file progress update
+      me.updateProgress(Math.floor(file.progress() * 100), progressBar);
+    });
+
+    resumable.on("fileSuccess", function (file, response) {
+      // trigger when file upload complete
+      response = JSON.parse(response);
+      console.log(uploads_store);
+      uploads_store.load();
+      success = response.success;
+      if (success == true) {
+        toastr.success("Uploaded Successfully", "Success Response");
+        uploads_store.load();
+      } else {
+        toastr.error(
+          response.message + " If problem persist contact system admin",
+          "Failure Response!!"
+        );
+      }
+      progressBar.up("window").close();
+      win.close();
+      delete resumable;
+    });
+
+    resumable.on("fileError", function (file, response) {
+      var errorResponse;
+
+      try {
+        // Attempt to parse the response as JSON
+        errorResponse = JSON.parse(response);
+      } catch (e) {
+        // If parsing fails, use the response as is
+        errorResponse = response;
+      }
+
+      // Log or handle the error information
+      console.error("File upload error:", errorResponse);
+
+      // trigger when there is any error
+      progressBar.up("window").close();
+      res = JSON.parse(response);
+      uploads_store.load();
+      win.close();
+      toastr.error(
+        res.message + " If problem persist contact system admin",
+        "Failure Response!!"
+      );
+    });
+  },
+
+  updateApplicationDocUploadWinCancelledJob: function (item) {
+    var me = this,
+      btn = item.up("button"),
+      mainTabPnl = item.up("#contentPanel"),
+      activeTab = mainTabPnl.getActiveTab(),
+      record = btn.getWidgetRecord(),
+      childXtype = item.childXtype,
+      winTitle = item.winTitle,
+      winWidth = item.winWidth,
+      grid = btn.up("grid"),
+      table_name = grid.table_name,
+      upload_tab = grid.upload_tab,
+      application_code = record.get("application_code"),
+      document_type_id = record.get("document_type_id"),
+      document_requirement = record.get("document_requirement_id"),
+      workflow_stage_id = activeTab
+        .down("hiddenfield[name=workflow_stage_id]")
+        .getValue(),
+      process_id = activeTab.down("hiddenfield[name=process_id]").getValue(),
+      form = Ext.widget(childXtype);
     if (application_code < 1) {
       toastr.error(
         "Missing document to update, Click on the Upload Button and Proceed",
@@ -643,6 +806,10 @@ Ext.define("Admin.view.commoninterfaces.viewControllers.CommoninterfacesVctr", {
     document_requirement_id.setValue(document_requirement);
     doctype_id.setReadOnly(true);
     document_requirement_id.setReadOnly(true);
+  },
+  updateProgress: function (value, progressBar) {
+    progressBar.setValue(value * 0.01);
+    progressBar.updateText(value + " %");
   },
 
   previewPreviousUploadedDocument: function (item) {

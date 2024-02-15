@@ -29,8 +29,8 @@ class DbHelper
             'created_by' => $user_id,
             'created_at' => Carbon::now()
         );
-        //DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
-        DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
+        DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+        // DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
 
 
         return $record_id;
@@ -128,8 +128,8 @@ class DbHelper
                 'created_by' => $user_id,
                 'created_at' => Carbon::now()
             ); //511600
-            //DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
-            DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
+            DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            // DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
             return true;
         } else {
             return false;
@@ -152,8 +152,8 @@ class DbHelper
                 'created_by' => $user_id,
                 'created_at' => date('Y-m-d H:i:s')
             );
-            // DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
-            DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
+            DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            // DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
             return true;
         } else {
             return false;
@@ -182,8 +182,8 @@ class DbHelper
                 'created_by' => $user_id,
                 'created_at' => Carbon::now()
             );
-            // DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
-            DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
+            DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            // DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
             return true;
         } else {
             return false;
@@ -212,8 +212,8 @@ class DbHelper
                 'created_by' => $user_id,
                 'created_at' => Carbon::now()
             );
-            //DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
-            DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
+            DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+            // DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
             return true;
         } else {
             return false;
@@ -480,8 +480,8 @@ class DbHelper
                     'created_by' => $user_id,
                     'created_at' => date('Y-m-d H:i:s')
                 );
-                //  DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
-                DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
+                DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+                //DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
                 $res = true;
                 break;
             case "update":
@@ -497,8 +497,8 @@ class DbHelper
                     'created_by' => $user_id,
                     'created_at' => date('Y-m-d H:i:s')
                 );
-                //DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
-                DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
+                DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+                //DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
                 $res = true;
                 break;
             case "delete":
@@ -512,8 +512,8 @@ class DbHelper
                     'created_by' => $user_id,
                     'created_at' => date('Y-m-d H:i:s')
                 );
-                //DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
-                DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
+                DB::connection('audit_db')->table('tra_portalaudit_trail')->insert($audit_detail);
+                // DB::table('audit_db.tra_portalaudit_trail')->insert($audit_detail);
                 $res = true;
                 break;
             default:
@@ -672,7 +672,7 @@ class DbHelper
     static function getSingleRecordColValue($table, $where, $col, $con)
     {
         $val = DB::connection($con)->table($table)->where($where)->value($col);
-        //$val = DB::table($con . "." . $table)->where($where)->value($col);
+        // $val = DB::table($con . "." . $table)->where($where)->value($col);
         return $val;
     }
 

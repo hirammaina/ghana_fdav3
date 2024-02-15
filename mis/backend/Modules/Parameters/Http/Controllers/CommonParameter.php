@@ -591,6 +591,7 @@ class CommonParameter extends BaseController
         }
         $con = $request->input('con');
         $db_con = 'pgsql';
+        $db_con = 'mysql';
         if (isset($con) && $con != '') {
             $db_con = $con;
         }

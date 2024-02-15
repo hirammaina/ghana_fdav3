@@ -10,14 +10,16 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+
 use Modules\Dashboard\Http\Controllers\DashboardController;
 
-Route::group(['middleware' => ['web'], 'prefix' => 'dashboard'], function(){
+Route::group(['middleware' => ['web'], 'prefix' => 'dashboard'], function () {
     Route::get('/', [DashboardController::class, 'index']);
     Route::get('getInTrayItems', [DashboardController::class, 'getInTrayItems']);
     Route::get('getOutTrayItems', [DashboardController::class, 'getOutTrayItems']);
     Route::get('getSystemGuidelines', [DashboardController::class, 'getSystemGuidelines']);
     Route::post('saveDashCommonData', [DashboardController::class, 'saveDashCommonData']);
+    Route::get('getApplicationTrackingSummaryIntrayItems', [DashboardController::class, 'getApplicationTrackingSummaryIntrayItems']);
     Route::get('getDispatchedCorrespondence', [DashboardController::class, 'getDispatchedCorrespondence']);
     Route::get('getCorrespondence', [DashboardController::class, 'getCorrespondence']);
     Route::post('dispatchCorrespondence', [DashboardController::class, 'dispatchCorrespondence']);
@@ -42,13 +44,4 @@ Route::group(['middleware' => ['web'], 'prefix' => 'dashboard'], function(){
     Route::get('getOnlineImportExportManagerReviewApplications', [DashboardController::class, 'getOnlineImportExportManagerReviewApplications']);
     Route::get('getAssignedFasttrackApplications', [DashboardController::class, 'getAssignedFasttrackApplications']);
     Route::get('checkFastTrackApplications', [DashboardController::class, 'checkFastTrackApplications']);
-
 });
-
-
-
-
-    
-
-    
-    

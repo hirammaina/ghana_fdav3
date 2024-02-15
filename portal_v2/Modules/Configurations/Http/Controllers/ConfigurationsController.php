@@ -52,10 +52,26 @@ class ConfigurationsController extends Controller
             $upload_url =  Config('constants.dms.system_uploadurl');
             $data = array();
             $module_id = $req->module_id;
+            // $sql = DB::connection('mis_db')->table('tra_online_portalservices as t1')
+            //     ->join('modules as t2', 't1.module_id', '=', 't2.id')
+            //     ->select(DB::raw(" DISTINCT ON (t1.module_id) t1.module_id,t1.*,t2.description, t2.name as module_name,t2.icons, concat(document_folder,'/',file_name ) as servicedocuments"))
+            //     ->where(array('is_online' => 1));
+
+
             $sql = DB::connection('mis_db')->table('tra_online_portalservices as t1')
                 ->join('modules as t2', 't1.module_id', '=', 't2.id')
-                ->select(DB::raw(" DISTINCT ON (t1.module_id) t1.module_id,t1.*,t2.description, t2.name as module_name,t2.icons, concat(document_folder,'/',file_name ) as servicedocuments"))
-                ->where(array('is_online' => 1));
+                ->select(
+                    DB::raw("DISTINCT t1.module_id as module_id"),
+                    't1.*',
+                    't2.description',
+                    't2.name as module_name',
+                    't2.icons',
+                    DB::raw("concat(t1.document_folder, '/', t1.file_name) as servicedocuments")
+                )
+                ->where('is_online', 1);
+
+
+
 
             if (validateIsNumeric($module_id)) {
                 $sql->where('t1.module_id', $module_id);
@@ -103,7 +119,7 @@ class ConfigurationsController extends Controller
             'id' => $rec->id,
             'navigation_type_id' => $rec->navigation_type_id,
             'router_link' => $rec->router_link,
-            'iconCls' => $rec->iconcls,
+            'iconCls' => $rec->iconCls,
             'level' => $rec->level,
             'parent_id' => $rec->parent_id,
             'is_disabled' => $rec->is_disabled,
@@ -125,6 +141,7 @@ class ConfigurationsController extends Controller
             $filter = $req->filter;
             $table_name = $req->table_name;
             $table_name = base64_decode($table_name);
+
 
             $sectionSelection = $req->sectionSelection;
             unset($requestData['table_name']);
@@ -297,8 +314,10 @@ class ConfigurationsController extends Controller
                 $res = $sql->select('t1.*', 't2.field_name');
             } else {
 
+
                 $res = $sql->select('t1.*');
             }
+
 
 
             if ($table_name == 'sub_modules' || $table_name == 'par_traderaccount_types') {

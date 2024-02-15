@@ -4,7 +4,7 @@
  * @Author: HiramMaina
  * @Create Time: 2024-01-10 10:38:56
  * @Modified by: JobMurumba
- * @Modified time: 2024-01-24 11:19:38
+ * @Modified time: 2024-02-15 12:14:18
  * @Description:
  */
 
@@ -1715,6 +1715,7 @@ class UtilitiesController extends Controller
 
             $prodclass_category_id = 0;
 
+
             if ($records) {
                 $status_id = $records->application_status_id;
                 $module_id = $records->module_id;
@@ -1854,6 +1855,8 @@ class UtilitiesController extends Controller
                         'created_on' => Carbon::now(),
                         'created_by' => $trader_id
                     ); //
+
+
                     if ($records->module_id == 4 || $records->module_id == 12 || $module_id == 2) {
 
                         $res = $this->onMisApplicationIntraySubmit($req);
@@ -1954,7 +1957,7 @@ class UtilitiesController extends Controller
                         $email_template = getEmailTemplateInfo(11, $vars);
                         $email_content = $email_template->body;
                         $subject = $email_template->subject;
-                        $response =  sendMailNotification($trader, $trader_emails, $subject, $email_content, $mansite_emails);
+                        //$response =  sendMailNotification($trader, $trader_emails, $subject, $email_content, $mansite_emails); job on 09.02.2024 to reisntate
                     }
                 } else if ($previous_status_id == 6 || $previous_status_id == 7 || $previous_status_id == 8 || $previous_status_id == 9) {
                     $template_id = 10;
@@ -2005,12 +2008,14 @@ class UtilitiesController extends Controller
         } catch (\Exception $e) {
             $res = array(
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
             );
         } catch (\Throwable $throwable) {
             $res = array(
                 'success' => false,
-                'message' => $throwable->getMessage()
+                'message' => $throwable->getMessage(),
+                'line' => $throwable->getLine()
             );
         }
 
@@ -2063,7 +2068,7 @@ class UtilitiesController extends Controller
                 ->leftJoin('modules as t10', 't1.module_id', '=', 't10.id')
                 ->leftJoin('sub_modules as t11', 't1.sub_module_id', '=', 't11.id')
                 ->leftJoin('par_sections as t12', 't1.section_id', '=', 't12.id')
-                ->select(DB::raw(" DISTINCT ON (t1.application_code) t1.application_code,t2.name as process_name,t1.reference_no,t1.tracking_no, t10.name as module_name, t11.name as application_type,t12.name as section,t1.id as ID,
+                ->select(DB::raw(" DISTINCT t1.application_code as application_code,t2.name as process_name,t1.reference_no,t1.tracking_no, t10.name as module_name, t11.name as application_type,t12.name as section,t1.id as ID,
                     t3.name as previous_process, t4.name as current_process, t1.date_received as processing_date"))
                 ->where(array('applicant_id' => $mistrader_id, 'isDone' => 0));
 
@@ -2758,18 +2763,45 @@ class UtilitiesController extends Controller
             $retentionyear_from = $req->retentionyear_from;
             $retentionyear_to = $req->retentionyear_to;
 
-            $records = DB::connection('mis_db')->table('tra_product_retentions as t1')
-                ->select(DB::raw("t1.id, TO_CHAR(t1.retention_year::DATE,'Y') as retention_year,t3.brand_name,t2.registration_no as certificate_no,t5.reference_no, t5.invoice_no,t6.total_element_amount as invoice_amount,t7.name as currency_name, (t6.total_element_amount*t6.paying_exchange_rate) as totalinvoice_amount, t9.name as cost_element"))
+            // $records = DB::connection('mis_db')->table('tra_product_retentions as t1')
+            //     ->select(DB::raw("t1.id, TO_CHAR(t1.retention_year::DATE,'Y') as retention_year,t3.brand_name,t2.registration_no as certificate_no,t5.reference_no, t5.invoice_no,t6.total_element_amount as invoice_amount,t7.name as currency_name, (t6.total_element_amount*t6.paying_exchange_rate) as totalinvoice_amount, t9.name as cost_element"))
+            //     ->join('tra_registered_products as t2', 't1.reg_product_id', '=', 't2.id')
+            //     ->join('tra_product_information  as t3', 't2.tra_product_id', '=', 't3.id')
+            //     ->join('tra_application_invoices as t5', 't1.invoice_id', '=', 't5.id')
+            //     ->join('tra_invoice_details as t6', 't5.id', '=', 't6.invoice_id')
+            //     ->join('par_currencies as  t7', 't6.paying_currency_id', '=', 't7.id')
+            //     ->join('tra_element_costs as t8', 't6.element_costs_id', '=', 't8.id')
+            //     ->join('par_cost_elements as t9', 't8.element_id', '=', 't9.id')
+            //     ->where('t1.retention_status_id', 1)
+            //     ->where('t2.registration_status_id', 2)
+            //     ->where(array('t5.applicant_id' => $trader_id));
+
+            $records = DB::connection('mis_db')
+                ->table('tra_product_retentions as t1')
+                ->select(
+                    't1.id',
+                    DB::raw('YEAR(t1.retention_year) as retention_year'),
+                    't3.brand_name',
+                    't2.registration_no as certificate_no',
+                    't5.reference_no',
+                    't5.invoice_no',
+                    't6.total_element_amount as invoice_amount',
+                    't7.name as currency_name',
+                    DB::raw('(t6.total_element_amount * t6.paying_exchange_rate) as totalinvoice_amount'),
+                    't9.name as cost_element'
+                )
                 ->join('tra_registered_products as t2', 't1.reg_product_id', '=', 't2.id')
-                ->join('tra_product_information  as t3', 't2.tra_product_id', '=', 't3.id')
+                ->join('tra_product_information as t3', 't2.tra_product_id', '=', 't3.id')
                 ->join('tra_application_invoices as t5', 't1.invoice_id', '=', 't5.id')
                 ->join('tra_invoice_details as t6', 't5.id', '=', 't6.invoice_id')
-                ->join('par_currencies as  t7', 't6.paying_currency_id', '=', 't7.id')
+                ->join('par_currencies as t7', 't6.paying_currency_id', '=', 't7.id')
                 ->join('tra_element_costs as t8', 't6.element_costs_id', '=', 't8.id')
                 ->join('par_cost_elements as t9', 't8.element_id', '=', 't9.id')
                 ->where('t1.retention_status_id', 1)
                 ->where('t2.registration_status_id', 2)
-                ->where(array('t5.applicant_id' => $trader_id));
+                ->where('t5.applicant_id', $trader_id);
+
+
             if (validateIsNumeric($section_id)) {
                 $records = $records->where('t4.section_id', $section_id);
             }
@@ -4024,7 +4056,7 @@ class UtilitiesController extends Controller
                 $data_query = $module_data->data_query;
 
 
-                $invoice_feessql = DB::select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
+                $invoice_feessql = DB::select(($data_query . ' where t1.application_code= ' . $application_code));
                 if (is_array($invoice_feessql) && count($invoice_feessql) > 0) {
                     //$paying_currencydefination = 'costs_in_usd' or costs_in_zmw
                     $invoice_appfeearray = (array)$invoice_feessql[0];

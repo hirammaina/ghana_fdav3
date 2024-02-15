@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
-
+use Modules\Administration\Http\Controllers\AdministrationController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -17,10 +17,10 @@ use Illuminate\Http\Request;
 //     return $request->user();
 
 // });
-Route::group(['middleware' => 'auth:api', 'prefix' => 'administration', 'namespace' => 'Modules\Administration\Http\Controllers'], function()
-{
+Route::group(['middleware' => 'auth:api', 'prefix' => 'administration',], function () {
+    //Route::group(['middleware' => 'auth:api', 'prefix' => 'administration', 'namespace' => 'Modules\Administration\Http\Controllers'], function () {
     Route::get('getUsers', 'AdministrationController@getUsers');
     Route::post('onUserLogOut', 'AdministrationController@onUserLogOut');
     Route::get('onApplicationInitialisation', 'AdministrationController@onApplicationInitialisation');
-
+    //Route::get('onApplicationInitialisation', [AdministrationController::class, 'onApplicationInitialisation']);
 });

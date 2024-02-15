@@ -18,47 +18,48 @@ use Illuminate\Support\Str;
 class AuthController extends Controller
 {
 
-   
+
     protected $mis_app_client;
     protected $external_api_client;
 
     public function __construct()
     {
         $mis_app_id = Config('constants.api.mis_app_client_id');
-       // $this->mis_app_client = DB::table('oauth_clients')->where('id', $mis_app_id)->first();
+        // $this->mis_app_client = DB::table('oauth_clients')->where('id', $mis_app_id)->first();
         $external_api_id = Config('constants.api.external_api_client_id');
-       // $this->external_api_client = DB::table('oauth_clients')->where('id', $external_api_id)->first();
+        // $this->external_api_client = DB::table('oauth_clients')->where('id', $external_api_id)->first();
     }
 
     public function handleLogin(Request $req)
     {
         $email = $req->input('email');
         $password = $req->input('password');
-        $remember_me = $req->input('remember_me'); 
+        $remember_me = $req->input('remember_me');
         $check_rem = false;
         if (is_numeric($remember_me) || !is_null($remember_me)) {
             $check_rem = true;
         }
         $encryptedEmail = aes_encrypt($email);
-		//$encryptedEmail = '9xvX68W5HTrS76T+81n10ncfqsQ3PrlkO7JC0OLHQec=';
-      // $user = User::where('email', $encryptedEmail)->first();
-        $user = User::where(function ($query) use($encryptedEmail,$email) {
+        //$encryptedEmail = '9xvX68W5HTrS76T+81n10ncfqsQ3PrlkO7JC0OLHQec=';
+        // $user = User::where('email', $encryptedEmail)->first();
+        $user = User::where(function ($query) use ($encryptedEmail, $email) {
             $query->where('email', '=', $encryptedEmail)
-                  ->orWhere('username', '=', $email);
+                ->orWhere('username', '=', $email);
         })
-		->first();
-   
+            ->first();
+
+
         if (is_null($user) || $user == null || empty($user) || (!$user->exists())) {
             //log the login attempt
             $email = $email;
-            
+
             $attemptLoginParams = array(
                 'email' => $email,
                 'password' => $password,
                 'ip_address' => request()->ip(),
                 'user_agent' => $_SERVER['HTTP_USER_AGENT'],
-                'time' => Carbon::now(),//date('Y-m-d H:i:s'),
-                'attempt_status' => 1//date('Y-m-d H:i:s')
+                'time' => Carbon::now(), //date('Y-m-d H:i:s'),
+                'attempt_status' => 1 //date('Y-m-d H:i:s')
             );
             DB::table('tra_login_attempts')->insert($attemptLoginParams);
             $res = array(
@@ -104,10 +105,10 @@ class AuthController extends Controller
                     //lets log the login attempts, for every attempted/failed login we increment the attempts counter
                     //first we get the number of attempts for this user within a 24hrs time span, beyond the time frame we reset the counter
                     //NB: max number of attempts is 5 after which we block the account
-                    $attemptsCount = DB::table('tra_failed_login_attempts')->where(array('account_id' => $user_id,'attempt_status' => 1))->first();
+                    $attemptsCount = DB::table('tra_failed_login_attempts')->where(array('account_id' => $user_id, 'attempt_status' => 1))->first();
                     if (!empty($attemptsCount) || (!is_null($attemptsCount))) {
                         $no_of_attempts = $attemptsCount->attempts;
-                        $time1 = Carbon::now();//date('Y-m-d H:i:s');
+                        $time1 = Carbon::now(); //date('Y-m-d H:i:s');
                         $time2 = $attemptsCount->time;
                         //now check for time span
                         $timeSpan = getTimeDiffHrs($time1, $time2);
@@ -119,7 +120,6 @@ class AuthController extends Controller
                             DB::table('tra_failed_login_attempts')->where('account_id', $user_id)->update($update);
                             $no_of_attempts = 0;
                         } else {
-
                         }
                         //increment the counter
                         //if counter is 4 then this was the last attempt so block the account
@@ -142,7 +142,7 @@ class AuthController extends Controller
                             );
                         }
                         //update
-                        DB::table('tra_failed_login_attempts')->where(array('account_id' => $user_id,'attempt_status'=>1))->update(array('attempts' => $no_of_attempts + 1));
+                        DB::table('tra_failed_login_attempts')->where(array('account_id' => $user_id, 'attempt_status' => 1))->update(array('attempts' => $no_of_attempts + 1));
                     } else {
                         //no attempts so fresh logging
                         $attempts = 1;
@@ -167,7 +167,7 @@ class AuthController extends Controller
         return response()->json($res);
     }
 
-      public function forgotPasswordHandler(Request $req)
+    public function forgotPasswordHandler(Request $req)
     {
         $res = array();
         try {
@@ -196,22 +196,22 @@ class AuthController extends Controller
                         //send the mail here
                         $subject = 'Rwanda FDA Management Information System :Password Recovery';
                         $email_content = "Below is the reset Account Password</br>.";
-                       
-                        $email_content .= " <p>- Account Email Address: ".$email .".<p/>";
-                        $email_content .= " - <h2>One Time Password(OTP):    ".$user_passwordData ."<br/></h2>";
 
-                        $email_content.="<p>For more information visit IMIS for a full account access guide</p>";
-                        $email_content.="<p><br/><br/></p>";
+                        $email_content .= " <p>- Account Email Address: " . $email . ".<p/>";
+                        $email_content .= " - <h2>One Time Password(OTP):    " . $user_passwordData . "<br/></h2>";
+
+                        $email_content .= "<p>For more information visit IMIS for a full account access guide</p>";
+                        $email_content .= "<p><br/><br/></p>";
                         $base_url = url('/');
-                        $email_content.="<p><center><h2><a href=".$base_url.">System Access(Login)<a/></h2></p>";
-                       
-                       // $link = url('/') . '/resetPassword?guid=' . $guid;
+                        $email_content .= "<p><center><h2><a href=" . $base_url . ">System Access(Login)<a/></h2></p>";
+
+                        // $link = url('/') . '/resetPassword?guid=' . $guid;
                         $vars = array(
                             '{username}' => $email
                         );
                         $res = forgotPasswordEmail(1, $email, $email_content, $vars);
-                        
-                        if($res['success']){
+
+                        if ($res['success']) {
                             $user_exists = User::find($user_id);
                             if ($user_exists->count() > 0) {
                                 $username = $user_exists->email;
@@ -220,7 +220,6 @@ class AuthController extends Controller
                                 $hashedPassword = hashPwd($username, $uuid, $user_passwordData);
                                 $user_exists->password = $hashedPassword;
                                 if ($user_exists->save()) {
-
                                 }
                             }
                         }
@@ -276,9 +275,9 @@ class AuthController extends Controller
         $data['system_version'] = Config('constants.sys.organisation_name');
         $data['access_token'] = '';
         $data['approval_lag_days'] = 2;
-        $data['upload_directory'] = ''; 
-        $data['system_dashboard'] = ''; 
-        $data['scheduledtcmeeting_counter'] = ''; 
+        $data['upload_directory'] = '';
+        $data['system_dashboard'] = '';
+        $data['scheduledtcmeeting_counter'] = '';
         $data['nonMenusArray'] = array();
 
         return view('init', $data);
@@ -495,7 +494,7 @@ class AuthController extends Controller
 
     public function authenticateApiUser(Request $request)
     {
-        $username = $request->input('username');//email address
+        $username = $request->input('username'); //email address
         $password = $request->input('password');
         $username = aes_encrypt($username);
         if (is_null($this->external_api_client)) {
@@ -548,7 +547,7 @@ class AuthController extends Controller
         $username = $request->input('email');
         $password = $request->input('password');
         $username = aes_encrypt($username);
-        
+
         if (is_null($this->mis_app_client)) {
             $res = array(
                 'success' => false,
@@ -566,9 +565,9 @@ class AuthController extends Controller
         ]);
         $tokenRequest = $request->create('/oauth/token', 'POST', $request->all());
         $token = \Route::dispatch($tokenRequest);
-        
+
         $token_contents = $token->getContent();
-        
+
         //TODO check if successfully
         $user_id = "";
         $status = false;
@@ -719,6 +718,4 @@ class AuthController extends Controller
         $token_contents = json_encode($token_contents);
         return \response($token_contents, 200, ['Content-Type' => 'application/json; charset=UTF-8']);
     }
-
-
 }

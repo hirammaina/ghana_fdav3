@@ -2635,6 +2635,9 @@ Ext.define(
     saveSampleSubmissionRemarks: function (btn) {
       this.fireEvent("saveSampleSubmissionRemarks", btn);
     },
+    showSampleSubmissionRemarksFrm: function (btn) {
+      this.fireEvent("showSampleSubmissionRemarksFrm", btn);
+    },
     funcCheckDrugsProductsPanel: function (panel) {
       var form = panel.down("form"),
         prodclass_category_id = form

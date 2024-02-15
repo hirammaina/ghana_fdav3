@@ -106,16 +106,16 @@ onPermitsApplicationSubmit(viewRef, application_code, tracking_no, table_name, a
       text: 'Yes',
       buttonClass: 'btn btn-danger',
       onAction: () => new Promise((resolve: any, reject: any) => {
-        this.spinner.show();
+        //this.spinner.show(); // Job on 9/02/24 to return
         this.onPermitApplicationSubmit(application_code, tracking_no, table_name,submission_data)
           .subscribe(
             response => {
               this.app_resp = response.json();
               //the details 
-              this.spinner.hide();
+             // this.spinner.hide(); // Job on 9/02/24 to return
               if (this.app_resp.success) {
                 this.toastr.success(this.app_resp.message, 'Response');
-                this.router.navigate(app_route);
+                this.router.navigate(app_route);// Job on 9/02/24 to return
               } else {
                 this.toastr.error(this.app_resp.message, 'Alert');
               }

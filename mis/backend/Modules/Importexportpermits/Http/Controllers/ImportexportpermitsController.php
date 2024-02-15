@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Job.Murumba
  * @Date:   2023-11-22 17:01:27
@@ -1111,6 +1112,7 @@ class ImportexportpermitsController extends Controller
         try {
             $assigned_stages = getAssignedProcessStages($user_id, $module_id);
 
+
             $qry = DB::table('tra_importexport_applications as t1')
                 ->join('tra_submissions as t7', 't1.application_code', '=', 't7.application_code')
                 ->join('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
@@ -1119,12 +1121,15 @@ class ImportexportpermitsController extends Controller
                 ->leftJoin('par_system_statuses as t6', 't1.application_status_id', '=', 't6.id')
                 ->join('users as t8', 't7.usr_from', '=', 't8.id')
                 ->join('users as t9', 't7.usr_to', '=', 't9.id')
-                ->select(DB::raw("t7.date_received, CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t9.first_name),decryptVal(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id, t1.proforma_invoice_no,t1.proforma_invoice_date,
+                ->select(DB::raw("t7.date_received,t7.isDone, CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as from_user,CONCAT_WS(' ',decrypt(t9.first_name),decrypt(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id, t1.proforma_invoice_no,t1.proforma_invoice_date,
                     t6.name as application_status, t3.name as applicant_name, t4.name as process_name, t5.name as workflow_stage, t5.is_general, t3.contact_person,
                     t3.tin_no, t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t3.physical_address as app_physical_address,
                     t3.postal_address as app_postal_address, t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email as app_email, t3.website as app_website,
                      t1.*"))
                 ->whereNotIn('t1.is_dismissed', [1]);
+            //users to causes no resulsts
+
+
 
             $is_super ? $qry->whereRaw('1=1') : $qry->whereIn('t1.workflow_stage_id', $assigned_stages);
 
@@ -1200,7 +1205,7 @@ class ImportexportpermitsController extends Controller
                 ->leftJoin('par_system_statuses as t6', 't1.application_status_id', '=', 't6.id')
                 ->join('users as t8', 't7.usr_from', '=', 't8.id')
                 ->join('users as t9', 't7.usr_to', '=', 't9.id')
-                ->select(DB::raw("CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t9.first_name),decryptVal(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id,
+                ->select(DB::raw("CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as from_user,CONCAT_WS(' ',decrypt(t9.first_name),decrypt(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id,
                     t6.name as application_status, t3.name as applicant_name, t4.name as process_name, t5.name as workflow_stage, t5.is_general, t3.contact_person,
                     t3.tin_no, t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t3.physical_address as app_physical_address,
                     t3.postal_address as app_postal_address, t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email as app_email, t3.website as app_website,
@@ -2859,7 +2864,8 @@ class ImportexportpermitsController extends Controller
                 ->leftJoin('par_validity_statuses as t7', 't1.validity_status_id', '=', 't7.id')
                 ->leftJoin('par_registration_statuses as t8', 't1.registration_status_id', '=', 't8.id')
                 ->select('t3.product_id', 't2.product_strength', 't2.brand_name as permitbrand_name', 't4.certificate_no as product_registration_no', 't4.certificate_no', 't2.id', 't2.brand_name', 't2.*', 't3.section_id', 't5.name as common_name', 't6.name as classification_name', 't7.name as validity_status', 't1.validity_status_id')
-                ->where(array('t2.section_id' => $section_id));
+                ->where(array('t2.section_id' => $section_id))
+                ->where("t1.registration_status_id", 2); //Job
 
 
             if ($search_value != '') {
@@ -3912,7 +3918,7 @@ class ImportexportpermitsController extends Controller
                 ->leftJoin('par_sections as t5', 't2.section_id', '=', 't5.id')
                 ->leftJoin('par_ports_information as t6', 't1.port_id', '=', 't6.id')
                 ->leftJoin('users as t7', 't1.inspected_by', '=', 't7.id')
-                ->select('t1.*', 't2.id as active_application_id', 't2.reference_no', 't2.tracking_no', 't4.permit_no', 't3.name as inspection_status', 't1.created_on as date_added', 't2.proforma_invoice_no', 't1.id as poe_application_id', 't5.name as permit_section', 't6.name as port_ofentryexit', DB::raw(" CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as inspection_by"));
+                ->select('t1.*', 't2.id as active_application_id', 't2.reference_no', 't2.tracking_no', 't4.permit_no', 't3.name as inspection_status', 't1.created_on as date_added', 't2.proforma_invoice_no', 't1.id as poe_application_id', 't5.name as permit_section', 't6.name as port_ofentryexit', DB::raw(" CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as inspection_by"));
 
             $results = $qry->get();
 
@@ -4013,9 +4019,9 @@ class ImportexportpermitsController extends Controller
                 ->leftJoin('par_ports_information as t6', 't1.port_id', '=', 't6.id')
                 ->leftJoin('users as t7', 't1.inspected_by', '=', 't7.id')
                 ->leftJoin('par_poeinspection_recommendation as t8', 't1.inspection_recommendation_id', '=', 't8.id')
-                // ->select(DB::raw("DISTINCT t2.application_code, CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as inspection_by, t8.name as inspection_recommendation,t1.*,t1.id as active_application_id, t2.reference_no,t2.tracking_no, t4.permit_no,if(t1.inspection_status_id >0,t3.name, 'Not Inspected') as inspection_status,t1.created_on as date_added, t2.proforma_invoice_no, t1.id as poe_application_id,t5.name as permit_section, t6.name as port_ofentryexit"))->distinct('t2.application_code')->orderBy('t1.id','desc')->groupBy('t1.application_code');
+                // ->select(DB::raw("DISTINCT t2.application_code, CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as inspection_by, t8.name as inspection_recommendation,t1.*,t1.id as active_application_id, t2.reference_no,t2.tracking_no, t4.permit_no,if(t1.inspection_status_id >0,t3.name, 'Not Inspected') as inspection_status,t1.created_on as date_added, t2.proforma_invoice_no, t1.id as poe_application_id,t5.name as permit_section, t6.name as port_ofentryexit"))->distinct('t2.application_code')->orderBy('t1.id','desc')->groupBy('t1.application_code');
                 // ->where(array('t1.inspection_status_id'=>2));
-                ->select(DB::raw("t2.application_code, CONCAT_WS(' ', decryptVal(t7.first_name), decryptVal(t7.last_name)) as inspection_by, t8.name as inspection_recommendation, t1.*, t1.id as active_application_id, t2.reference_no, t2.tracking_no, t4.permit_no, CASE WHEN t1.inspection_status_id > 0 THEN t3.name ELSE 'Not Inspected' end  as inspection_status, t1.created_on as date_added, t2.proforma_invoice_no, t1.id as poe_application_id, t5.name as permit_section, t6.name as port_ofentryexit"))
+                ->select(DB::raw("t2.application_code, CONCAT_WS(' ', decrypt(t7.first_name), decrypt(t7.last_name)) as inspection_by, t8.name as inspection_recommendation, t1.*, t1.id as active_application_id, t2.reference_no, t2.tracking_no, t4.permit_no, CASE WHEN t1.inspection_status_id > 0 THEN t3.name ELSE 'Not Inspected' end  as inspection_status, t1.created_on as date_added, t2.proforma_invoice_no, t1.id as poe_application_id, t5.name as permit_section, t6.name as port_ofentryexit"))
                 ->orderBy('t1.id', 'desc')
                 ->groupBy(
                     't2.application_code',
@@ -4507,7 +4513,7 @@ class ImportexportpermitsController extends Controller
                 ->leftJoin('par_common_names as t12', 't11.common_name_id', '=', 't12.id')
                 ->leftJoin('par_packaging_units as t14', 't9.packaging_unit_id', '=', 't14.id')
                 //distinct t2.application_code 
-                ->select(DB::raw("t2.application_code, CONCAT_WS(' ',decryptVal(t7.first_name),decryptVal(t7.last_name)) as inspection_by, t8.name as inspection_recommendation,
+                ->select(DB::raw("t2.application_code, CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as inspection_by, t8.name as inspection_recommendation,
                         t1.permit_references,t1.custom_declaration_no,t1.tra_reg_date,t1.date_received,t1.permit_reference_no,
                         t1.icd_port_id,t1.tansad_no,t1.remarks,t1.inspected_on,t1.id as active_application_id, t2.reference_no,t2.tracking_no, 
                         t2.reference_no as permit_no,case when t1.inspection_status_id >0 THEN  t3.name ELSE  'Not Inspected' END  as inspection_status,
@@ -4991,7 +4997,7 @@ class ImportexportpermitsController extends Controller
                     't18.name as premises_validation_recommendation',
                     't20.name as products_validation_recommendation',
                     't1.id as active_application_id',
-                    DB::raw("t10.date_received, CONCAT_WS(' ',decryptVal(t12.first_name),decryptVal(t12.last_name)) as from_user,t16.name as process_name, t11.name as workflow_stage")
+                    DB::raw("t10.date_received, CONCAT_WS(' ',decrypt(t12.first_name),decrypt(t12.last_name)) as from_user,t16.name as process_name, t11.name as workflow_stage")
                 )
                 ->where(array('t10.current_stage' => $workflow_stage, 'isDone' => 0, 't1.section_id' => $section_id));
             // ->where('t10.usr_to', $user_id);
@@ -5429,7 +5435,7 @@ class ImportexportpermitsController extends Controller
                 ->where(array('t8.decision_id' => 1, 't1.section_id' => $section_id));
 
             if ($filter_string != '') {
-                $qry->whereRAW($filter_string);
+                // $qry->whereRAW($filter_string);
             }
 
             $count = $qry->count();
@@ -6533,6 +6539,7 @@ class ImportexportpermitsController extends Controller
             $trader_email = $req->trader_email;
             $trader_id = $req->trader_id;
             $rec = DB::table($table_name)->where($where)->first();
+            $permit_productscategory_id = $req->input('permit_productscategory_id');
 
             $user_id = $this->user_id;
             if ($rec) {
@@ -6579,7 +6586,9 @@ class ImportexportpermitsController extends Controller
                     }
                     $reference_no = $this->generateImportPermitAmmendmentTrackingno($reference_no, $reg_importexport_id, $table_name, $sub_module_id, 'LIC');
 
-                    $generateapplication_code = generateApplicationCode($sub_module_id, 'wb_importexport_applications');
+                    //$generateapplication_code = generateApplicationCode($sub_module_id, 'wb_importexport_applications');
+                    $generateapplication_code = generateApplicationCode($sub_module_id, 'tra_importexport_applications'); //Job from above as not in mis table
+
                     $app_data['reference_no'] = $reference_no;
                     $app_data['tracking_no'] = $reference_no;
                     $app_data['application_code'] = $generateapplication_code;
@@ -6829,7 +6838,7 @@ class ImportexportpermitsController extends Controller
                 ->join("tesws_permitsgeneral_information as t10", 't1.application_code', 't10.application_code')
 
                 ->leftJoin("par_teswspermitsubmission_statuses as t11", 't10.permitsubmission_status_id', 't11.id')
-                ->select(DB::raw("t7.date_received, CONCAT_WS(' ',decryptVal(t8.first_name),decryptVal(t8.last_name)) as from_user,CONCAT_WS(' ',decryptVal(t9.first_name),decryptVal(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id, t1.proforma_invoice_no,t1.proforma_invoice_date,
+                ->select(DB::raw("t7.date_received, CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as from_user,CONCAT_WS(' ',decrypt(t9.first_name),decrypt(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id, t1.proforma_invoice_no,t1.proforma_invoice_date,
                     t6.name as application_status, t3.name as applicant_name, t4.name as process_name, t5.name as workflow_stage, t5.is_general, t3.contact_person,
                     t3.tin_no, t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t3.physical_address as app_physical_address,
                     t3.postal_address as app_postal_address, t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email as app_email, t3.website as app_website,t10.applicationReference as declaration_reference_no,t11.name as declaration_status,

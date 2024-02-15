@@ -11,7 +11,7 @@ class SecurityHelper
     {
         $new_key = str_repeat(chr(0), 16);
         for ($i = 0, $len = strlen($key); $i < $len; $i++) {
-            $new_key [$i % 16] = $new_key [$i % 16] ^ $key [$i];
+            $new_key[$i % 16] = $new_key[$i % 16] ^ $key[$i];
         }
         return $new_key;
     }
@@ -26,7 +26,7 @@ class SecurityHelper
 
     static function aes_decrypt($val)
     {
-       
+
         $original_val = $val;
         if (self::is_base64_encoded($val) == true || self::is_base64_encoded($val) == 'true' || self::is_base64_encoded($val) == 1 || self::is_base64_encoded($val) == '1') {
             $val = base64_decode($val);
@@ -36,20 +36,20 @@ class SecurityHelper
             if ($decrypted == '') {
                 return $original_val;
             }
-            $valid_encoding = mb_check_encoding($decrypted, 'UTF-8');//check if malformed for the specified encoding
+            $valid_encoding = mb_check_encoding($decrypted, 'UTF-8'); //check if malformed for the specified encoding
             if ($valid_encoding == false) {
                 return $original_val;
             }
             return $decrypted;
         }
-       
+
         return $original_val;
     }
 
     static function getEncryptionKey()
     {
         $key = Config('constants.encrypt_key');
-        
+
         return $key;
     }
 
@@ -72,12 +72,12 @@ class SecurityHelper
         foreach ($arrays as $value) {
             foreach ($value as $nested_key => $nested_value) {
                 if ($nested_value == '' || $nested_value == null || $nested_value == NULL || $nested_value == ' ' || $nested_value == " ") {
-                    $value [$nested_key] = '';
+                    $value[$nested_key] = '';
                 } else {
-                    $value [$nested_key] = self::aes_decrypt($nested_value);
+                    $value[$nested_key] = self::aes_decrypt($nested_value);
                 }
             }
-            $new_array [] = $value;
+            $new_array[] = $value;
         }
         return $new_array;
     }
@@ -108,5 +108,4 @@ class SecurityHelper
             return false;
         }
     }
-
 }

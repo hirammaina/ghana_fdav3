@@ -1790,14 +1790,17 @@ class WorkflowController extends Controller
             $checklist_categories = convertStdClassObjToArray($checklist_categories);
             $checklist_categories = convertAssArrayToSimpleArray($checklist_categories, 'checklist_category_id');
 
+
+
             //get applicable checklist types
             $qry2 = DB::table('par_checklist_types as t1')
-                ->select('t1.id')
+                ->select('t1.*')
                 ->where($where2)
                 ->whereIn('checklist_category_id', $checklist_categories);
             $checklist_types = $qry2->get();
             $checklist_types = convertStdClassObjToArray($checklist_types);
             $checklist_types = convertAssArrayToSimpleArray($checklist_types, 'id');
+
 
             if (validateIsNumeric($query_id)) {
 
@@ -1807,32 +1810,6 @@ class WorkflowController extends Controller
                     ->select(DB::raw("$module_id as module_id,t4.checklist_querycategory_id,t3.name,t5.response as query_response,t4.id, $sub_module_id as sub_module_id,  t4.query"))
                     ->where('t4.query_id', $query_id);
             } else {
-                // $qry = DB::table('par_checklist_items as t1')
-                //     ->leftJoin('checklistitems_responses as t2', function ($join) use ($application_code, $query_id, $submission_id, $is_auditor) {
-
-                //         if (isset($query_id) && $query_id != '') {
-                //             $join->on('t2.checklist_item_id', '=', 't1.id')
-                //                 ->where('t2.application_code', $application_code);
-                //         } else if (validateIsNumeric($is_auditor)) {
-                //             $join->on('t2.checklist_item_id', '=', 't1.id')
-                //                 ->where('t2.application_code', $application_code);
-                //         } else {
-                //             $join->on('t2.checklist_item_id', '=', 't1.id')
-                //                 ->where('t2.application_code', $application_code);
-                //         }
-                //     })
-
-                //     ->leftJoin('checklistitems_queries as t4', function ($join) use ($query_id) {
-                //         $join->where('t4.query_id', $query_id);
-                //     })
-                //     ->leftJoin('par_checklist_types as t3', 't1.checklist_type_id', '=', 't3.id')
-
-                //     ->leftJoin('par_checklist_categories as t5', 't3.checklist_category_id', '=', 't5.id')
-                //     ->leftJoin('users as t7', 't2.responses_by', '=', 't7.id')
-                //     ->leftJoin('checklistitems_queryresponses as t8', 't4.id', '=', 't8.query_id')
-                //     ->select(DB::raw("t1.*,t4.checklist_querycategory_id,t1.id as checklist_item_id,t8.response as query_response, t2.id as item_resp_id,t2.pass_status,CONCAT_WS(' ',decryptval(t7.first_name),decryptval(t7.last_name)) as screened_by,t2.comment,t2.observation, t2.auditor_comment, t3.name as checklist_type, t2.auditorpass_status, $module_id as module_id, $sub_module_id as sub_module_id,  t4.query,t2.comment as observation"))
-                //     ->groupBy('t1.id');
-
                 $qry = DB::table('par_checklist_items as t1')
                     ->leftJoin('checklistitems_responses as t2', function ($join) use ($application_code, $query_id, $submission_id, $is_auditor) {
 
@@ -1847,15 +1824,42 @@ class WorkflowController extends Controller
                                 ->where('t2.application_code', $application_code);
                         }
                     })
+
                     ->leftJoin('checklistitems_queries as t4', function ($join) use ($query_id) {
                         $join->where('t4.query_id', $query_id);
                     })
                     ->leftJoin('par_checklist_types as t3', 't1.checklist_type_id', '=', 't3.id')
+
                     ->leftJoin('par_checklist_categories as t5', 't3.checklist_category_id', '=', 't5.id')
                     ->leftJoin('users as t7', 't2.responses_by', '=', 't7.id')
                     ->leftJoin('checklistitems_queryresponses as t8', 't4.id', '=', 't8.query_id')
-                    ->select(DB::raw("t1.*,t4.checklist_querycategory_id,t1.id as checklist_item_id,t8.response as query_response, t2.id as item_resp_id,t2.pass_status,CONCAT_WS(' ',decryptval(t7.first_name),decryptval(t7.last_name)) as screened_by,t2.comment,t2.observation, t2.auditor_comment, t3.name as checklist_type, t2.auditorpass_status, $module_id as module_id, $sub_module_id as sub_module_id,  t4.query,t2.comment as observation"))
-                    ->groupBy('t1.id', 't4.checklist_querycategory_id', 't8.response', 't2.id', 't2.pass_status', 'screened_by', 't2.comment', 't2.observation', 't2.auditor_comment', 't3.name', 't2.auditorpass_status', 't4.query'); // Add all non-aggregated columns to groupBy
+                    ->select(DB::raw("t1.*,t4.checklist_querycategory_id,t1.id as checklist_item_id,t8.response as query_response, t2.id as item_resp_id,t2.pass_status,CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as screened_by,t2.comment,t2.observation, t2.auditor_comment, t3.name as checklist_type, t2.auditorpass_status, $module_id as module_id, $sub_module_id as sub_module_id,  t4.query,t2.comment as observation"))
+                    ->groupBy('t1.id');
+
+                //below for pgsql
+                // $qry = DB::table('par_checklist_items as t1')
+                //     ->leftJoin('checklistitems_responses as t2', function ($join) use ($application_code, $query_id, $submission_id, $is_auditor) {
+
+                //         if (isset($query_id) && $query_id != '') {
+                //             $join->on('t2.checklist_item_id', '=', 't1.id')
+                //                 ->where('t2.application_code', $application_code);
+                //         } else if (validateIsNumeric($is_auditor)) {
+                //             $join->on('t2.checklist_item_id', '=', 't1.id')
+                //                 ->where('t2.application_code', $application_code);
+                //         } else {
+                //             $join->on('t2.checklist_item_id', '=', 't1.id')
+                //                 ->where('t2.application_code', $application_code);
+                //         }
+                //     })
+                //     ->leftJoin('checklistitems_queries as t4', function ($join) use ($query_id) {
+                //         $join->where('t4.query_id', $query_id);
+                //     })
+                //     ->leftJoin('par_checklist_types as t3', 't1.checklist_type_id', '=', 't3.id')
+                //     ->leftJoin('par_checklist_categories as t5', 't3.checklist_category_id', '=', 't5.id')
+                //     ->leftJoin('users as t7', 't2.responses_by', '=', 't7.id')
+                //     ->leftJoin('checklistitems_queryresponses as t8', 't4.id', '=', 't8.query_id')
+                //     ->select(DB::raw("t1.*,t4.checklist_querycategory_id,t1.id as checklist_item_id,t8.response as query_response, t2.id as item_resp_id,t2.pass_status,CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as screened_by,t2.comment,t2.observation, t2.auditor_comment, t3.name as checklist_type, t2.auditorpass_status, $module_id as module_id, $sub_module_id as sub_module_id,  t4.query,t2.comment as observation"))
+                //     ->groupBy('t1.id', 't4.checklist_querycategory_id', 't8.response', 't2.id', 't2.pass_status', 'screened_by', 't2.comment', 't2.observation', 't2.auditor_comment', 't3.name', 't2.auditorpass_status', 't4.query'); // Add all non-aggregated columns to groupBy
 
 
                 if (validateIsNumeric($query_id)) {
@@ -1898,6 +1902,7 @@ class WorkflowController extends Controller
         } catch (\Exception $exception) {
             $res = array(
                 'success' => true,
+                "line" => $exception->getLine(),
                 'message' => $exception->getMessage()
             );
         } catch (\Throwable $throwable) {
@@ -1919,8 +1924,8 @@ class WorkflowController extends Controller
                 ->join('tra_application_checklists_reftracker as t3', 't1.checklist_ref_id', '=', 't3.id')
                 ->leftJoin('users as t4', 't1.created_by', '=', 't4.id')
                 ->leftJoin('users as t5', 't3.submission_by', '=', 't5.id')
-                ->select(DB::raw("t2.*,t1.*,t1.id as item_resp_id,t1.created_on,CONCAT_WS(' ',decryptval(t4.first_name),decryptval(t4.last_name)) as captured_by,t3.checklist_ref,t3.submission_date,
-                        decryptval(t5.first_name) as submitted_by"))
+                ->select(DB::raw("t2.*,t1.*,t1.id as item_resp_id,t1.created_on,CONCAT_WS(' ',decrypt(t4.first_name),decrypt(t4.last_name)) as captured_by,t3.checklist_ref,t3.submission_date,
+                        decrypt(t5.first_name) as submitted_by"))
                 ->where('t1.application_code', $application_code);
             if (validateIsNumeric($workflow_stage_id)) {
                 $qry->where('t3.workflow_stage_id', $workflow_stage_id);
@@ -2642,7 +2647,7 @@ class WorkflowController extends Controller
                 //query 2
 
                 $qry2 = DB::table('users as t2')
-                    ->select(DB::raw("t2.id,CONCAT_WS(' ',decryptval(t2.first_name),decryptval(t2.last_name)) as name"))
+                    ->select(DB::raw("t2.id,CONCAT_WS(' ',decrypt(t2.first_name),decrypt(t2.last_name)) as name"))
                     ->whereIn('t2.id', function ($query) use ($stage_groups) {
                         $query->select(DB::raw('t3.user_id'))
                             ->from('tra_user_group as t3')
@@ -2686,7 +2691,7 @@ class WorkflowController extends Controller
         }
         $qry2 = DB::table($table_name . ' as t1')
             ->join('users as t2', 't1.inspector_id', '=', 't2.id')
-            ->select(DB::raw("t1.role_id,t2.id,CONCAT_WS(' ',decryptval(t2.first_name),decryptval(t2.last_name)) as name"))
+            ->select(DB::raw("t1.role_id,t2.id,CONCAT_WS(' ',decrypt(t2.first_name),decrypt(t2.last_name)) as name"))
             ->where('t1.inspection_id', $inspection_id);
         $results = $qry2->get();
         return $results;
@@ -2730,6 +2735,7 @@ class WorkflowController extends Controller
             $table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
             $request->table_name = $table_name;
         }
+
         $module_id = $request->input('module_id');
         if ($module_id == 1) { //PRODUCT REGISTRATION
             $this->processProductsApplicationSubmission($request);
@@ -3383,7 +3389,7 @@ class WorkflowController extends Controller
                     $directorate_details = $this->getDirectorateInformation($section_id);
                     if ($directorate_details) {
                         $meeting_id = $meeting_details->id;
-                        //->select(DB::raw("t2.name as directorate_name, CONCAT_WS(' ',decryptval(t4.first_name),decryptval(t4.last_name)) as director_name"))
+                        //->select(DB::raw("t2.name as directorate_name, CONCAT_WS(' ',decrypt(t4.first_name),decrypt(t4.last_name)) as director_name"))
                         $directorate_name = $directorate_details->directorate_name;
                         $director_name = $directorate_details->director_name;
                         $section_name = $directorate_details->section_name;
@@ -3543,7 +3549,7 @@ class WorkflowController extends Controller
             ->join('par_directorates as t2', 't1.directorate_id', 't2.id')
             ->join('tra_directorate_directors as t3', 't2.id', 't3.directorate_id')
             ->join('users as t4', 't3.user_id', 't4.id')
-            ->select(DB::raw("t2.name as directorate_name, CONCAT_WS(' ',decryptval(t4.first_name),decryptval(t4.last_name)) as director_name, t1.name as section_name"))
+            ->select(DB::raw("t2.name as directorate_name, CONCAT_WS(' ',decrypt(t4.first_name),decrypt(t4.last_name)) as director_name, t1.name as section_name"))
             ->where('t1.id', $section_id)
             ->first();
         return $record;
@@ -3556,7 +3562,7 @@ class WorkflowController extends Controller
             ->join('tra_premise_inspection_details as t2', 't1.inspection_id', 't2.id')
             ->join('tra_premiseinspection_inspectors as t3', 't2.id', 't3.inspection_id')
             ->join('users as t4', 't3.inspector_id', 't4.id')
-            ->select(DB::raw("decryptval(t4.email) as email"))
+            ->select(DB::raw("decrypt(t4.email) as email"))
             ->where(array('t1.application_code' => $application_code))
             ->groupBy('t3.id')
             ->get();
@@ -5042,7 +5048,7 @@ class WorkflowController extends Controller
                 ->leftJoin('wf_workflow_stages as t4', 't1.current_stage', '=', 't4.id')
                 ->leftJoin('par_application_return_directives as t5', 't1.directive_id', '=', 't5.id')
                 ->select(DB::raw("t3.name as from_stage_name,t4.name as to_stage_name,t1.remarks,t1.created_on as changes_date,
-                t5.name as directive,CONCAT_WS(' ',decryptval(t6.first_name),decryptval(t6.last_name)) as  author ,  CONCAT_WS(' ',decryptval(t2.first_name),decryptval(t2.last_name)) as previous_user"))
+                t5.name as directive,CONCAT_WS(' ',decrypt(t6.first_name),decrypt(t6.last_name)) as  author ,  CONCAT_WS(' ',decrypt(t2.first_name),decrypt(t2.last_name)) as previous_user"))
                 ->where($where)
                 ->orderBy('t1.id');
             $data = $qry->get();
@@ -5998,7 +6004,7 @@ class WorkflowController extends Controller
             ->leftjoin('users as t4', 't1.approved_by_id', 't4.id')
             ->leftjoin('modules as t5', 't1.module_id', 't5.id')
             ->leftjoin('par_cancellation_statuses as t6', 't1.cancellation_status_id', 't6.id')
-            ->select('t1.*', 't2.name as cancellation_reason', 't1.requested_by', 't5.name as module_name', 't6.name as cancellation_status', DB::raw("CONCAT_WS(' ',decryptval(t4.first_name),decryptval(t4.last_name)) as approved_by"));
+            ->select('t1.*', 't2.name as cancellation_reason', 't1.requested_by', 't5.name as module_name', 't6.name as cancellation_status', DB::raw("CONCAT_WS(' ',decrypt(t4.first_name),decrypt(t4.last_name)) as approved_by"));
         if (validateIsNumeric($module_id)) {
             $qry->where('t1.module_id', $module_id);
         }
@@ -6299,10 +6305,10 @@ class WorkflowController extends Controller
 
             //switch between auditor history and evaluators 
             if (validateIsNumeric($is_auditor)) {
-                $qry->select(DB::raw("t2.*,t1.*,t1.auditorpass_status as pass_status, t1.auditor_comment as comment, t1.id as item_resp_id,t1.created_on,CONCAT_WS(' ',decryptval(t4.first_name),decryptval(t4.last_name)) as captured_by, t3.created_on as submission_date"))
+                $qry->select(DB::raw("t2.*,t1.*,t1.auditorpass_status as pass_status, t1.auditor_comment as comment, t1.id as item_resp_id,t1.created_on,CONCAT_WS(' ',decrypt(t4.first_name),decrypt(t4.last_name)) as captured_by, t3.created_on as submission_date"))
                     ->whereIn('t1.submission_id', $submission_ids);
             } else {
-                $qry->select(DB::raw("t2.*,t1.*,t1.id as item_resp_id,t1.created_on,CONCAT_WS(' ',decryptval(t4.first_name),decryptval(t4.last_name)) as captured_by, t3.created_on as submission_date"))
+                $qry->select(DB::raw("t2.*,t1.*,t1.id as item_resp_id,t1.created_on,CONCAT_WS(' ',decrypt(t4.first_name),decrypt(t4.last_name)) as captured_by, t3.created_on as submission_date"))
                     ->whereIn('t1.submission_id', $submission_ids);
             }
 

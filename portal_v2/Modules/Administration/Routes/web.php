@@ -12,14 +12,11 @@
 */
 
 
-//use Modules\Administration\Http\Controllers\AdministrationController;
+use Modules\Administration\Http\Controllers\AdministrationController;
 
-Route::group(['prefix' => 'administration'], function() {
+Route::group(['prefix' => 'administration'], function () {
 
     Route::get('getUsers', [AdministrationController::class, 'getUsers']);
-    Route::post('onUserLogOut', [AdministrationController::class,'onUserLogOut']);
-    Route::get('onApplicationInitialisation', [AdministrationController::class,'onApplicationInitialisation']);
-   
-    
+    Route::post('onUserLogOut', [AdministrationController::class, 'onUserLogOut']);
+    Route::get('onApplicationInitialisation', [AdministrationController::class, 'onApplicationInitialisation']);
 });
-
