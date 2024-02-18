@@ -2492,8 +2492,8 @@ Ext.define("Admin.view.commoninterfaces.viewControllers.CommoninterfacesVctr", {
       download = item.download,
       grid = item.up("grid"),
       uploadeddocuments_id = record.get("uploadeddocuments_id");
-
-    if ((node_ref != "" ** node_ref) !== null) {
+    if (node_ref !== "" && node_ref !== null) {
+      //if ((node_ref != "" ** node_ref) !== null) {///Job causing build failure 17.02.24
       this.functDownloadAppDocument(
         node_ref,
         download,

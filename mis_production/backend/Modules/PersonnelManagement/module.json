@@ -1,0 +1,11 @@
+{
+    "name": "PersonnelManagement",
+    "alias": "personnelmanagement",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\PersonnelManagement\\Providers\\PersonnelManagementServiceProvider"
+    ],
+    "files": []
+}

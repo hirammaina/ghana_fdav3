@@ -1879,7 +1879,6 @@ class RevenuemanagementController extends Controller
 
 
 
-
             if (is_array($invoice_feessql) && count($invoice_feessql) > 0) {
                 $invoice_appfeearray = (array)$invoice_feessql[0];
 
@@ -2253,12 +2252,13 @@ class RevenuemanagementController extends Controller
             }
             $module_data = getTableData('wb_applicationinvoicedata_queries', $data_check);
 
-
             if ($module_data) {
                 $data_query = $module_data->data_query;
 
                 //$invoice_feessql = DB::connection('portal_db')->select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
                 $invoice_feessql = DB::connection('portal_db')->select(($data_query . ' where t1.application_code= ' . $application_code)); //Job on 14.02.24
+
+
 
 
                 if (is_array($invoice_feessql) && count($invoice_feessql) > 0) {
@@ -2545,7 +2545,8 @@ class RevenuemanagementController extends Controller
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
-                'message' => $exception->getMessage()
+                'message' => $exception->getMessage(),
+                'line' => $exception->getLine()
             );
         } catch (\Throwable $throwable) {
             $res = array(

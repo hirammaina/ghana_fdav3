@@ -54,7 +54,7 @@ trait ReportsTrait
 		$tplId = $pdf->importPage(1);
 
 		// use the imported page and place it at point 10,10 with a width of 100 mm
-		$pdf->useTemplate($tplId, 0, 0);
+		//$pdf->useTemplate($tplId, 0, 0);
 		$pdf->setPageMark();
 		$pdf->SetLineWidth(0.4);
 		$pdf->Rect(5, 5, 200, 280);
@@ -121,10 +121,14 @@ trait ReportsTrait
 
 				$pdf->Cell(0, 21, '', 0, 1);
 
-				$pdf->Cell(0, 5, 'REGISTRATION CERTIFICATE OF FOOD PRODUCT', 0, 1, 'C');
+				if ($row->section_id == 8) {
+					$pdf->Cell(0, 5, 'REGISTRATION CERTIFICATE OF TOBACCO  PRODUCT', 0, 1, 'C');
+				} else {
+					$pdf->Cell(0, 5, 'REGISTRATION CERTIFICATE OF FOOD PRODUCT', 0, 1, 'C');
+				}
 				$pdf->SetFont('times', '', 10);
 				$pdf->ln();
-				$act_statement = "Made under Law No. 003/2018 of 09/02/2018 establishing the Uganda NDA and determining its mission, organization and functioning in his article 3 and article 8 and regulation No. CBD/TRG/010. The Authority here issues.\n";
+				$act_statement = "Made under Law No. 003/2018 of 09/02/2018 establishing the Ghana FDA and determining its mission, organization and functioning in his article 3 and article 8 and regulation No. CBD/TRG/010. The Authority here issues.\n";
 
 				$pdf->MultiCell(0, 5, $act_statement, 0, 'J', 0, 1);
 
@@ -146,7 +150,7 @@ trait ReportsTrait
 				$pdf->SetFont('times', '', 10);
 
 				//Brand NameUganda NDA
-				$pdf->MultiCell(0, 8, "This is to certify that the medicine described below has been registered in Uganda subject to conditions indicated at the back of the this certificate:\n", 0, 'J', 0, 1);
+				$pdf->MultiCell(0, 8, "This is to certify that the medicine described below has been registered in Ghana subject to conditions indicated at the back of the this certificate:\n", 0, 'J', 0, 1);
 
 				$pdf->SetFont('times', '', 10);
 
@@ -1532,7 +1536,7 @@ trait ReportsTrait
 				$pdf->Cell(0, 5, 'REGISTRATION CERTIFICATE OF MEDICAL DEVICES ', 0, 1, 'C');
 				$pdf->SetFont('times', 'B', 10);
 				$pdf->ln();
-				$act_statement = "Made under Law No. 003/2018 of 09/02/2018 establishing the Rwanda FDA and determining its mission, organization and functioning in its article 9 paragraph 2 and regulations No: DFAR/HMDAR/TRG/002 in its article 13.\n";
+				$act_statement = "Made under Law No. 003/2018 of 09/02/2018 establishing the Ghana FDA and determining its mission, organization and functioning in its article 9 paragraph 2 and regulations No: DFAR/HMDAR/TRG/002 in its article 13.\n";
 
 				$pdf->MultiCell(0, 5, $act_statement, 0, 'J', 0, 1);
 
@@ -1559,7 +1563,7 @@ trait ReportsTrait
 				$pdf->SetFont('times', '', 10);
 
 				//Brand Name
-				$pdf->MultiCell(0, 8, "This is to certify that the Medical Device described below has been registered in Rwanda subject to conditions indicated at the back of this certificate.\n", 0, 'J', 0, 1);
+				$pdf->MultiCell(0, 8, "This is to certify that the Medical Device described below has been registered in Ghana subject to conditions indicated at the back of this certificate.\n", 0, 'J', 0, 1);
 
 				$pdf->SetFont('times', '', 10);
 

@@ -1,0 +1,13 @@
+{
+    "name": "Pv",
+    "alias": "pv",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Pv\\Providers\\PvServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

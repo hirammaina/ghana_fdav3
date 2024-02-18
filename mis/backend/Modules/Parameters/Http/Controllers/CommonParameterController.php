@@ -1022,7 +1022,7 @@ class CommonParameterController extends BaseController
 
                 ->LeftJoin('par_sections as t11', 'a7.section_id', 't11.id')
                 ->LeftJoin('par_cost_types as t12', 't1.cost_type_id', 't12.id')
-                ->LeftJoin('par_revenue_accounts as t13', 't1.revenue_code_id', 't13.id')
+                //->LeftJoin('par_revenue_accounts as t13', 't1.revenue_code_id', 't13.id')//Job on 18.02.24, table not available to reinstate later 
                 ->select(
                     't1.*',
                     't1.id as element_costs_id',
@@ -1038,7 +1038,7 @@ class CommonParameterController extends BaseController
                     't8.name as formulaflag',
                     't9.name as optionalflag',
                     't10.name as glcode',
-                    't10.name as revenue_code',
+                    // 't10.name as revenue_code',
                     't12.name as cost_type',
                     DB::raw("concat(t6.name,' ',a7.name,' ',t5.name,' ',t2.name, ' ',if(cost >0,cost,formula_rate),' ',t4.name) as element_desc")
                 );

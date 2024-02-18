@@ -723,10 +723,14 @@ z-index: 10005;
 height: 100%;
   background:url(../images/loading_logo.png) no-repeat center;
   text-align: center;
+ /* Set the initial rotation angle to 0 degrees */
+ transform: rotate(0deg);
+ /* relate to below keyframe spin */
+ animation: spin 2s linear infinite;
 }
 @keyframes spin {
   0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  100% { transform: rotate(45deg); }
 } 
 
           .margin-10{
