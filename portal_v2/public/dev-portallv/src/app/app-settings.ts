@@ -1,6 +1,6 @@
 var app_connection = 'production';
 if(window.location.hostname =='localhost'){
-  var app_connection = 'development';
+ // var app_connection = 'development';
 }
 if(app_connection == 'development'){
 
@@ -19,7 +19,9 @@ else if(app_connection == 'fixed_acess'){
 else if(app_connection == 'production'){
   var base_url = window.location.protocol+'//'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+window.location.pathname;
   var assets_url = window.location.protocol+'//'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+window.location.pathname+"public/resources/";
-  var mis_url = window.location.protocol+'//'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+'/irims-mis/';
+  //var mis_url = window.location.protocol+'//'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+'/irims-mis/';
+  var mis_url = window.location.protocol+'//'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+'/mis_production/';
+
 }
 
 export class AppSettings {
