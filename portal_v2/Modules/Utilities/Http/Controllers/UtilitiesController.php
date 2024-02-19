@@ -4,7 +4,7 @@
  * @Author: HiramMaina
  * @Create Time: 2024-01-10 10:38:56
  * @Modified by: JobMurumba
- * @Modified time: 2024-02-15 12:14:18
+ * @Modified time: 2024-02-19 13:44:35
  * @Description:
  */
 
@@ -1468,6 +1468,8 @@ class UtilitiesController extends Controller
             $resp = "";
             $trader_id = $req->trader_id;
             $product_id = getSingleRecordColValue('tra_product_applications', array('application_code' => $req->application_code), 'product_id', 'mis_db');
+            //wrong application code, temporary fix here
+            $product_id = $req->product_id; //Job on 19.02.24 to revert including frontend
 
             $data = array(
                 'manufacturing_date' => formatDate($req->manufacturing_date),
@@ -1508,6 +1510,7 @@ class UtilitiesController extends Controller
                 if (!recordExists($table_name, $where, 'mis_db')) {
                     $resp = insertRecord($table_name, $data, $trader_id, 'mis_db');
 
+
                     $record_id = $resp['record_id'];
                 } else {
                     $resp = array('success' => false);
@@ -1531,7 +1534,8 @@ class UtilitiesController extends Controller
             $res = array(
                 'success' => false,
                 'messag1' => $product_id,
-                'message' => $exception->getMessage()
+                'message' => $exception->getMessage(),
+                "line" => $exception->getLine(),
             );
         } catch (\Throwable $throwable) {
             $res = array(

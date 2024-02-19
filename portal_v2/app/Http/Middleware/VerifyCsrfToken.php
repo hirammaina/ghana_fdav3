@@ -102,6 +102,7 @@ class VerifyCsrfToken extends Middleware
         'productregistration/onSaveGroupedApplicationdetails',
         "utilities/onGroupedApplicationInvoiceGeneration",
         "gmpinspection/onSaveGmpOtherDetails",
-        "utilities/onApplicationInvoiceGeneration"
+        "utilities/onApplicationInvoiceGeneration",
+        "utilities/onSavesampleDetails"
     ];
 }

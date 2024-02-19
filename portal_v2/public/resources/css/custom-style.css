@@ -695,6 +695,8 @@ button[disabled]{
   float:right !important;
 
 }
+
+
 .loader {
   position: absolute;
   left:     48%;

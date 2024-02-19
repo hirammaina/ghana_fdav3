@@ -3,10 +3,11 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Portal</title>
+    <title>Ghana iRIMS Portal</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <!-- <link rel="icon" type="image/x-icon" href="favicon.ico"> -->
+    <link rel="icon" type="image/ico" href="logo.ico">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <!-- Bootstrap 3.3.7 -->
 
@@ -50,7 +51,7 @@
 
 <script type="text/javascript" src="{{asset('public/front-end/scripts.f5885ad9265632b59482.js')}}"></script>
 
-<script type="text/javascript" src="{{asset('public/front-end/main.28cc1c5cf015900cdd58.js')}}"></script>
+<script type="text/javascript" src="{{asset('public/front-end/main.9e9618b145274ed9adcd.js')}}"></script>
 
 
 <script src="{{asset('public/resources/js/jquery.min.js')}}"></script>
@@ -70,7 +71,7 @@
 <!-- jvectormap  -->
 
 <!-- SlimScroll -->
-<script src="{{asset('public/front-end/resources/js/jquery-slimscroll/jquery.slimscroll.min.js')}}"></script>
+<script src="{{asset('public/resources/js/jquery.slimscroll.min.js')}}"></script>
 
 </body>
 

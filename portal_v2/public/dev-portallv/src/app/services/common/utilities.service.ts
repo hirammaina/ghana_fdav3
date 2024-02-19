@@ -665,14 +665,24 @@ onPermitsApplicationSubmit(viewRef, application_code, tracking_no, table_name, a
         return <any>data;
       }));
   } 
-  onsaveApplicationUniformDetails(application_code, permitData,action_url) {
+  onsaveApplicationUniformDetails(application_code, permitData,action_url,product_id=null) {
 
     var headers = new Headers({
       "Accept": "application/json",
       "Authorization": "Bearer " + this.authService.getAccessToken(),
     });
-    return this.http.post(AppSettings.base_url + 'utilities/'+action_url, permitData, { params: { application_code: application_code,  'trader_id': this.trader_id, 'trader_email': this.email_address }, headers: headers })
-      .pipe(map(data => {
+    //job 02.29.24
+    let  params={};
+    if(product_id)
+    {
+      params= { application_code: application_code,  'trader_id': this.trader_id, 'trader_email': this.email_address,product_id }
+    }else{
+      params={ application_code: application_code,  'trader_id': this.trader_id, 'trader_email': this.email_address }
+    }
+   // return this.http.post(AppSettings.base_url + 'utilities/'+action_url, permitData, { params: { application_code: application_code,  'trader_id': this.trader_id, 'trader_email': this.email_address }, headers: headers })
+    return this.http.post(AppSettings.base_url + 'utilities/'+action_url, permitData, { params, headers: headers })
+      
+    .pipe(map(data => {
         return data;
       }));
   }

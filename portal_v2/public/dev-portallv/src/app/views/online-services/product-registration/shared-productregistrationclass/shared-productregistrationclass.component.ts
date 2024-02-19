@@ -2929,7 +2929,7 @@ this.spinner.show();
 let table_name;
     table_name = 'wb_sample_information';
 
-this.utilityService.onsaveApplicationUniformDetails(this.application_code, this.sampleDetailsFrm.value, 'onSavesampleDetails')
+this.utilityService.onsaveApplicationUniformDetails(this.application_code, this.sampleDetailsFrm.value, 'onSavesampleDetails',this.product_id)
   .subscribe(
     response => {
       this.product_resp = response.json();
