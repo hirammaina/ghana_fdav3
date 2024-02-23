@@ -438,6 +438,8 @@ export class SharedPremisesregistrationclassComponent {
 
   }
   funcgetapplicationCAPARequestsData(){
+
+
       
     this.utilityService.getApplicationPreQueriesDetails(this.application_code,'wb_premises_applications', 'application_status_id','utilities/getapplicationCAPARequestsData')
     .subscribe(

@@ -1208,7 +1208,12 @@ Ext.define("Admin.controller.ImportExportpermitsCtr", {
       (me = this),
       (mainTabPanel = me.getMainTabPanel()),
       (activeTab = mainTabPanel.getActiveTab());
-    section_id = activeTab.down("hiddenfield[name=section_id]").getValue();
+    var section_id;
+    if (activeTab.down("hiddenfield[name=section_id]")) {
+      section_id = activeTab.down("hiddenfield[name=section_id]").getValue();
+    } else {
+      section_id = record.get("section_id");
+    }
     permit_type_id = record.get("permit_type_id");
 
     this.funcChangePermitSubModuleDetails(permit_type_id, section_id, frm);

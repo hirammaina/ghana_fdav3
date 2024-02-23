@@ -170,7 +170,9 @@ Ext.define(
         items: [
           {
             xtype: "form",
+            itemId: "otherDetailsForm",
             bodyPadding: 5,
+
             layout: "column",
             defaults: {
               margin: 2,

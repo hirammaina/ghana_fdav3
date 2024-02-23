@@ -872,6 +872,7 @@ class GmpApplicationsController extends Controller
         $workflow_stage = $request->input('workflow_stage_id');
         $gmp_type_id = $request->input('gmp_type_id');
         $section_id = $request->input('section_id');
+       
         try {
             $qry = DB::table($table_name . ' as t1')
                 ->join('tra_manufacturing_sites as t2', 't1.manufacturing_site_id', '=', 't2.id')
@@ -3063,7 +3064,7 @@ class GmpApplicationsController extends Controller
         try {
             $portal_db = DB::connection('portal_db');
             $qry = $portal_db->table('wb_gmp_productline_details as t1')
-                ->join('wb_manufacturingsite_blocks as t2', 't1.manufacturingsite_block_id', '=', 't2.id')
+                ->leftjoin('wb_manufacturingsite_blocks as t2', 't1.manufacturingsite_block_id', '=', 't2.id') //Job to change the block back to join on 21.02.24
                 ->select('t1.*', 't2.name as block')
                 ->where('t1.manufacturing_site_id', $site_id);
             $results = $qry->get();

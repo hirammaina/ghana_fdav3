@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
+
 class AuthController extends Controller
 {
 
@@ -83,19 +84,21 @@ class AuthController extends Controller
                     'password' => $password,
                     'uuid' => $uuid
                 );
-                if (\Auth::attempt($authParams, $check_rem)) {
+                if (Auth::attempt($authParams, $check_rem)) {
                     //check if this user have login failed attempts then clear
-                    DB::table('tra_failed_login_attempts')->where('account_id', \Auth::user()->id)->update(array('attempt_status' => 2));
+                    DB::table('tra_failed_login_attempts')->where('account_id', Auth::user()->id)->update(array('attempt_status' => 2));
                     //clear previous access tokens
-                    $loggedInUser = \Auth::user();
-                    $mis_client_id = Config('constants.api.mis_client_id');
-                    $userTokens = $loggedInUser->tokens();
-                    foreach ($userTokens as $token) {
-                        if ($token->client_id == $mis_client_id) {
-                            $token->revoke();
-                            $token->delete();
-                        }
-                    }
+                    $loggedInUser = Auth::user();
+                    // $mis_client_id = Config('constants.api.mis_client_id');
+                    //$userTokens = $loggedInUser->tokens;
+                    // foreach ($userTokens as $token) {
+                    //     if ($token->client_id == $mis_client_id) {
+                    //         $token->revoke();
+                    //         $token->delete();
+                    //     }
+                    // }
+
+
 
                     $res = array(
                         'success' => true,

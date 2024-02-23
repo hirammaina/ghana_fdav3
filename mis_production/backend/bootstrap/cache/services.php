@@ -60,10 +60,11 @@
     56 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
     57 => 'ZanySoft\\Zip\\ZipServiceProvider',
     58 => 'Elibyy\\TCPDF\\ServiceProvider',
-    59 => 'App\\Providers\\AppServiceProvider',
-    60 => 'App\\Providers\\AuthServiceProvider',
-    61 => 'App\\Providers\\EventServiceProvider',
-    62 => 'App\\Providers\\RouteServiceProvider',
+    59 => 'Laravel\\Passport\\PassportServiceProvider',
+    60 => 'App\\Providers\\AppServiceProvider',
+    61 => 'App\\Providers\\AuthServiceProvider',
+    62 => 'App\\Providers\\EventServiceProvider',
+    63 => 'App\\Providers\\RouteServiceProvider',
   ),
   'eager' => 
   array (
@@ -100,10 +101,11 @@
     30 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
     31 => 'ZanySoft\\Zip\\ZipServiceProvider',
     32 => 'Elibyy\\TCPDF\\ServiceProvider',
-    33 => 'App\\Providers\\AppServiceProvider',
-    34 => 'App\\Providers\\AuthServiceProvider',
-    35 => 'App\\Providers\\EventServiceProvider',
-    36 => 'App\\Providers\\RouteServiceProvider',
+    33 => 'Laravel\\Passport\\PassportServiceProvider',
+    34 => 'App\\Providers\\AppServiceProvider',
+    35 => 'App\\Providers\\AuthServiceProvider',
+    36 => 'App\\Providers\\EventServiceProvider',
+    37 => 'App\\Providers\\RouteServiceProvider',
   ),
   'deferred' => 
   array (

@@ -1753,6 +1753,7 @@ class RevenuemanagementController extends Controller
                     ->where('t1.application_code', $application_code)
                     ->get();
 
+
                 foreach ($invoicing_data as $invoice) {
                     $invoice_amt = getApplicationPaymentsRunningBalance($application_code, $invoice->invoice_id);
                     $invoice->balance = $invoice_amt['running_balance'];
@@ -1865,6 +1866,7 @@ class RevenuemanagementController extends Controller
         );
 
 
+
         $module_data = getTableData('tra_applicationinvoicedata_queries', $data_check);
 
 
@@ -1876,6 +1878,8 @@ class RevenuemanagementController extends Controller
             //changed associated records of data query ie put double quotes in section_id
             //$invoice_feessql = DB::select(DB::raw($data_query.' where t1.application_code= '.$application_code));
             $invoice_feessql = DB::select(($data_query . ' where t1.application_code= ' . $application_code)); //Job 25.06.24
+
+
 
 
 
@@ -1893,7 +1897,7 @@ class RevenuemanagementController extends Controller
                         $fees_data = $import_data['results'];
                     }
                 } else {
-                    if ($section_id == 2) { //all of this
+                    if ($section_id == 2 && $module_id == 1) { //all of this
                         $invoice_appfeearray['assessmentprocedure_type_id'] = 3; //to remove test puproses Job 25..01.2024
 
 
@@ -1953,7 +1957,7 @@ class RevenuemanagementController extends Controller
 
 
         $sub_module_id = $rec->sub_module_id;
-        $currency_id = $rec->currency_id;
+        $currency_id = $rec->currency_id ?? 21; //Job 20.02.24 to remove the 21 fr demo
         $fasttrack_option_id = 1;
 
         $fob_value = $rec->fob_value;
@@ -1991,8 +1995,10 @@ class RevenuemanagementController extends Controller
                 echo json_encode($res);
                 exit();
             }
+
             //$invoice_feessql = DB::select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
             $invoice_feessql = DB::select(($data_query . ' where t1.application_code= ' . $application_code));
+
 
             if (is_array($invoice_feessql) && count((array)$invoice_feessql) > 0) {
                 $invoice_appfeearray = (array)$invoice_feessql[0];
@@ -2013,6 +2019,7 @@ class RevenuemanagementController extends Controller
                     ->select(DB::raw("t1.id,$local_currency_id as currency_id, 'Quotation' as invoice_description,t10.name as sub_category, t9.name as cost_type,  '' as invoice_number,t5.name as fee_type,t6.name as cost_category,t7.name as element,t2.id as element_costs_id, concat(t5.name,'-', t6.name, '-', t7.name) as element_costs, (t2.cost/100*$fob_value*$exchange_ratedata) as cost,(t2.cost/100*$fob_value*$exchange_ratedata) as costs ,formula_rate,$exchange_ratedata as exhange_rate, formula,$fob_value as fob,t8.name as currency,$currency_id as permit_currency_id"))
                     ->where($invoice_appfeearray)
                     ->get();
+
 
 
                 $res = array('success' => true, 'results' => $fees_data);
@@ -2252,12 +2259,13 @@ class RevenuemanagementController extends Controller
             }
             $module_data = getTableData('wb_applicationinvoicedata_queries', $data_check);
 
-
             if ($module_data) {
                 $data_query = $module_data->data_query;
 
                 //$invoice_feessql = DB::connection('portal_db')->select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
                 $invoice_feessql = DB::connection('portal_db')->select(($data_query . ' where t1.application_code= ' . $application_code)); //Job on 14.02.24
+
+
 
 
                 if (is_array($invoice_feessql) && count($invoice_feessql) > 0) {
@@ -2476,7 +2484,8 @@ class RevenuemanagementController extends Controller
                 $applicant_id =  $rec->trader_id;
                 $email =  $rec->email;
                 $module_id = $rec->module_id;
-                if ($module_id == 1) {
+                //if ($module_id == 1) {
+                if ($module_id == 1 || $module_id == 3) { //Job on 21.02.24
                     $data_check = array(
                         'module_id' => $rec->module_id,
                         'sub_module_id' => $rec->sub_module_id, 'section_id' => $rec->section_id
@@ -2496,6 +2505,7 @@ class RevenuemanagementController extends Controller
                 if (is_array($invoice_feessql) && count($invoice_feessql) > 0) {
 
                     $invoice_appfeearray = (array)$invoice_feessql[0];
+
                     $quantity = 1;
                     if ($fasttrack_option_id == 1) {
                         $quantity = 2;
@@ -2510,7 +2520,7 @@ class RevenuemanagementController extends Controller
                             $fees_data = array();
                         }
                     } else {
-                        if ($rec->section_id == 2) { //all of this
+                        if ($rec->section_id == 2  && $module_id == 1) { //all of this
                             $invoice_appfeearray['assessmentprocedure_type_id'] = 3; //to remove test puproses Job 25..01.2024
                         }
 

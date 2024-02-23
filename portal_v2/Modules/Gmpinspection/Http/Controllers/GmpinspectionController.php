@@ -946,6 +946,7 @@ class GmpinspectionController extends Controller
                 })
                 ->leftJoin('wb_statuses_actions as t7', 't6.action_id', 't7.id')
                 ->leftJoin('wb_premises as t8', 't1.local_agent_id', 't8.id')
+                ->where("t1.date_added", ">=", '2024-01-01') // Job on 21/02/24
                 ->whereNotIn('application_status_id', array('12'));
             if (is_array($application_status_ids) && count($application_status_ids) > 0 && $application_status_id != '') {
 
@@ -1087,7 +1088,7 @@ class GmpinspectionController extends Controller
                 ->join('wb_statuses as t3', 't1.application_status_id', '=', 't3.id')
                 ->leftJoin('wb_trader_account as t5', 't1.applicant_id', '=', 't5.id')
                 ->leftJoin('wb_premises as t6', 't1.local_agent_id', '=', 't6.id')
-
+                // ->where("t1.date_created", ">", "2024-02-20")//to remove Jm 22.02.24
                 ->leftJoin('wb_tfdaprocesses as t4', function ($join) {
                     $join->on('t1.sub_module_id', '=', 't4.sub_module_id');
                     $join->on('t1.application_status_id', '=', 't4.status_id');

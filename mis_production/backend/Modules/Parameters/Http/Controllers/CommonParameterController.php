@@ -1022,7 +1022,7 @@ class CommonParameterController extends BaseController
 
                 ->LeftJoin('par_sections as t11', 'a7.section_id', 't11.id')
                 ->LeftJoin('par_cost_types as t12', 't1.cost_type_id', 't12.id')
-                ->LeftJoin('par_revenue_accounts as t13', 't1.revenue_code_id', 't13.id')
+                ->LeftJoin('par_revenue_accounts as t13', 't1.revenue_code_id', 't13.id') //Job on 18.02.24, table not available to reinstate later 
                 ->select(
                     't1.*',
                     't1.id as element_costs_id',

@@ -73,6 +73,8 @@ class ImportexportpermitsController extends Controller
                     't4.name as application_status',
                     't4.is_manager_query'
                 )
+                ->where('t1.sub_module_id', 60)
+
                 ->whereIn('application_status_id', array(2, 13, 15, 21));
 
             $modulesData = getParameterItems('modules', '');
@@ -86,7 +88,10 @@ class ImportexportpermitsController extends Controller
                 $qry->where('t1.sub_module_id', $sub_module_id);
             }
             if (isset($section_id) && $section_id != '') {
-                $qry->where('t1.section_id', $section_id);
+                //$qry->where('t1.section_id', $section_id);
+                $filters_section = [14];
+                $filters_section[] = $section_id;
+                $qry->whereIN('t1.section_id', $filters_section);
             }
             $records = $qry->get();
 
@@ -1120,12 +1125,12 @@ class ImportexportpermitsController extends Controller
                 ->join('wf_workflow_stages as t5', 't7.current_stage', '=', 't5.id')
                 ->leftJoin('par_system_statuses as t6', 't1.application_status_id', '=', 't6.id')
                 ->join('users as t8', 't7.usr_from', '=', 't8.id')
-                ->join('users as t9', 't7.usr_to', '=', 't9.id')
+                ->leftjoin('users as t9', 't7.usr_to', '=', 't9.id')
                 ->select(DB::raw("t7.date_received,t7.isDone, CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as from_user,CONCAT_WS(' ',decrypt(t9.first_name),decrypt(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id, t1.proforma_invoice_no,t1.proforma_invoice_date,
                     t6.name as application_status, t3.name as applicant_name, t4.name as process_name, t5.name as workflow_stage, t5.is_general, t3.contact_person,
                     t3.tin_no, t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t3.physical_address as app_physical_address,
                     t3.postal_address as app_postal_address, t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email as app_email, t3.website as app_website,
-                     t1.*"))
+                     t1.*,t7.current_stage as workflow_stage_id")) //job t7.current_stage as workflow_stage_id due to bug on 0 process id on tra_import to fix later after demo
                 ->whereNotIn('t1.is_dismissed', [1]);
             //users to causes no resulsts
 
@@ -6237,7 +6242,7 @@ class ImportexportpermitsController extends Controller
         try {
             $resp = "";
             $user_id = $this->user_id;
-
+            $permitprod_recommendation_id = $req->permitprod_recommendation_id;
             $application_code = $req->application_code;
             $unit_price = $req->unit_price;
             $currency_id = $req->currency_id;

@@ -1128,7 +1128,7 @@ class ReportsController extends Controller
 		}
 	}
 
-	public function genenerateImportExportPermit(Request $request)
+	public function genenerateImportExportPermitOurVersion(Request $request)
 	{
 		$document_type_id = 25;
 		$document_requirement_id = 254;
@@ -1168,6 +1168,40 @@ class ReportsController extends Controller
 			echo "No approval recommendation, contact the system admin";
 		}
 	}
+
+	//nda
+	public function genenerateImportExportPermit(Request $request)
+	{
+		$document_type_id = 25;
+		$document_requirement_id = 254;
+
+		$application_code = $request->input('application_code');
+		$permit_watermark = $request->input('permit_watermark');
+		$is_permitupdate = $request->input('is_permitupdate');
+
+		$approvalGrant = DB::table('tra_managerpermits_review')->where('application_code', $application_code)->first();
+		if (!empty($approvalGrant) && $approvalGrant->decision_id == 1) {
+			$record = DB::table('tra_importexport_applications as t1')
+				->join('sub_modules as t2', 't1.sub_module_id', 't2.id')
+				->select('t2.title', 't1.sub_module_id')
+				->where('application_code', $application_code)->first();
+			$sub_module_id = $record->sub_module_id;
+			if ($sub_module_id == 78) {
+
+				$this->printImportExportLicense($application_code, $record, $permit_watermark);
+			} else {
+
+				$this->printImportExportvisa($application_code, $record, $permit_watermark);
+			}
+		} else if (!empty($approvalGrant) && $approvalGrant->decision_id == 2) {
+			echo "The Application has been rejected " . $approvalGrant->comment;
+		} else {
+			echo "No approval recommendation, contact the system admin";
+		}
+	}
+
+
+
 
 	function funcDownloadDMSReport($document_path)
 	{
@@ -1729,7 +1763,7 @@ class ReportsController extends Controller
 				}
 				PDF::SetFont('', 'BI', 9);
 
-				PDF::Cell(0, 4, '(Made under Section 20 (2a) of RWANDA FOOD AND DRUGS AUTHORITY Act, Cap 219)', 0, 1, 'C');
+				PDF::Cell(0, 4, '(Made under Section 20 (2a) of GHANA FOOD AND DRUGS AUTHORITY Act, Cap 219)', 0, 1, 'C');
 				PDF::Cell(10);
 				PDF::SetFont('', 'B', 11);
 				PDF::Cell(0, 5, '', 0, 1);
@@ -1740,7 +1774,7 @@ class ReportsController extends Controller
 				if ($section_id == 2) {
 					$complaince_statement = 'current Good Manufacturing Practice requirements for dosage forms and categories of medicines listed below:';
 				} else {
-					$complaince_statement = ' ISO 13485 requirements and RWANDA FOOD AND DRUGS AUTHORITY (Control of Medical Devices) Regulations, 2015 for the following scope:';
+					$complaince_statement = ' ISO 13485 requirements and GHANA FOOD AND DRUGS AUTHORITY (Control of Medical Devices) Regulations, 2015 for the following scope:';
 				}
 				PDF::SetFont('', '', 11);
 				PDF::WriteHTML("This is to certify that M/S " . strtoupper($premise_name) . " located at " . strtoupper($premise_phy_addr . ", " . $premCountryName) . " has been found to comply with " . $complaince_statement, true, 0, true, true, '');

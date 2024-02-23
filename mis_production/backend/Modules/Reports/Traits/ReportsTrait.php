@@ -98,6 +98,294 @@ trait ReportsTrait
 
 
 	}
+
+
+	public function printImportExportLicense($application_code, $record, $permit_watermark)
+	{
+		try {
+			$record = DB::table('tra_importexport_applications as t1')
+				->join('sub_modules as t2', 't1.sub_module_id', 't2.id')
+				->leftJoin('wb_trader_account as t3', 't1.applicant_id', 't3.id')
+				->join('par_countries as t4', 't3.country_id', 't4.id')
+				->leftJoin('par_regions as t5', 't3.region_id', 't5.id')
+				->leftJoin('par_ports_information as t6', 't1.port_id', 't6.id')
+				->leftJoin('tra_permitsrelease_recommendation as t7', 't1.application_code', 't7.application_code')
+				->leftJoin('users as t8', 't7.permit_signatory', 't8.id')
+				->leftJoin('tra_permitsenderreceiver_data as t9', 't1.sender_receiver_id', 't9.id')
+				->leftJoin('par_countries as t10', 't9.country_id', 't10.id')
+				->leftJoin('par_regions as t11', 't9.region_id', 't11.id')
+				->leftJoin('par_modesof_transport as t12', 't1.mode_oftransport_id', 't12.id')
+				->leftJoin('tra_managerpermits_review as t13', 't1.application_code', 't13.id')
+				->leftJoin('tra_consignee_data as t14', 't1.consignee_id', 't14.id')
+				->leftJoin('par_permitsproduct_categories as t15', 't1.permit_productscategory_id', 't15.id')
+				->select('t2.title', 't15.name  as product_category', 't2.title as permit_title', 't13.permit_no', 't14.name as consignee_name', 't1.sub_module_id', 't1.*', 't3.name as applicant_name', 't2.action_title', 't6.name as port_entry', 't3.*', 't4.name as country_name', 't5.name as region_name', 't7.permit_signatory', 't7.approval_date', DB::raw("concat(decrypt(t8.first_name),' ',decrypt(t8.last_name)) as permit_signatoryname, t9.name as suppler_name, t9.physical_address as suppler_address, t10.name as supplier_country, t11.name as supplier_region, t9.postal_address as supplier_postal_address, t12.name as mode_of_transport"))
+				->where('t1.application_code', $application_code)->first();
+
+			$sub_module_id = $record->sub_module_id;
+			$permit_title = $record->permit_title;
+			$action_title = $record->action_title;
+			$consignee_name  = $record->consignee_name;
+			$approval_date = '';
+			if ($record->approval_date != '') {
+				$approval_date = $record->approval_date;
+			}
+			if ($record) {
+				$org_info = $this->getOrganisationInfo();
+
+				$pdf = new PdfProvider();
+				$this->getCertificateHeader($pdf, '');
+
+				$this->funcGenerateQrCode($record, $pdf);
+				$logo = getcwd() . '/resources/images/org-logo.jpg';
+				$pdf->SetFont('times', 'B', 9);
+				$pdf->Cell(0, 1, '', 0, 1);
+				$pdf->ln();
+				$pdf->Image($logo, 89, 15, 33, 35);
+
+
+				$pdf->Cell(40, 10, '', 0, 1);
+				$pdf->ln();
+
+				$pdf->SetFont('', 'B', 13);
+				$pdf->MultiCell(0, 5, strtoupper($permit_title), 0, 'C', 0, 1);
+
+				$pdf->SetFont('', 'B', 10);
+				$pdf->Cell(40, 7, 'Visa No: ' . $record->permit_no, 0, 1);
+				//$pdf->ln(); 
+				$pdf->SetFont('', '', 10);
+				$pdf->setCellHeightRatio(1.8);
+				$pdf->WriteHTML("This is to certify the (Name of permit holder)<b> " . strtoupper($record->applicant_name) . "</b> of (Physical Address) <b>" . strtoupper($record->physical_address . ", " . $record->postal_address . ", " . $record->region_name . ", " . $record->country_name) . $consignee_name . "</b> is authorised to <b>" . $action_title . "</b> Ghana FDA regulated products specified in Proforma Invoice number <b>" . $record->proforma_invoice_no . "  for the following products categories : " . $record->product_category, true, 0, true, true, 'J');
+
+				$pdf->MultiCell(0, 6, 'Total Product Value', 0, '', 0, 1);
+
+
+				//	$pdf->Cell(0,5,'Date: '.date('jS F, Y',strtotime($approval_date)),0,1,'R');
+				$pdf->SetFont('', 'B', 10);
+
+				$pdf->Cell(10, 7, 'No', 1, 0);
+				$pdf->Cell(45, 7, 'Product', 1, 0);
+				$pdf->Cell(30, 7, 'Batch Details', 1, 0);
+				$pdf->Cell(30, 7, 'Quantity', 1, 0);
+				$pdf->Cell(25, 7, 'Unit Value', 1, 0);
+				$pdf->Cell(0, 7, 'Total Value', 1, 1);
+				$pdf->SetFont('', '', 10);
+				$prod_rec = DB::table('tra_permits_products as t1')
+					->leftJoin('tra_product_information as t2', 't1.product_id', 't2.id')
+					->leftJoin('par_dosage_forms as t3', 't1.dosage_form_id', 't3.id')
+					->leftJoin('par_packaging_units as t4', 't1.packaging_unit_id', 't4.id')
+					->leftJoin('par_common_names as t5', 't1.common_name_id', 't5.id')
+					->leftJoin('par_si_units as t6', 't1.unitpack_unit_id', 't6.id')
+					->leftJoin('par_currencies as t7', 't1.currency_id', 't7.id')
+					->select('t1.*', 't7.name as currency_name', 't4.name as packaging_unit', 't1.product_strength', 't5.name as generic_name', 't2.brand_name', 't3.name as dosage_form', 't6.name as si_unit', 't1.unitpack_size')
+					->where(array('application_code' => $record->application_code))
+					->get();
+				$prod_counter = $prod_rec->count();
+				if ($prod_counter > 0) {
+					$i = 1;
+					$total_amount = 0;
+					foreach ($prod_rec as $rec) {
+						if ($rec->permitbrand_name != '') {
+							$permit_brandname = $rec->permitbrand_name . ' ' . $rec->generic_name;
+						} else {
+							$permit_brandname = $rec->brand_name . ' ' . $rec->generic_name;
+						}
+						$amount = ($rec->unit_price * $rec->quantity);
+						$batch_details = "Batch No: " . $rec->product_batch_no . " Batch Qty- " . $rec->quantity . " Expiry Date -" . formatDateRpt($rec->product_expiry_date);
+						$packaging_data = $rec->unitpack_size . ' ' . $rec->si_unit;
+						$rowcount = max(PDF::getNumLines($permit_brandname, 120), PDF::getNumLines($batch_details, 25));
+						$pdf->MultiCell(10, 5 * $rowcount, $i, 1, '', 0, 0);
+						$pdf->MultiCell(45, 5 * $rowcount, $permit_brandname, 1, '', 0, 0);
+						$pdf->MultiCell(30, 5 * $rowcount, $batch_details, 1, '', 0, 0);
+						$pdf->MultiCell(30, 5 * $rowcount, $rec->quantity . ' ' . $rec->packaging_unit, 1, '', 0, 0);
+						$pdf->MultiCell(25, 5 * $rowcount, formatMoney($rec->unit_price) . ' ', 1, '', 0, 0);
+						$pdf->MultiCell(0, 5 * $rowcount, formatMoney($amount) . $rec->currency_name, 1, 'R', 0, 1);
+						$currency_name = $rec->currency_name;
+						$total_amount = $total_amount + $amount;
+					}
+					$pdf->Cell(140, 7, 'Total Value:', 1, 0, 'C');
+					$pdf->Cell(0, 7, formatMoney($total_amount) . ' ' . $rec->currency_name, 1, 1, 'R');
+				}
+				$pdf->SetFont('', '', 10);
+				$pdf->ln();
+				$pdf->WriteHTML("Name of Supplier / Exporter / Consignee :<b> " . strtoupper($record->suppler_name) . "</b> of (Physical Address) <b>" . strtoupper($record->suppler_address . ", " . $record->supplier_region . ", " . $record->supplier_country) . '</b>.', true, 0, true, true, 'J');
+
+
+				$pdf->Cell(0, 5, 'This Special Case Import Visa is valid for only 3 months from the issue date', 0, 1);
+
+				$pdf->ln();
+				$pdf->Cell(0, 5, 'Done at Accra on : ' . formatDateRpt($record->approval_date), 0, 1);
+
+
+				$pdf->ln();
+				$permit_signitory = '';
+				$title = 'ACTING';
+				$title = '';
+				$approved_by = '';
+
+				$this->getCertificateSignatoryDetail($record, $pdf);
+				$pdf->Output($permit_title . '.pdf');
+			}
+		} catch (\Exception $exception) {
+			//DB::rollBack();
+			$res = array(
+				'success' => false,
+				'message' => $exception->getMessage()
+			);
+		} catch (\Throwable $throwable) {
+			//DB::rollBack();
+			$res = array(
+				'success' => false,
+				'message' => $throwable->getMessage()
+			);
+		}
+
+		print_r($res);
+		return response()->json($res);
+	}
+	public function printImportExportvisa($application_code, $record, $permit_watermark)
+	{
+		try {
+			$record = DB::table('tra_importexport_applications as t1')
+				->join('sub_modules as t2', 't1.sub_module_id', 't2.id')
+				->leftJoin('wb_trader_account as t3', 't1.applicant_id', 't3.id')
+				->join('par_countries as t4', 't3.country_id', 't4.id')
+				->leftJoin('par_regions as t5', 't3.region_id', 't5.id')
+				->leftJoin('par_ports_information as t6', 't1.port_id', 't6.id')
+				->leftJoin('tra_permitsrelease_recommendation as t7', 't1.application_code', 't7.application_code')
+				->leftJoin('users as t8', 't7.permit_signatory', 't8.id')
+				->leftJoin('tra_permitsenderreceiver_data as t9', 't1.sender_receiver_id', 't9.id')
+				->leftJoin('par_countries as t10', 't9.country_id', 't10.id')
+				->leftJoin('par_regions as t11', 't9.region_id', 't11.id')
+				->leftJoin('par_modesof_transport as t12', 't1.mode_oftransport_id', 't12.id')
+				->leftJoin('tra_managerpermits_review as t13', 't1.application_code', 't13.id')
+				->leftJoin('tra_consignee_data as t14', 't1.consignee_id', 't14.id')
+				->leftJoin('par_permitsproduct_categories as t15', 't1.permit_productscategory_id', 't15.id')
+				->select('t2.title', 't15.name  as product_category', 't2.title as permit_title', 't13.permit_no', 't14.name as consignee_name', 't1.sub_module_id', 't1.*', 't3.name as applicant_name', 't2.action_title', 't6.name as port_entry', 't3.*', 't4.name as country_name', 't5.name as region_name', 't7.permit_signatory', 't7.approval_date', DB::raw("concat(decrypt(t8.first_name),' ',decrypt(t8.last_name)) as permit_signatoryname, t9.name as suppler_name, t9.physical_address as suppler_address, t10.name as supplier_country, t11.name as supplier_region, t9.postal_address as supplier_postal_address, t12.name as mode_of_transport"))
+				->where('t1.application_code', $application_code)->first();
+
+			$sub_module_id = $record->sub_module_id;
+			$permit_title = $record->permit_title;
+			$action_title = $record->action_title;
+			$consignee_name  = $record->consignee_name;
+			$approval_date = '';
+			if ($record->approval_date != '') {
+				$approval_date = $record->approval_date;
+			}
+			if ($record) {
+				$org_info = $this->getOrganisationInfo();
+
+				$pdf = new PdfProvider();
+				$this->getCertificateHeader($pdf, '');
+
+				$this->funcGenerateQrCode($record, $pdf);
+				$logo = getcwd() . '/resources/images/org-logo.jpg';
+				$pdf->SetFont('times', 'B', 9);
+				$pdf->Cell(0, 1, '', 0, 1);
+				$pdf->ln();
+				$pdf->Image($logo, 89, 15, 33, 35);
+
+
+				$pdf->Cell(40, 10, '', 0, 1);
+				$pdf->ln();
+
+				$pdf->SetFont('', 'B', 13);
+				$pdf->MultiCell(0, 5, strtoupper($permit_title), 0, 'C', 0, 1);
+
+				$pdf->SetFont('', 'B', 10);
+				$pdf->Cell(40, 7, 'Visa No: ' . $record->permit_no, 0, 1);
+				//$pdf->ln(); 
+				$pdf->SetFont('', '', 10);
+				$pdf->setCellHeightRatio(1.8);
+				$pdf->WriteHTML("This is to certify the (Name of permit holder)<b> " . strtoupper($record->applicant_name) . "</b> of (Physical Address) <b>" . strtoupper($record->physical_address . ", " . $record->postal_address . ", " . $record->region_name . ", " . $record->country_name) . $consignee_name . "</b> is authorised to <b>" . $action_title . "</b> GHANA FDA regulated products specified in Proforma Invoice number <b>" . $record->proforma_invoice_no . "  for the following products categories : " . $record->product_category, true, 0, true, true, 'J');
+
+				$pdf->MultiCell(0, 6, 'Total Product Value', 0, '', 0, 1);
+
+
+				//	$pdf->Cell(0,5,'Date: '.date('jS F, Y',strtotime($approval_date)),0,1,'R');
+				$pdf->SetFont('', 'B', 10);
+
+				$pdf->Cell(10, 7, 'No', 1, 0);
+				$pdf->Cell(45, 7, 'Product', 1, 0);
+				$pdf->Cell(30, 7, 'Pack Size', 1, 0);
+				$pdf->Cell(30, 7, 'Quantity', 1, 0);
+				$pdf->Cell(25, 7, 'Unit Value', 1, 0);
+				$pdf->Cell(0, 7, 'Total Value', 1, 1);
+				$pdf->SetFont('', '', 10);
+				$prod_rec = DB::table('tra_permits_products as t1')
+					->leftJoin('tra_product_information as t2', 't1.product_id', 't2.id')
+					->leftJoin('par_dosage_forms as t3', 't1.dosage_form_id', 't3.id')
+					->leftJoin('par_packaging_units as t4', 't1.packaging_unit_id', 't4.id')
+					->leftJoin('par_common_names as t5', 't1.common_name_id', 't5.id')
+					->leftJoin('par_si_units as t6', 't1.unitpack_unit_id', 't6.id')
+					->leftJoin('par_currencies as t7', 't1.currency_id', 't7.id')
+					->select('t1.*', 't7.name as currency_name', 't4.name as packaging_unit', 't1.product_strength', 't5.name as generic_name', 't2.brand_name', 't3.name as dosage_form', 't6.name as si_unit', 't1.unitpack_size')
+					->where(array('application_code' => $record->application_code))
+					->get();
+				$prod_counter = $prod_rec->count();
+				$currency_name = '';
+				$total_amount = 0;
+				if ($prod_counter > 0) {
+					$i = 1;
+					foreach ($prod_rec as $rec) {
+						if ($rec->permitbrand_name != '') {
+							$permit_brandname = $rec->permitbrand_name . ' ' . $rec->generic_name;
+						} else {
+							$permit_brandname = $rec->brand_name . ' ' . $rec->generic_name;
+						}
+						$amount = $rec->unit_price * $rec->quantity;
+						$packaging_data = $rec->unitpack_size . ' ' . $rec->si_unit;
+						$rowcount = max(PDF::getNumLines($permit_brandname, 120), PDF::getNumLines($packaging_data, 40));
+						$pdf->MultiCell(10, 5 * $rowcount, $i, 1, '', 0, 0);
+						$pdf->MultiCell(45, 5 * $rowcount, $permit_brandname, 1, '', 0, 0);
+						$pdf->MultiCell(30, 5 * $rowcount, $rec->unitpack_size . ' ' . $rec->si_unit, 1, '', 0, 0);
+						$pdf->MultiCell(30, 5 * $rowcount, $rec->quantity . ' ' . $rec->packaging_unit, 1, '', 0, 0);
+						$pdf->MultiCell(25, 5 * $rowcount, ($rec->unit_price) . ' ', 1, '', 0, 0);
+						$pdf->MultiCell(0, 5 * $rowcount, ($amount) . ' ' . $rec->currency_name, 1, 'R', 0, 1);
+
+						$currency_name = $rec->currency_name;
+						$total_amount = $total_amount + $amount;
+					}
+					$pdf->Cell(140, 7, 'Total Value:', 1, 0, 'C');
+					$pdf->Cell(0, 7, ($total_amount) . ' ' . $currency_name, 1, 1, 'R');
+				}
+				$pdf->SetFont('', '', 10);
+				$pdf->ln();
+				$pdf->WriteHTML("Name of Supplier / Exporter / Consignee :<b> " . strtoupper($record->suppler_name) . "</b> of (Physical Address) <b>" . strtoupper($record->suppler_address . ", " . $record->supplier_region . ", " . $record->supplier_country) . '</b>.', true, 0, true, true, 'J');
+
+
+				$pdf->Cell(0, 5, 'This Special Case Import Visa is valid for only 3 months from the issue date', 0, 1);
+
+				$pdf->ln();
+				$pdf->Cell(0, 5, 'Done at Accra on : ' . formatDateRpt($record->approval_date), 0, 1);
+
+
+				$pdf->ln();
+				$permit_signitory = '';
+				$title = 'ACTING';
+				$title = '';
+				$approved_by = '';
+
+				$this->getCertificateSignatoryDetail($record, $pdf);
+				$pdf->Output($permit_title . '.pdf');
+			}
+		} catch (\Exception $exception) {
+			//DB::rollBack();
+			$res = array(
+				'success' => false,
+				'message' => $exception->getMessage(),
+				"line" => $exception->getLine()
+			);
+		} catch (\Throwable $throwable) {
+			//DB::rollBack();
+			$res = array(
+				'success' => false,
+				'message' => $throwable->getMessage()
+			);
+		}
+
+		print_r($res);
+		return response()->json($res);
+	}
 	public function foodProductRegistrationCertificate($application_code, $row)
 	{
 		try {
@@ -121,7 +409,11 @@ trait ReportsTrait
 
 				$pdf->Cell(0, 21, '', 0, 1);
 
-				$pdf->Cell(0, 5, 'REGISTRATION CERTIFICATE OF FOOD PRODUCT', 0, 1, 'C');
+				if ($row->section_id == 8) {
+					$pdf->Cell(0, 5, 'REGISTRATION CERTIFICATE OF TOBACCO  PRODUCT', 0, 1, 'C');
+				} else {
+					$pdf->Cell(0, 5, 'REGISTRATION CERTIFICATE OF FOOD PRODUCT', 0, 1, 'C');
+				}
 				$pdf->SetFont('times', '', 10);
 				$pdf->ln();
 				$act_statement = "Made under Law No. 003/2018 of 09/02/2018 establishing the Ghana FDA and determining its mission, organization and functioning in his article 3 and article 8 and regulation No. CBD/TRG/010. The Authority here issues.\n";
@@ -316,13 +608,15 @@ trait ReportsTrait
 			//DB::rollBack();
 			$res = array(
 				'success' => false,
-				'message' => $exception->getMessage()
+				'message' => $exception->getMessage(),
+				"line" => $exception->getLine()
 			);
 		} catch (\Throwable $throwable) {
 			//DB::rollBack();
 			$res = array(
 				'success' => false,
-				'message' => $throwable->getMessage()
+				'message' => $throwable->getMessage(),
+				"line" => $throwable->getLine()
 			);
 		}
 		print_r($res);
@@ -405,7 +699,7 @@ trait ReportsTrait
 					$pdf->ln();
 					$pdf->SetFont('times', '', 10);
 
-					$premises_statement1 = "Reference is made to the <b>Law No 003/2018 of 09/02/2018</b> establishing Uganda National Drug Authority and determining its missing, organisation and functioning especially in its article 3: and considering the provisions of the <b>Law No 47/2012 of 14/10/2013</b> relating to the regulations and inspection of food and pharmaceutical products especially in its artical 32;\n";
+					$premises_statement1 = "Reference is made to the <b>Law No 003/2018 of 09/02/2018</b> establishing Ghana FDA and determining its missing, organisation and functioning especially in its article 3: and considering the provisions of the <b>Law No 47/2012 of 14/10/2013</b> relating to the regulations and inspection of food and pharmaceutical products especially in its artical 32;\n";
 
 					$pdf->WriteHTML($premises_statement1, true, false, true, true, 'J');
 					$pdf->ln();
@@ -447,7 +741,7 @@ trait ReportsTrait
 					$pdf->ln();
 					$this->getCertificateRegistrationConditions($record, $pdf);
 					$pdf->ln();
-					$pdf->Cell(0, 5, 'Done at Kigali on : ' . formatDateRpt($record->permit_issue_date), 0, 1);
+					$pdf->Cell(0, 5, 'Done at Accra on : ' . formatDateRpt($record->permit_issue_date), 0, 1);
 
 					$permit_signitory = '';
 					$title = 'ACTING';
@@ -546,7 +840,7 @@ trait ReportsTrait
 				} else {
 					$date_of_destruction =   date('jS F, Y', strtotime($row->destruction_startdate)) . ' to ' .  date('jS F, Y', strtotime($row->destruction_enddate));
 				}
-				$text = "Reference is made to the Law Nº 003/2018 of 09/02/2018 establishing Uganda National Drug Authority and determining its mission, organization and functioning especially in its article 8; and considering the provisions of the Law No 47/2012 of 14/01/2013 relating to the regulation and inspection of food and pharmaceutical products especially in its article 38;.\n";
+				$text = "Reference is made to the Law Nº 003/2018 of 09/02/2018 establishing Ghana FDA and determining its mission, organization and functioning especially in its article 8; and considering the provisions of the Law No 47/2012 of 14/01/2013 relating to the regulation and inspection of food and pharmaceutical products especially in its article 38;.\n";
 				$pdf->setCellHeightRatio(2);
 				$pdf->writeHTML($text, true, false, false, false, 'J');
 
@@ -637,14 +931,14 @@ trait ReportsTrait
 				$market_value = formatMoney($row->market_value) . ' ' . $row->currency_name;
 
 				$pdf->Cell(0, 2, '', 0, 1);
-				$text2 = "Uganda NDA, hereby certifies the disposal of substandard/ falsified/ expired products being the property of the company named <b>" . $applicant_name . "</b>.located in <b>" . $region_name . "</b/> Province, <b>" . $district_name . "</b> District, <b>" . $physical_address . "</b> which took place on <b>" . $date_of_destruction . "</b>.\n";
+				$text2 = "GHANA FDA, hereby certifies the disposal of substandard/ falsified/ expired products being the property of the company named <b>" . $applicant_name . "</b>.located in <b>" . $region_name . "</b/> Province, <b>" . $district_name . "</b> District, <b>" . $physical_address . "</b> which took place on <b>" . $date_of_destruction . "</b>.\n";
 				$pdf->writeHTML($text2, true, false, false, false, 'J');
 				$pdf->Cell(0, 2, '', 0, 1);
-				$text3 = "The annexed consignment was destroyed by <b>" . $methods . "</b>(method) at <b>" . $destruction_site . "</b>(location/site) under the witness and supervision of (Uganda NDA Inspectors, and others if any) as specified in the attached disposal form. The weight of the consignment disposed was <b>" . $weight_consignement . "</b> and its market value was <b>" . $market_value . "</b>.\n";
+				$text3 = "The annexed consignment was destroyed by <b>" . $methods . "</b>(method) at <b>" . $destruction_site . "</b>(location/site) under the witness and supervision of (GHANA FDA Inspectors, and others if any) as specified in the attached disposal form. The weight of the consignment disposed was <b>" . $weight_consignement . "</b> and its market value was <b>" . $market_value . "</b>.\n";
 				$pdf->writeHTML($text3, true, false, false, false, 'J');
 				$pdf->SetFont('', 'B', 10);
 				$pdf->ln();
-				$pdf->Cell(0, 5, 'Done at Kigali on : ' . formatDateRpt($record->approval_date), 0, 1);
+				$pdf->Cell(0, 5, 'Done at Accra on : ' . formatDateRpt($record->approval_date), 0, 1);
 
 
 				$permit_signitory = '';
@@ -1809,15 +2103,15 @@ trait ReportsTrait
 
 					$pdf->Cell(0, 5, 'CLINICAL TRIAL APPROVAL CERTIFICATE', 0, 1, 'C');
 					$pdf->SetFont('', 'BI', 9);
-					$pdf->Cell(0, 5, '(Made under section 61(2)(b)(ii) of Uganda National Drug AUTHORITY Act, Cap 219)', 0, 1, 'C');
-					$pdf->MultiCell(0, 5, '(Made under law No. 003/2018 of 09/02/2018 establishing the Uganda NDA and determining its mission, organization, and functioning in its article 8, paragraph 7and article 9, paragraph 2)', 0, 'C', 0, 1);
+					$pdf->Cell(0, 5, '(Made under section 61(2)(b)(ii) of GHANA FDA Act, Cap 219)', 0, 1, 'C');
+					$pdf->MultiCell(0, 5, '(Made under law No. 003/2018 of 09/02/2018 establishing the Ghana FDA and determining its mission, organization, and functioning in its article 8, paragraph 7and article 9, paragraph 2)', 0, 'C', 0, 1);
 
 					$pdf->Cell(0, 5, '', 0, 1);
 					$pdf->SetFont('', 'B', 11);
 					$pdf->Cell(0, 5, 'Clinical Trial Approval Certificate No:' . strtoupper($row->registration_no), 0, 1, '');
 					$pdf->Cell(0, 5, '', 0, 1);
 					$pdf->SetFont('', '', 11);
-					$pdf->MultiCell(0, 5, "This is to certify that the clinical trial described below has been approved in Uganda subject to conditions indicated in this certificate.:\n", 0, 'J', 0, 1);
+					$pdf->MultiCell(0, 5, "This is to certify that the clinical trial described below has been approved in Ghana subject to conditions indicated in this certificate.:\n", 0, 'J', 0, 1);
 
 					$pdf->SetFont('', '', 11);
 					$pdf->SetLineWidth(0.2);
@@ -1960,7 +2254,7 @@ trait ReportsTrait
 		print_r($res);
 		return response()->json($res);
 	}
-	public function printImportExportLicense($application_code, $record, $permit_watermark)
+	public function printImportExportLicenseGhanaVes($application_code, $record, $permit_watermark)
 	{
 		try {
 			$record = DB::table('tra_importexport_applications as t1')
@@ -2014,7 +2308,7 @@ trait ReportsTrait
 				//$pdf->ln(); 
 				$pdf->SetFont('', '', 10);
 				$pdf->setCellHeightRatio(1.8);
-				$pdf->WriteHTML("This is to certify the (Name of permit holder)<b> " . strtoupper($record->applicant_name) . "</b> of (Physical Address) <b>" . strtoupper($record->physical_address . ", " . $record->postal_address . ", " . $record->region_name . ", " . $record->country_name) . $consignee_name . "</b> is authorised to <b>" . $action_title . "</b> Uganda NDA regulated products specified in Proforma Invoice number <b>" . $record->proforma_invoice_no . "  for the following products categories : " . $record->product_category, true, 0, true, true, 'J');
+				$pdf->WriteHTML("This is to certify the (Name of permit holder)<b> " . strtoupper($record->applicant_name) . "</b> of (Physical Address) <b>" . strtoupper($record->physical_address . ", " . $record->postal_address . ", " . $record->region_name . ", " . $record->country_name) . $consignee_name . "</b> is authorised to <b>" . $action_title . "</b> Ghana FDA regulated products specified in Proforma Invoice number <b>" . $record->proforma_invoice_no . "  for the following products categories : " . $record->product_category, true, 0, true, true, 'J');
 
 				$pdf->MultiCell(0, 6, 'Total Product Value', 0, '', 0, 1);
 
@@ -2073,7 +2367,7 @@ trait ReportsTrait
 				$pdf->Cell(0, 5, 'This Special Case Import Visa is valid for only 3 months from the issue date', 0, 1);
 
 				$pdf->ln();
-				$pdf->Cell(0, 5, 'Done at Kigali on : ' . formatDateRpt($record->approval_date), 0, 1);
+				$pdf->Cell(0, 5, 'Done at Accra on : ' . formatDateRpt($record->approval_date), 0, 1);
 
 
 				$pdf->ln();
@@ -2102,7 +2396,7 @@ trait ReportsTrait
 		print_r($res);
 		return response()->json($res);
 	}
-	public function printImportExportvisa($application_code, $record, $permit_watermark)
+	public function printImportExportvisaGhanav($application_code, $record, $permit_watermark)
 	{
 		try {
 			$record = DB::table('tra_importexport_applications as t1')
@@ -2156,7 +2450,7 @@ trait ReportsTrait
 				//$pdf->ln(); 
 				$pdf->SetFont('', '', 10);
 				$pdf->setCellHeightRatio(1.8);
-				$pdf->WriteHTML("This is to certify the (Name of permit holder)<b> " . strtoupper($record->applicant_name) . "</b> of (Physical Address) <b>" . strtoupper($record->physical_address . ", " . $record->postal_address . ", " . $record->region_name . ", " . $record->country_name) . $consignee_name . "</b> is authorised to <b>" . $action_title . "</b> Uganda NDA regulated products specified in Proforma Invoice number <b>" . $record->proforma_invoice_no . "  for the following products categories : " . $record->product_category, true, 0, true, true, 'J');
+				$pdf->WriteHTML("This is to certify the (Name of permit holder)<b> " . strtoupper($record->applicant_name) . "</b> of (Physical Address) <b>" . strtoupper($record->physical_address . ", " . $record->postal_address . ", " . $record->region_name . ", " . $record->country_name) . $consignee_name . "</b> is authorised to <b>" . $action_title . "</b> Ghana FDA regulated products specified in Proforma Invoice number <b>" . $record->proforma_invoice_no . "  for the following products categories : " . $record->product_category, true, 0, true, true, 'J');
 
 				$pdf->MultiCell(0, 6, 'Total Product Value', 0, '', 0, 1);
 
@@ -2216,7 +2510,7 @@ trait ReportsTrait
 				$pdf->Cell(0, 5, 'This Special Case Import Visa is valid for only 3 months from the issue date', 0, 1);
 
 				$pdf->ln();
-				$pdf->Cell(0, 5, 'Done at Kigali on : ' . formatDateRpt($record->approval_date), 0, 1);
+				$pdf->Cell(0, 5, 'Done at Accra on : ' . formatDateRpt($record->approval_date), 0, 1);
 
 
 				$pdf->ln();

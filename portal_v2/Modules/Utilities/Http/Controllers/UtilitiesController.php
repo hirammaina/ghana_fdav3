@@ -4,7 +4,7 @@
  * @Author: HiramMaina
  * @Create Time: 2024-01-10 10:38:56
  * @Modified by: JobMurumba
- * @Modified time: 2024-02-19 13:44:35
+ * @Modified time: 2024-02-23 10:03:03
  * @Description:
  */
 
@@ -1908,12 +1908,14 @@ class UtilitiesController extends Controller
                     if ($previous_status_id == 2) {
                         $res = array('success' => false, 'message' => 'Application has been submitted successfully.');
                     } else {
-                        $res = array('success' => false, 'message' => 'Application status has not been set, contact the RWANDA FDA Authority for further guidance..');
+
+                        $res = array('success' => false, 'message' => 'Application status has not been set, contact the Ghana FDA Authority for further guidance..');
                     }
                 }
             }
 
-            if ($resp['success']) {
+
+            if (is_array($resp) &&  $resp['success']) {
                 //send emails 
 
                 $bcc = array();
@@ -2451,17 +2453,22 @@ class UtilitiesController extends Controller
     {
         try {
 
-            $table_name = $req->table_name;
-            $manufacturing_site_id = $req->manufacturing_site_id;
-            $title = $req->title;
-            $res = $this->validatGmpOtherDetails($table_name, $manufacturing_site_id, $title);
+            // $table_name = $req->table_name;///Job to reinstate 22.02.24
+            // $manufacturing_site_id = $req->manufacturing_site_id;
+            // $title = $req->title;
+            // $res = $this->validatGmpOtherDetails($table_name, $manufacturing_site_id, $title);
 
-            if ($res == '') {
-                $res = array(
-                    'success' => true,
-                    'message' => 'Data entry validated'
-                );
-            }
+            // if ($res == '') {
+            //     $res = array(
+            //         'success' => true,
+            //         'message' => 'Data entry validated'
+            //     );
+            // }
+            //Job to remove just to return true onvalidategmp details during clicking button documents next at gmp capa
+            $res = array(
+                'success' => true,
+                'message' => 'Data entry validated'
+            );
         } catch (\Exception $e) {
             $res = array(
                 'success' => false,
@@ -4043,7 +4050,7 @@ class UtilitiesController extends Controller
                 $applicant_id =  $rec->trader_id;
                 $sub_module_id =  $rec->sub_module_id;
                 $email =  $rec->email;
-                if ($rec->module_id == 1) {
+                if ($rec->module_id == 1 || $rec->module_id == 3) { //Job on 21.02.24 on $rec->module_id == 1
                     $data_check = array(
                         'module_id' => $rec->module_id, 'section_id' => $rec->section_id,
                         'sub_module_id' => $rec->sub_module_id
@@ -4350,7 +4357,9 @@ class UtilitiesController extends Controller
 
         $sub_module_id = $rec->sub_module_id;
 
-        if ($rec->module_id == 1) {
+        if ($rec->module_id == 1 || $rec->module_id == 3) {
+
+            // if ($rec->module_id == 1) {
             $data_check = array(
                 'module_id' => $rec->module_id, 'section_id' => $rec->section_id,
                 'sub_module_id' => $rec->sub_module_id
@@ -4362,11 +4371,14 @@ class UtilitiesController extends Controller
             );
         }
 
+
         $module_data = getTableData('wb_applicationinvoicedata_queries', $data_check, 'mis_db');
 
 
         if ($module_data) {
             $data_query = $module_data->data_query;
+
+
 
             //Job replaced single qoutes with double qoutes where module_id=2,sub_module_id=1, wb_applicationinvoicedata_queries then removed raw db select cant accet that ,Job 22-01-23
             //$invoice_feessql = DB::select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
@@ -4382,6 +4394,7 @@ class UtilitiesController extends Controller
                     //  $quantity = 2;
 
                 }
+
 
                 $fees_data = DB::connection('mis_db')->table('tra_appmodules_feesconfigurations as t1')
                     ->join('tra_element_costs as t2', 't1.element_costs_id', 't2.id')

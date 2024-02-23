@@ -1112,6 +1112,7 @@ class DbHelper
     }
     static function getStageQueryChecklistCategory($workflow_stage)
     {
+
         $qry = DB::table('par_checklist_categories as t1')
             ->Join('tra_proc_applicable_checklists as t2', function ($join) use ($workflow_stage) {
                 $join->on('t2.checklist_category_id', '=', 't1.id')

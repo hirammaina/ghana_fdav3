@@ -43,6 +43,7 @@ return [
         'api' => [
             'driver' => 'passport',
             'provider' => 'users',
+            'expires_in' => 604800, // 1 week in seconds
         ],
     ],
 

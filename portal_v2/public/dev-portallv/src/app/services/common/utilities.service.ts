@@ -437,7 +437,7 @@ onPermitsApplicationSubmit(viewRef, application_code, tracking_no, table_name, a
       }));
   }
   validateApplicationDocumentsQuerySubmission(application_code, status_id, table_name,prodclass_category_id=0) {
-
+  
     var headers = new Headers({
       "Accept": "application/json",
       "Authorization": "Bearer " + this.authService.getAccessToken(),

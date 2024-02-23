@@ -469,11 +469,15 @@ class WorkflowController extends Controller
         $is_submission = $request->input('is_submission');
         //workflowaction_type_id
         try {
+
             $qry = DB::table('wf_workflow_actions as t1')
                 ->leftJoin('wf_workflow_stages as t2', 't1.stage_id', '=', 't2.id')
                 ->leftJoin('wf_workflowaction_types as t3', 't1.action_type_id', '=', 't3.id')
                 ->select('t1.*', 't2.name as stage_name', 't3.name as action_type')
                 ->where('stage_id', $stage_id);
+
+
+
 
             if (isset($is_status_tied) && $is_status_tied == 1) {
                 $qry->where('application_status_id', $application_status_id)
@@ -498,6 +502,8 @@ class WorkflowController extends Controller
                 );
                 $qry->where($where);
             }
+
+
             if (isset($gmpinspection_type_id) && $gmpinspection_type_id != '') {
                 $where = array(
                     't1.gmp_inspection_type_id' => $gmpinspection_type_id
@@ -506,11 +512,9 @@ class WorkflowController extends Controller
                 $inspection_type_id = explode(',', $gmpinspection_type_id);
 
                 $qry->where(function ($query) use ($inspection_type_id) {
-                    $query->whereIn('t1.gmp_inspection_type_id', $inspection_type_id);
-                    // ->orWhere('t1.gmp_inspection_type_id', '=', 0)
-                    //->orWhereNull('t1.gmp_inspection_type_id');
-
-
+                    $query->whereIn('t1.gmp_inspection_type_id', $inspection_type_id)
+                        ->orWhere('t1.gmp_inspection_type_id', '=', 0) //Job on 22.02.2024 uncommented, based also on req can comment back,also below code
+                        ->orWhereNull('t1.gmp_inspection_type_id');
                 });
             }
             if (validateIsNumeric($premiseinspection_recomm_id)) {
@@ -524,10 +528,11 @@ class WorkflowController extends Controller
                 });
             }
 
+
             if (validateIsNumeric($has_queries)) {
 
                 //  if (validateIsNumeric($has_queries) && $has_queries != 0) { //Job error on food product 1st assesment transition to 2nd no recommend action
-                $qry->where('t1.query_raised_submission', 1);
+                // $qry->where('t1.query_raised_submission', 1);//Job for demo to reinstate
             } else {
                 if (validateIsNumeric($is_submission) && $is_submission == 1) {
                     $qry->where(function ($query) {
@@ -973,11 +978,12 @@ class WorkflowController extends Controller
                     't4.name as applicationStatus', 't4.id as applicationStatusId', 't2.module_id', 't2.sub_module_id', 't2.section_id')
                 ->where('t1.application_code', $application_code);'isDone'=>0,
 				*/
-                $where = array('t5.id' => $application_id, 'isDOne' => 0, 'is_revenuesubprocessfinal_stage' => 0);
+                $where = array('t5.id' => $application_id, 'isDone' => 0, 'is_revenuesubprocessfinal_stage' => 0);
                 if (validateIsNumeric($application_code)) {
                     $where = array('t5.application_code' => $application_code, 'is_revenuesubprocessfinal_stage' => 0);
                 }
                 if ($table_name != '') {
+
                     $qry = DB::table('tra_submissions as t1')
                         ->leftJoin('wf_tfdaprocesses as t2', 't1.process_id', '=', 't2.id')
                         ->leftJoin('wf_workflow_stages as t3', 't1.current_stage', 't3.id')
@@ -1002,8 +1008,10 @@ class WorkflowController extends Controller
                         ->whereNotIn('t3.stage_status', [3, 4, 5, 6])
                         ->where(array('isDone' => 0))
                         ->where($where);
+
                     //handle the query responses 
                     if (!$qry->first()) {
+
                         $qry = DB::table($table_name . ' as t1')
                             ->join('wf_tfdaprocesses as t2', 't1.process_id', '=', 't2.id')
                             ->join('wf_workflows as t6', 't2.workflow_id', '=', 't6.id')
@@ -1024,7 +1032,10 @@ class WorkflowController extends Controller
                                 't2.sub_module_id',
                                 't2.section_id'
                             )
-                            ->where(array('t1.id' => $application_id, 't3.stage_status' => 1, 'isDone' => 0));
+                            //to inspect this block now applicaton after apporval is back to receiving
+                            ->where(array('t1.id' => $application_id, 't3.stage_status' => 1,)); //Job on 23.02.24 like for exmple tra_gmp_application does not have is done
+
+                        //->where(array('t1.id' => $application_id, 't3.stage_status' => 1, 'isDone' => 0));
                     }
                 } else {
                     $qry = DB::table('tra_submissions as t1')
@@ -1570,35 +1581,38 @@ class WorkflowController extends Controller
             'stage_id' => $workflow_stage
         );
         try {
-            //module_id, sub_module_id and section_id
-            $where2 = DB::table('wf_tfdaprocesses')
-                ->select('module_id', 'sub_module_id', 'section_id')
-                ->where('id', $process_id)
-                ->get();
-            $where2 = convertStdClassObjToArray($where2);
-            //get applicable checklist categories
-            $qry1 = DB::table('tra_proc_applicable_checklists')
-                ->select('checklist_category_id')
-                ->where($where);
-            $checklist_categories = $qry1->get();
-            $checklist_categories = convertStdClassObjToArray($checklist_categories);
-            $checklist_categories = convertAssArrayToSimpleArray($checklist_categories, 'checklist_category_id');
-            //get applicable checklist types
+            if (validateIsNumeric($process_id)) {
+                //module_id, sub_module_id and section_id
+                $where2 = DB::table('wf_tfdaprocesses')
+                    ->select('module_id', 'sub_module_id', 'section_id')
+                    ->where('id', $process_id)
+                    ->get();
+                $where2 = convertStdClassObjToArray($where2);
+                //get applicable checklist categories
+                $qry1 = DB::table('tra_proc_applicable_checklists')
+                    ->select('checklist_category_id')
+                    ->where($where);
+                $checklist_categories = $qry1->get();
+                $checklist_categories = convertStdClassObjToArray($checklist_categories);
+                $checklist_categories = convertAssArrayToSimpleArray($checklist_categories, 'checklist_category_id');
+                //get applicable checklist types
 
-            $qry2 = DB::table('par_checklist_types as t1')
-                ->where($where2[0])
-                ->whereIn('checklist_category_id', $checklist_categories);
-            $results = $qry2->get();
+                $qry2 = DB::table('par_checklist_types as t1')
+                    ->where($where2[0])
+                    ->whereIn('checklist_category_id', $checklist_categories);
+                $results = $qry2->get();
+            }
 
             $res = array(
                 'success' => true,
-                'results' => $results,
+                'results' => $results ?? [], //Job 20.02.24
                 'message' => 'All is well'
             );
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
-                'message' => $exception->getMessage()
+                'message' => $exception->getMessage(),
+                "line" => $exception->getLine()
             );
         } catch (\Throwable $throwable) {
             $res = array(
@@ -2803,6 +2817,8 @@ class WorkflowController extends Controller
     {
         $module_id = $request->input('module_id');
         $res = array();
+
+
         if ($module_id == 1) { //PRODUCT REGISTRATION
             $res = $this->saveProductOnlineApplicationDetails($request);
         } else if ($module_id == 2) { //PREMISE REGISTRATION
@@ -2825,6 +2841,8 @@ class WorkflowController extends Controller
             //unknown module
 
         }
+
+
         if ($res['success']) {
             //remove record in the online submissions 
             $application_code = $request->application_code;

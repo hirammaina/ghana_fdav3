@@ -653,6 +653,7 @@ Ext.define("Admin.controller.WorkflowManagementCtr", {
       grid = activeTab.down("grid");
     }
 
+    console.log(grid);
     selected = this.buildApplicationsToSubmit(grid, mode, activeTab);
 
     if (frm.isValid()) {
@@ -709,7 +710,6 @@ Ext.define("Admin.controller.WorkflowManagementCtr", {
     if (mode == "all" || mode === "all") {
       records = grid.getStore().data.items;
     } else {
-      console.log(grid);
       if (grid.getSelectionModel()) {
         var sm = grid.getSelectionModel();
         records = sm.getSelection();

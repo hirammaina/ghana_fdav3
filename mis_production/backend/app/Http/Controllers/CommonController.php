@@ -426,13 +426,18 @@ class CommonController extends Controller
                 $records = DB::table('tra_appinspectioncapa_reftracker')
                     ->where(array('application_code' => $application_code, 'query_processstage_id' => $query_processstage_id, 'status_id' => 1))
                     ->count();
+
+
+
                 if ($records > 0) {
 
                     $res = array('success' => false, 'message' => 'There is an already Existing and open query, verify and close to proceed.');
                     return \response()->json($res);
                     exit();
                 }
+
                 $checklist_category_id = getStageQueryChecklistCategory($workflow_stage_id);
+
 
                 $query_ref = $this->generateApplicationQueryRefNo($application_code, $apptable_name, $query_processstage_id, '/CAPA');
 
@@ -455,12 +460,20 @@ class CommonController extends Controller
                     'status_id' => $queryref_status_id,
                     'queryref_status_id' => $queryref_status_id
                 );
-
                 $res = insertRecord('tra_appinspectioncapa_reftracker', $query_data, $user_id);
                 $res['checklist_category_id'] =  $checklist_category_id;
             }
         } catch (\Exception $exception) {
-            $res = sys_error_handler($exception->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), explode('\\', __CLASS__), \Auth::user()->id);
+
+            $res = array(
+                'success' => true,
+                'results' => $exception->getLine(),
+                'message' =>  $exception->getMessage()
+            );
+
+            // return $res;
+
+            // $res = sys_error_handler($exception->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), explode('\\', __CLASS__), \Auth::user()->id);
         } catch (\Throwable $throwable) {
             $res = sys_error_handler($throwable->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), explode('\\', __CLASS__), \Auth::user()->id);
         }
@@ -2246,6 +2259,39 @@ class CommonController extends Controller
         }
         return $results;
     }
+
+    public function getSampleSubmissionRemarks(Request $request)
+    {
+        $application_id = $request->input('application_id');
+        $application_code = $request->input('application_code');
+        try {
+            $where = array(
+                't1.application_code' => $application_code
+            );
+            $qry = DB::table('tra_documentsubmission_recommendations as t1')
+                ->select('t1.*')
+                ->where($where)
+                ->orderBy('t1.id', 'DESC');
+            $results = $qry->first();
+            $res = array(
+                'success' => true,
+                'results' => $results,
+                'message' => 'All is well'
+            );
+        } catch (\Exception $exception) {
+            $res = array(
+                'success' => false,
+                'message' => $exception->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return \response()->json($res);
+    }
+
 
     public function saveApplicationWithdrawalReasons(Request $request)
     {
@@ -4250,5 +4296,72 @@ class CommonController extends Controller
             $res = sys_error_handler($throwable->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), explode('\\', __CLASS__), \Auth::user()->id);
         }
         return \response()->json($res);
+    }
+
+    public function saveApplicationCapaDeficiencies(Request $req) // job 0n 22.0.224
+    {
+        try {
+            $user_id = \Auth::user()->id;
+            $post_data = $req->all();
+            $table_name = 'tra_inspectioncapa_deficiencies';
+            $id = $post_data['id'];
+            $application_code = $post_data['application_code'];
+            $deficiencies = $post_data['deficiencies'];
+            $comment = $post_data['comment'];
+            $inspection_capa_id = $post_data['inspection_capa_id'];
+            $deficiencies_category_id = $post_data['deficiencies_category_id'];
+            $deficiency_references = $post_data['deficiency_references'];
+            $manager_query_comment = $post_data['manager_query_comment'];
+            $manager_queryresp_comment = $post_data['manager_queryresp_comment'];
+
+            $table_data = array(
+                'application_code' => $application_code,
+                'deficiencies' => $deficiencies,
+                'inspection_capa_id' => $inspection_capa_id,
+                'deficiencies_category_id' => $deficiencies_category_id,
+                'comment' => $comment,
+                'deficiency_references' => $deficiency_references
+            );
+            //add extra params
+            $table_data['created_on'] = Carbon::now();
+            $table_data['created_by'] = $user_id;
+            $where = array(
+                'id' => $id
+            );
+            $res = array();
+            if (validateIsNumeric($id)) {
+                if (recordExists($table_name, $where)) {
+
+                    $table_data['dola'] = Carbon::now();
+                    $table_data['altered_by'] = $user_id;
+                    $previous_data = getPreviousRecords($table_name, $where);
+                    if ($previous_data['success'] == false) {
+                        return $previous_data;
+                    }
+                    $previous_data = $previous_data['results'];
+                    $res = updateRecord($table_name, $previous_data, $where, $table_data, $user_id);
+                }
+            } else {
+                $table_data['created_on'] = Carbon::now();
+                $table_data['created_by'] = $user_id;
+                $res = insertRecord($table_name, $table_data, $user_id);
+            }
+            if ($res['success']) {
+                $res = array(
+                    'success' => true,
+                    'message' => 'Query details Saved Successfully!!'
+                );
+            } else {
+                $res = array(
+                    'success' => true,
+                    'message' => $res['message']
+                );
+            }
+        } catch (\Exception $exception) {
+            $res = sys_error_handler($exception->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), explode('\\', __CLASS__), \Auth::user()->id);
+        } catch (\Throwable $throwable) {
+            $res = sys_error_handler($throwable->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), explode('\\', __CLASS__), \Auth::user()->id);
+        }
+        return response()->json($res);
     }
 }

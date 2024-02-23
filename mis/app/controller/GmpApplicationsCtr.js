@@ -2391,7 +2391,7 @@ Ext.define("Admin.controller.GmpApplicationsCtr", {
         .down("hiddenfield[name=sub_module_id]")
         .getValue(),
       module_id = activeTab.down("hiddenfield[name=module_id]").getValue(),
-      otherDetailsFrm = activeTab.down("form"),
+      otherDetailsFrm = activeTab.down("#otherDetailsForm"), //Job on 22.02.24 from ('form') corresponding item added added on form which scopes it to the parent container
       productlinedetailsgrid = activeTab.down(
         "productlinedetailsinspectiongrid"
       ),
@@ -2403,8 +2403,10 @@ Ext.define("Admin.controller.GmpApplicationsCtr", {
       ),
       inspectiondetailsupdatefrm = activeTab.down("inspectiondetailsupdatefrm"),
       gmp_type_id_fld = activeTab.down("hiddenfield[name=gmp_type_id]"),
-      section_id = activeTab.down("hiddenfield[name=section_id]"),
-      workflow_stage_id = activeTab.down("hiddenfield[name=workflow_stage_id]"),
+      section_id = activeTab.down("hiddenfield[name=section_id]").getValue(),
+      workflow_stage_id = activeTab
+        .down("hiddenfield[name=workflow_stage_id]")
+        .getValue(),
       gmp_type_txt_fld = activeTab.down("displayfield[name=gmp_type_txt]");
 
     if (sub_module_id == 6) {
@@ -3932,7 +3934,7 @@ Ext.define("Admin.controller.GmpApplicationsCtr", {
         .down("hiddenfield[name=manufacturing_site_id]")
         .getValue(),
       business_type_id = activeTab
-        .down("combo[name=business_type_id]")
+        .down("field[name=business_type_id]")
         .getValue(),
       childXtype = btn.childXtype,
       title = btn.winTitle,
@@ -3946,6 +3948,8 @@ Ext.define("Admin.controller.GmpApplicationsCtr", {
     childObject
       .down("hiddenfield[name=manufacturing_site_id]")
       .setValue(site_id);
+
+    console.log(business_type_id);
     childObject.down("combo[name=business_type_id]").setValue(business_type_id);
     busTypesStr.removeAll();
     busTypesStr.load({ params: { filters: filterStr } });
@@ -4689,6 +4693,7 @@ Ext.define("Admin.controller.GmpApplicationsCtr", {
       table_name = getApplicationTable(module_id),
       gmp_inspection_type = sel[0].get("inspection_type_id"),
       inspection_id = sel[0].get("inspection_id"),
+      grid_xtype = btn.grid_xtype, //Job on 22.02.23
       extraParams = [
         {
           field_type: "hiddenfield",
@@ -4709,7 +4714,8 @@ Ext.define("Admin.controller.GmpApplicationsCtr", {
         "workflowsubmissionmanagerqueryfrm",
         winWidth,
         storeID,
-        extraParams
+        extraParams,
+        grid_xtype //22.02.24
       );
     } else {
       Ext.getBody().unmask();

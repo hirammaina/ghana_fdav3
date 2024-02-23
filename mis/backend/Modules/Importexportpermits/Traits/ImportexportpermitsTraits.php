@@ -1482,6 +1482,7 @@ trait ImportexportpermitsTraits
                 ->where('t1.application_code', $application_code);
             $results = $qry->first();
 
+
             if (is_null($results)) {
                 $res = array(
                     'success' => false,
@@ -1713,44 +1714,44 @@ trait ImportexportpermitsTraits
                     'eligible_importersdoctype_id' => $results->eligible_importersdoctype_id,
                     'eligible_importerscategory_id' => $results->eligible_importerscategory_id,
                     'document_upload_id' => $results->document_upload_id,
-                    'product_classification_id' => $results->product_classification_id,
+                    // 'product_classification_id' => $results->product_classification_id ?? null,//Job on 20.02.24 to look through after gap analysis demo on non existence of fields
 
-                    'has_registered_premises' => $results->has_registered_premises,
-                    'licence_type_id' => $results->licence_type_id,
-                    'tpin_no' => $results->tpin_no,
-                    'physical_address' => $results->physical_address,
-                    'email' => $results->email,
-                    'company_registration_no' => $results->company_registration_no,
-                    'name' => $results->name,
+                    // 'has_registered_premises' => $results->has_registered_premises ?? null,
+                    // 'licence_type_id' => $results->licence_type_id ?? null,
+                    // 'tpin_no' => $results->tpin_no ?? null,
+                    // 'physical_address' => $results->physical_address ?? null,
+                    // 'email' => $results->email ?? null,
+                    // 'company_registration_no' => $results->company_registration_no ?? null,
+                    // 'name' => $results->name ?? null,
 
 
-                    'business_type_id' => $results->business_type_id,
-                    'psu_no' => $results->psu_no,
-                    'full_names' => $results->full_names,
-                    'psu_date' => $results->psu_date,
-                    'pharmacist_telephone' => $results->pharmacist_telephone,
-                    'pharmacist_email' => $results->pharmacist_email,
-                    'pharmacist_qualification' => $results->pharmacist_qualification,
-                    'pharmacist_country_id' => $results->pharmacist_country_id,
-                    'pharmacist_district_id' => $results->pharmacist_district_id,
-                    'pharmacist_region_id' => $results->pharmacist_region_id,
+                    // 'business_type_id' => $results->business_type_id ?? null,
+                    // 'psu_no' => $results->psu_no ?? null,
+                    // 'full_names' => $results->full_names ?? null,
+                    // 'psu_date' => $results->psu_date ?? null,
+                    // 'pharmacist_telephone' => $results->pharmacist_telephone ?? null,
+                    // 'pharmacist_email' => $results->pharmacist_email ?? null,
+                    // 'pharmacist_qualification' => $results->pharmacist_qualification ?? null,
+                    // 'pharmacist_country_id' => $results->pharmacist_country_id ?? null,
+                    // 'pharmacist_district_id' => $results->pharmacist_district_id ?? null,
+                    // 'pharmacist_region_id' => $results->pharmacist_region_id ?? null,
 
-                    'reason_fornonregister_outlet' => $results->reason_fornonregister_outlet,
-                    'permit_productscategory_id' => $results->permit_productscategory_id,
-                    'permit_reason_id' => $results->permit_reason_id,
-                    'proforma_invoice_no' => $results->proforma_invoice_no,
-                    'proforma_invoice_date' => $results->proforma_invoice_date,
-                    'premise_id' => $results->premise_id,
-                    'paying_currency_id' => $results->paying_currency_id,
-                    'sender_receiver_id' => $results->sender_receiver_id,
-                    'zone_id' => $results->zone_id,
-                    'port_id' => $results->port_id,
+                    // 'reason_fornonregister_outlet' => $results->reason_fornonregister_outlet ?? null,
+                    'permit_productscategory_id' => $results->permit_productscategory_id ?? null,
+                    'permit_reason_id' => $results->permit_reason_id ?? null,
+                    'proforma_invoice_no' => $results->proforma_invoice_no ?? null,
+                    'proforma_invoice_date' => $results->proforma_invoice_date ?? null,
+                    'premise_id' => $results->premise_id ?? null,
+                    'paying_currency_id' => $results->paying_currency_id ?? null,
+                    'sender_receiver_id' => $results->sender_receiver_id ?? null,
+                    'zone_id' => $results->zone_id ?? null,
+                    'port_id' => $results->port_id ?? null,
 
-                    'application_status_id' => $results->application_status_id,
-                    'consignee_options_id' => $results->consignee_options_id,
-                    'consignee_id' => $results->consignee_id,
-                    'process_id' => $process_id,
-                    'application_status_id' => $app_status_id,
+                    'application_status_id' => $results->application_status_id ?? null,
+                    'consignee_options_id' => $results->consignee_options_id ?? null,
+                    'consignee_id' => $results->consignee_id ?? null,
+                    'process_id' => $process_id  ?? null,
+                    'application_status_id' => $app_status_id ?? null,
                     'portal_id' => $portal_application_id,
                     'created_on' => Carbon::now(),
                     'created_by' => $user_id
@@ -1853,7 +1854,8 @@ trait ImportexportpermitsTraits
             DB::rollBack();
             $res = array(
                 'success' => false,
-                'message' => $exception->getMessage()
+                'message' => $exception->getMessage(),
+                "line" => $exception->getLine()
             );
         } catch (\Throwable $throwable) {
             DB::rollBack();

@@ -1,41 +1,58 @@
 /**
  * Created by Kip on 7/10/2018.
  */
-Ext.define('Admin.store.administration.SystemRolesTreeStr', {
-    extend: 'Ext.data.TreeStore',
+Ext.define("Admin.store.administration.SystemRolesTreeStr", {
+  extend: "Ext.data.TreeStore",
 
-    storeId: 'systemrolestreestr',
-    alias: 'store.systemrolestreestr',
-    remoteSort: false,
-    requires:[
-        'Admin.model.administration.AdministrationMdl'
-    ],
-    model: 'Admin.model.administration.AdministrationMdl',
-    autoLoad: false,
-    defaultRootId: 'root',
-    proxy: {
-        type: 'ajax',
-        api: {
-            read: 'administration/getSystemRoles'
-        },
-        headers: {
-            'Authorization':'Bearer '+access_token
-        },
-        reader: {
-            type: 'json',
-            idProperty: 'id',
-            messageProperty: 'msg'
-        }
+  storeId: "systemrolestreestr",
+  alias: "store.systemrolestreestr",
+  remoteSort: false,
+  requires: ["Admin.model.administration.AdministrationMdl"],
+  model: "Admin.model.administration.AdministrationMdl",
+  autoLoad: false,
+  defaultRootId: "root",
+  proxy: {
+    type: "ajax",
+    api: {
+      read: "administration/getSystemRoles",
     },
-    listeners: {
-        load: function (store, records, success, operation) {
-            var reader = store.getProxy().getReader(),
-                response = operation.getResponse(),
-                successID = reader.getResponseData(response).success,
-                message = reader.getResponseData(response).message;
-            if (!success || (successID == false || successID === false)) {
-                toastr.warning(message, 'Warning Response');
-            }
+    headers: {
+      Authorization: "Bearer " + access_token,
+    },
+    reader: {
+      type: "json",
+      idProperty: "id",
+      messageProperty: "msg",
+    },
+  },
+  // listeners: {
+  //     load: function (store, records, success, operation) {
+  //         var reader = store.getProxy().getReader(),
+  //             response = operation.getResponse(),
+  //             successID = reader.getResponseData(response).success,
+  //             message = reader.getResponseData(response).message;
+  //         if (!success || (successID == false || successID === false)) {
+  //             toastr.warning(message, 'Warning Response');
+  //         }
+  //     }
+  // }
+  listeners: {
+    load: function (store, records, success, operation) {
+      var reader = store.getProxy().getReader();
+      if (operation && operation.getResponse) {
+        var response = operation.getResponse();
+        if (response) {
+          var successID = reader.getResponseData(response).success;
+          var message = reader.getResponseData(response).message;
+          if (!success || successID == false || successID === false) {
+            toastr.warning(message, "Warning Response");
+          }
+        } else {
+          console.error("Response object is null");
         }
-    }
+      } else {
+        console.error("Invalid operation object");
+      }
+    },
+  },
 });

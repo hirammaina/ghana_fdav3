@@ -51,7 +51,7 @@
 
 <script type="text/javascript" src="{{asset('public/front-end/scripts.f5885ad9265632b59482.js')}}"></script>
 
-<script type="text/javascript" src="{{asset('public/front-end/main.9e9618b145274ed9adcd.js')}}"></script>
+<script type="text/javascript" src="{{asset('public/front-end/main.bff818fa35d10ea26cc9.js')}}"></script>
 
 
 <script src="{{asset('public/resources/js/jquery.min.js')}}"></script>

@@ -62,6 +62,7 @@ Ext.define("Admin.view.commoninterfaces.viewControllers.CommoninterfacesVctr", {
     form.down("hiddenfield[name=process_id]").setValue(process_id);
     form.down("hiddenfield[name=section_id]").setValue(section_id);
     form.setHeight(height);
+    console.log(workflow_stage_id);
 
     funcShowCustomizableWindow(win_title, "90%", form, "customizablewindow");
   },

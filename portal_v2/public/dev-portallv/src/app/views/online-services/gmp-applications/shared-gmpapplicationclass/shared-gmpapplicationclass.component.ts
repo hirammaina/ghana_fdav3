@@ -94,6 +94,7 @@ export class SharedGmpapplicationclassComponent implements OnInit {
   premisesOtherDetailsRows: any;
   gmpProductLineDataRows:any;
   gmpManufacturingBlocksDataRows:any;
+  initcaparesponsefrm:FormGroup;
   
   businessTypesData: any;
   product_lineData:any;
@@ -129,6 +130,8 @@ export class SharedGmpapplicationclassComponent implements OnInit {
   applicationRejectionData:any;
   submission_comments:string;
   appDocumentsUploadData:any;
+
+  applicationCAPARequestsData:any;//Job on 22.02.24
  
 
   document_previewurl: any;
@@ -365,17 +368,80 @@ registered_id: number;
       id: new FormControl('', Validators.compose([])),
       query_id: new FormControl('', Validators.compose([]))
     });
+
+    this.initcaparesponsefrm = new FormGroup({
+      deficiencies: new FormControl('', Validators.compose([Validators.required])),
+      deficiency_references: new FormControl('', Validators.compose([])),
+      root_causeanalysis: new FormControl('', Validators.compose([])),
+      corrective_actions: new FormControl('', Validators.compose([Validators.required])),
+      corrective_actionssteps: new FormControl('', Validators.compose([])),
+      completion_date: new FormControl('', Validators.compose([Validators.required])),
+      application_code: new FormControl('', Validators.compose([])),
+      id: new FormControl('', Validators.compose([])),
+      inspection_capa_id: new FormControl('', Validators.compose([]))
+    });
     this.funcReloadQueriesDetails();
     this.onLoadAutoLoadedParams(this.section_id,this.sub_module_id);
 
     this.onLoadfastTrackOptionsData();
     this.onLoadpayingCurrencyData();
 
+    this.funcgetapplicationCAPARequestsData();//Job on 22.02.24 gmp capa
+
   }
 
   ngOnInit() {
    
   }
+  funcgetapplicationCAPARequestsData(){
+
+
+      
+    this.utilityService.getApplicationPreQueriesDetails(this.application_code,'wb_premises_applications', 'application_status_id','utilities/getapplicationCAPARequestsData')
+    .subscribe(
+      data => {
+        this.applicationCAPARequestsData = data.data;
+        this.spinner.hide();
+      });
+  }
+
+  funcInitCAPAResponse(data) {
+  
+    // this.premisesPersonnelDetailsfrm.patchValue({personnel_id:data.data.personnel_id,id:data.data.id,start_date:data.data.start_date,end_date:data.data.end_date, personnel_name:data.data.personnel_name})
+    this.initcaparesponsefrm.patchValue(data.data);
+    this.query_sectioncheck = data.data.application_section;
+    
+    this.isInitalCapaResponseFrmVisible = true;
+  
+  }
+
+  
+  onSaveinitCAPAresponses() {
+    if (this.initcaparesponsefrm.invalid) {
+      this.toastr.error('', 'Response');
+
+      return;
+    }
+    this.action_url  = 'onSaveinitCAPAresponses';
+    this.utilityService.onsaveApplicationCodeDetails(this.application_code, this.initcaparesponsefrm.value, this.action_url)
+      .subscribe(
+        response => {
+         this.gmp_resp = response.json();
+          if (this.gmp_resp.success) {
+            this.toastr.success(this.gmp_resp.message, 'Response');
+            this.funcgetapplicationCAPARequestsData();
+            this.isInitalCapaResponseFrmVisible = false;
+            
+          } else {
+            this.toastr.error(this.gmp_resp.message, 'Alert');
+          }
+        },
+        error => {
+          this.toastr.error('Error occurred!!', 'Alert');
+        });
+  } 
+
+
   onLoadpayingCurrencyData() {
     var data = {
       table_name: 'par_currencies',
@@ -1160,6 +1226,7 @@ registered_id: number;
           this.spinner.hide();
         },
         error => {
+          
           this.toastr.error(error.message, 'Alert');
           this.spinner.hide();
         });
@@ -1290,7 +1357,9 @@ registered_id: number;
         let response_data = response;
         if (response_data.success) {
 
-          this.funcValidateStepDetails('Upload  Document Details to proceed', this.appDocumentsUploadData, nextStep);
+          this.funcValidateStepDetails('Upload  Document Details to proceed', this.appDocumentsUploadData, nextStep); ///second param table is undefined whuy 22.02.24
+          //this.funcValidateStepDetails('Upload  Document Details to proceed',"wb_gmp_applications" this.appDocumentsUploadData, nextStep);Job on 22.02.24 temp fix table name not sure
+
 
         }
         else{
@@ -1300,6 +1369,11 @@ registered_id: number;
         this.spinner.hide();
       });
     
+  }
+  onPremisesApplicationSubmit() {
+    this.app_route = ['./online-services/gmpapplications-dashboard'];
+    this.utilityService.onPermitsApplicationSubmit(this.viewRef, this.application_code, this.tracking_no,'wb_gmp_applications', this.app_route,this.onApplicationSubmissionFrm.value);
+    this.isApplicationSubmitwin = false;
   }
  
   funcValidateApplicationWithdrawalDetails(nextStep) {

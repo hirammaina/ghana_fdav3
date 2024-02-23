@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: Kip
@@ -17,7 +18,7 @@ trait GmpApplicationsTrait
 
     public function getGmpApplicationTrackingCodes($sub_module_id, $appCodeDetails, $table_name)
     {
-        if ($sub_module_id == 6) {//renewal
+        if ($sub_module_id == 6) { //renewal
             $initial_ref_no = DB::table($table_name)
                 ->where('reg_site_id', $appCodeDetails->reg_site_id)
                 ->where('sub_module_id', 5)
@@ -50,7 +51,7 @@ trait GmpApplicationsTrait
 
     public function getGmpApplicationReferenceCodes($sub_module_id, $application_details, $table_name)
     {
-        if ($sub_module_id == 6) {//renewal
+        if ($sub_module_id == 6) { //renewal
             $initial_ref_no = DB::table($table_name)
                 ->where('reg_site_id', $application_details->reg_site_id)
                 ->where('sub_module_id', 5)
@@ -83,7 +84,8 @@ trait GmpApplicationsTrait
     }
 
 
-    public function calculateReturnDate($startDate, $numberOfDays) {
+    public function calculateReturnDate($startDate, $numberOfDays)
+    {
         $currentDate = new \DateTime($startDate);
 
         while ($numberOfDays > 0) {
@@ -120,13 +122,13 @@ trait GmpApplicationsTrait
         $process_id = $request->input('process_id');
         $table_name = $request->input('table_name');
         $user_id = $this->user_id;
-        $table_name = returnTableNamefromModule($table_name,$module_id);
-        
-			// if($table_name == ''){
-			// 	$table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
-			// 	$table_name = $table_name;
-				
-			// }
+        $table_name = returnTableNamefromModule($table_name, $module_id);
+
+        // if($table_name == ''){
+        // 	$table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
+        // 	$table_name = $table_name;
+
+        // }
         //todo: get application details
         $application_details = DB::table($table_name)
             ->where('id', $application_id)
@@ -149,7 +151,7 @@ trait GmpApplicationsTrait
         $keep_status = $action_details->keep_status;
         $action_type = $action_details->action_type_id;
         if ($action_details->generate_refno == 1) {
-           if ($refno_generated != 1 && ($reference_no == '' or is_null($reference_no))) {
+            if ($refno_generated != 1 && ($reference_no == '' or is_null($reference_no))) {
 
                 $codes_array = $this->getGmpApplicationReferenceCodes($sub_module_id, $application_details, $table_name);
                 $refno_details = generateApplicationRefNumber($application_id, $table_name, $sub_module_id, 1, $codes_array, $process_id, $zone_id, $user_id);
@@ -174,11 +176,11 @@ trait GmpApplicationsTrait
                 exit();
             }
         }
-        if ($action_type == 2) {//initial query
+        if ($action_type == 2) { //initial query
             $this->processReceivingQueriedApplicationSubmission($request);
-        } else if ($action_type == 3) {//initial rejection
+        } else if ($action_type == 3) { //initial rejection
             $this->processReceivingRejectedApplicationSubmission($request);
-        } else if ($action_type == 6) {//recommendation submission
+        } else if ($action_type == 6) { //recommendation submission
             $recommendation_table = $action_details->recommendation_table;
             $this->processRecommendationApplicationSubmission($request, $recommendation_table);
         } else {
@@ -196,12 +198,12 @@ trait GmpApplicationsTrait
         $action_type = $action_details->action_type_id;
         $approval_submission = $action_details->is_approval_submission;
         if ($approval_submission == 1) {
-            if ($sub_module_id == 5) {//todo New Applications
+            if ($sub_module_id == 5) { //todo New Applications
                 $this->processNewApprovalApplicationSubmission($request, $keep_status);
-            } else if ($sub_module_id == 6) {//todo Renewal Applications
+            } else if ($sub_module_id == 6) { //todo Renewal Applications
                 $this->processSubsequentApprovalApplicationSubmission($request);
                 //$this->batchGmpApplicationApprovalSubmission($request);
-            } else if ($sub_module_id == 40) {//todo Alteration Applications
+            } else if ($sub_module_id == 40) { //todo Alteration Applications
                 $this->processSubsequentApprovalApplicationSubmission($request);
                 //$this->batchGmpApplicationApprovalSubmission($request);
             } else {
@@ -212,14 +214,14 @@ trait GmpApplicationsTrait
                 echo json_encode($res);
                 exit();
             }
-        } else if ($action_type == 4) {//manager query to customer
+        } else if ($action_type == 4) { //manager query to customer
             $this->submitApplicationFromManagerQueryToCustomer($request);
-        } else if ($action_type == 5) {//manager query normal submission
+        } else if ($action_type == 5) { //manager query normal submission
             $this->processManagerQueryReturnApplicationSubmission($request);
-        } else if ($action_type == 10) {//Lead Inspectors TCM Recommendation
+        } else if ($action_type == 10) { //Lead Inspectors TCM Recommendation
             $this->processTCMSchedulingToLeadInspectorsApplicationSubmission($request);
         } else {
-            $this->processNormalManagersApplicationSubmission($request, $keep_status,$action_type);
+            $this->processNormalManagersApplicationSubmission($request, $keep_status, $action_type);
         }
     }
 
@@ -381,7 +383,7 @@ trait GmpApplicationsTrait
     public function saveGmpApplicationApprovalDetails(Request $request, $sub_module_id, $app_details)
     {
         $decision_id = $request->input('decision_id');
-        if ($sub_module_id == 39 || $sub_module_id == 40) {//Withdrawal, Alteration
+        if ($sub_module_id == 39 || $sub_module_id == 40) { //Withdrawal, Alteration
             $res = $this->saveGmpApplicationAlterationRecommendationDetails($request);
         } else {
             $res = $this->saveGmpApplicationRecommendationDetails($request);
@@ -435,7 +437,7 @@ trait GmpApplicationsTrait
                         return $res;
                     }
                 }
-               
+
                 if ($dg_signatory == 1) {
                     $permit_signatory = getPermitSignatory();
                 } else {
@@ -473,13 +475,12 @@ trait GmpApplicationsTrait
                     unset($prev_data_results[0]['id']);
                     DB::table('tra_approval_recommendations_log')
                         ->insert($prev_data_results);
-						$sub_module_id = $app_details->sub_module_id;
-						if($sub_module_id == 1){
-							$ref_id = 43;
-						}
-						else{$ref_id = 5;
-							
-						}
+                    $sub_module_id = $app_details->sub_module_id;
+                    if ($sub_module_id == 1) {
+                        $ref_id = 43;
+                    } else {
+                        $ref_id = 5;
+                    }
                     if ($decision_id == 1) {
                         //$siteUpdateParams['premise_reg_no'] = $app_details->reference_no;
                         $validity_status_id = 2;
@@ -488,7 +489,7 @@ trait GmpApplicationsTrait
                         //permit
                         if ($prev_decision_id != 1) {
                             //$permit_no = generatePremisePermitNo($app_details->zone_id, $app_details->section_id, $table_name, $user_id, 10,$sub_module_id);
-							$permit_no = generatePremisePermitNo($app_details->zone_id, $app_details->section_id, $table_name, $user_id, 10 ,$app_details->sub_module_id);
+                            $permit_no = generatePremisePermitNo($app_details->zone_id, $app_details->section_id, $table_name, $user_id, 10, $app_details->sub_module_id);
                             $params['permit_no'] = $permit_no;
                         }
                     } else {
@@ -509,7 +510,7 @@ trait GmpApplicationsTrait
                         $validity_status_id = 2;
                         $registration_status_id = 2;
                         //permits
-                        $permit_no = generatePremisePermitNo($app_details->zone_id, $app_details->section_id, $table_name, $user_id, 10,$app_details->sub_module_id);
+                        $permit_no = generatePremisePermitNo($app_details->zone_id, $app_details->section_id, $table_name, $user_id, 10, $app_details->sub_module_id);
                         $params['permit_no'] = $permit_no;
                         $qry->update(array('application_status_id' => 6));
                     } else {
@@ -526,7 +527,7 @@ trait GmpApplicationsTrait
                 $siteUpdateParams['permit_id'] = $id;
                 //$prev_records = getPreviousRecords('tra_premises', array('id' => $app_details->premise_id));
                 $sub_module_id = $app_details->sub_module_id;
-                if (  $sub_module_id == 5 || $sub_module_id == 6) {//we only update site validity status on new applications
+                if ($sub_module_id == 5 || $sub_module_id == 6) { //we only update site validity status on new applications
                     $updates = array(
                         'validity_status_id' => $validity_status_id,
                         'registration_status_id' => $registration_status_id,
@@ -534,20 +535,19 @@ trait GmpApplicationsTrait
                         'expiry_date' => $expiry_date,
                         'approval_date' => $approval_date
                     );
-                    if($decision_id == 1){
+                    if ($decision_id == 1) {
                         $updates['registration_date'] = $approval_date;
                     }
                     DB::table('registered_manufacturing_sites')
                         ->where('id', $app_details->reg_site_id)
                         ->update($updates);
                 }
-                if($decision_id == 1){
+                if ($decision_id == 1) {
                     $portal_status_id = 10;
+                } else {
+                    $portal_status_id = 11;
                 }
-                else{
-                    $portal_status_id = 11; 
-                }
-                updatePortalApplicationStatusWithCode($application_code, 'wb_gmp_applications',$portal_status_id);
+                updatePortalApplicationStatusWithCode($application_code, 'wb_gmp_applications', $portal_status_id);
 
                 DB::table('tra_manufacturing_sites')
                     ->where('id', $app_details->manufacturing_site_id)
@@ -666,15 +666,14 @@ trait GmpApplicationsTrait
                     $res = insertRecord('tra_approval_recommendations', $params, $user_id);
                     $id = $res['record_id'];
                 }
-                if($decision_id == 1){
+                if ($decision_id == 1) {
                     $portal_status_id = 10;
+                } else {
+                    $portal_status_id = 11;
                 }
-                else{
-                    $portal_status_id = 11; 
-                }
-                updatePortalApplicationStatusWithCode($application_code, 'wb_gmp_applications',$portal_status_id);
+                updatePortalApplicationStatusWithCode($application_code, 'wb_gmp_applications', $portal_status_id);
 
-                if ($app_details->sub_module_id == 39) {//withdrawal applications, change site statuses
+                if ($app_details->sub_module_id == 39) { //withdrawal applications, change site statuses
                     DB::table('registered_manufacturing_sites')
                         ->where('id', $app_details->reg_site_id)
                         ->update(array('validity_status' => $validity_status_id, 'registration_status' => $registration_status_id));
@@ -955,7 +954,6 @@ trait GmpApplicationsTrait
         $backup_records = $backup_records->get();
         $backup_records = convertStdClassObjToArray($backup_records);
         $delete_init = clone $initialQry;
-
     }
 
     public function updateGmpAlterationBasicDetails($formAmendmentDetails, $site_id, $init_site_id, $log_data)
@@ -1024,54 +1022,52 @@ trait GmpApplicationsTrait
     {
         $application_code = $request->input('application_code');
         $status_type_id = $request->input('status_type_id');
-        $has_queries = $request->input('has_queries');//take care of initial pre checking queries
+        $has_queries = $request->input('has_queries'); //take care of initial pre checking queries
         $res = array();
         $app_status_id = '';
-       
+
 
         $is_portalupdate = 0;
         $app_exists = recordExists('tra_gmp_applications', array('application_code' => $application_code));
-        if ($app_exists) {//update
+        if ($app_exists) { //update
             $res = $this->updateGmpOnlineApplicationDetailsOnMIS($request, 1, $is_portalupdate);
-			$rec = DB::table('tra_gmp_applications')->where(array('application_code'=>$application_code))->first();
-            if($rec){
+            $rec = DB::table('tra_gmp_applications')->where(array('application_code' => $application_code))->first();
+            if ($rec) {
                 $mis_application_id = $rec->id;
                 $tracking_no = $rec->tracking_no;
                 $is_fast_track = $rec->is_fast_track;
-                $res = $this->saveApplicationInvoicingDetails($request,$mis_application_id,$application_code,$tracking_no,$is_fast_track);
-            
+                $res = $this->saveApplicationInvoicingDetails($request, $mis_application_id, $application_code, $tracking_no, $is_fast_track);
             }
-        } else {//insertion
+        } else { //insertion
             if ($has_queries == 1) {
                 $app_status_id = 2;
             }
-            $res = $this->saveInitialGmpOnlineApplicationDetails($request, $app_status_id,$is_portalupdate,true);
-		
-            $rec = DB::table('tra_gmp_applications')->where(array('application_code'=>$application_code))->first();
-            if($rec){
+            $res = $this->saveInitialGmpOnlineApplicationDetails($request, $app_status_id, $is_portalupdate, true);
+
+            $rec = DB::table('tra_gmp_applications')->where(array('application_code' => $application_code))->first();
+            if ($rec) {
                 $mis_application_id = $rec->id;
                 $tracking_no = $rec->tracking_no;
                 $is_fast_track = $rec->is_fast_track;
-                $res = $this->saveApplicationInvoicingDetails($request,$mis_application_id,$application_code,$tracking_no,$is_fast_track);
-              
+                $res = $this->saveApplicationInvoicingDetails($request, $mis_application_id, $application_code, $tracking_no, $is_fast_track);
             }
         }
 
-		DB::commit();
+        DB::commit();
         return $res;
     }
-   
+
 
     public function saveGmpOnlineApplicationDetails(Request $request)
     {
         $application_code = $request->input('application_code');
         $status_type_id = $request->input('status_type_id');
-        $has_queries = $request->input('has_queries');//take care of initial pre checking queries
+        $has_queries = $request->input('has_queries'); //take care of initial pre checking queries
         $res = array();
         $app_status_id = '';
         $app_exists = recordExists('tra_gmp_applications', array('application_code' => $application_code));
-        if ($app_exists) {//update
-            if ($status_type_id == 2) {//Pre checking query response
+        if ($app_exists) { //update
+            if ($status_type_id == 2) { //Pre checking query response
                 if ($this->hasUnclosedStructuredQueries($application_code)) {
                     $res = array(
                         'success' => false,
@@ -1080,21 +1076,21 @@ trait GmpApplicationsTrait
                 } else {
                     $res = $this->updateGmpOnlineApplicationDetailsOnMIS($request, 4);
                 }
-            } else{
+            } else {
                 $res = $this->updateGmpOnlineApplicationDetailsOnMIS($request, 1);
             }
-        } else {//insertion
+        } else { //insertion
             if ($has_queries == 1) {
                 $app_status_id = 2;
             }
             $res = $this->saveInitialGmpOnlineApplicationDetails($request, $app_status_id);
-			DB::commit();
+            DB::commit();
         }
 
         return $res;
     }
 
-    public function saveInitialGmpOnlineApplicationDetails(Request $request, $static_appstatus_id = '', $is_portalupdate = 1,$is_invoiceprocess= false)
+    public function saveInitialGmpOnlineApplicationDetails(Request $request, $static_appstatus_id = '', $is_portalupdate = 1, $is_invoiceprocess = false)
     {
         $next_stage = $request->input('next_stage');
         $application_id = $request->input('application_id');
@@ -1134,7 +1130,7 @@ trait GmpApplicationsTrait
                 return $res;
             }
             $workflow_details = getTableData('wf_workflow_stages', array('id' => $next_stage));
-			
+
             if (is_null($workflow_details)) {
                 $res = array(
                     'success' => false,
@@ -1177,13 +1173,12 @@ trait GmpApplicationsTrait
                 ->where('id', $site_details->ltr_id)
                 ->first();
             if (is_null($ltr_details)) {
-               	$ltr_id =0;
+                $ltr_id = 0;
+            } else {
+                $ltr_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $ltr_details->identification_no), 'id');
             }
-			else{
-				$ltr_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $ltr_details->identification_no), 'id');
-			}
-			
-            
+
+
 
             $site_details->portal_id = $results->manufacturing_site_id;
             $site_details->applicant_id = $applicant_id;
@@ -1249,10 +1244,10 @@ trait GmpApplicationsTrait
              DB::table('tra_product_gmpinspectiondetails')
                  ->insert($gmp_productdetails);*/
 
-            if ($sub_module_id == 39) {//Withdrawal
+            if ($sub_module_id == 39) { //Withdrawal
                 $this->syncApplicationOnlineWithdrawalReasons($application_code);
             }
-            if ($sub_module_id == 40) {//Alteration
+            if ($sub_module_id == 40) { //Alteration
                 $this->syncApplicationOnlineVariationRequests($application_code);
             }
             //application details
@@ -1289,7 +1284,7 @@ trait GmpApplicationsTrait
                 DB::rollBack();
                 return $application_insert;
             }
-			
+
             $mis_application_id = $application_insert['record_id'];
             if ($sub_module_id == 5) {
                 $reg_params = array(
@@ -1318,31 +1313,30 @@ trait GmpApplicationsTrait
             DB::table('tra_product_gmpinspectiondetails')
                 ->insert($gmp_productdetails);
             //end
-			$rec = DB::table('wf_workflow_transitions as t1')
-                                        ->join('wf_workflow_actions as t2', 't1.action_id','t2.id')
-										->join('wf_workflow_stages as t3', 't1.stage_id','t3.id')
-                                        ->select('portal_status_id')
-                                        ->where(array('nextstage_id'=>$next_stage,'t3.stage_status'=>1) )
-                                        ->first();
-                            $portal_status_id = 3;
-                            if($rec){
-                                $portal_status_id = $rec->portal_status_id;
-                            }
-							if($is_invoiceprocess){
-				 $portal_status_id =4;
-			}
-			else{
-				 $portal_status_id = 3;
-			}
-                 
-			$portal_params = array(
-                'application_status_id' => $portal_status_id 
+            $rec = DB::table('wf_workflow_transitions as t1')
+                ->join('wf_workflow_actions as t2', 't1.action_id', 't2.id')
+                ->join('wf_workflow_stages as t3', 't1.stage_id', 't3.id')
+                ->select('portal_status_id')
+                ->where(array('nextstage_id' => $next_stage, 't3.stage_status' => 1))
+                ->first();
+            $portal_status_id = 3;
+            if ($rec) {
+                $portal_status_id = $rec->portal_status_id;
+            }
+            if ($is_invoiceprocess) {
+                $portal_status_id = 4;
+            } else {
+                $portal_status_id = 3;
+            }
+
+            $portal_params = array(
+                'application_status_id' => $portal_status_id
             );
-            
+
             $portal_where = array(
                 'id' => $portal_application_id
             );
-           
+
             $details = array(
                 'application_id' => $application_insert['record_id'],
                 'application_code' => $application_code,
@@ -1360,47 +1354,46 @@ trait GmpApplicationsTrait
                 'applicant_id' => $applicant_id
             );
             //submissions
-            if($is_portalupdate == 1){
-                     updatePortalParams('wb_gmp_applications', $portal_params, $portal_where);
-                    $submission_params = array(
-                        'application_id' => $application_insert['record_id'],
-                        'view_id' => $view_id,
-                        'process_id' => $process_details->id,
-                        'application_code' => $application_code,
-                        //'reference_no' => $ref_no,
-                        'tracking_no' => $tracking_no,
-                        'usr_from' => $user_id,
-                        'usr_to' => $responsible_user,
-                        'previous_stage' => $workflow_details->id,
-                        'current_stage' => $workflow_details->id,
-                        'module_id' => $results->module_id,
-                        'sub_module_id' => $results->sub_module_id,
-                        'section_id' => $results->section_id,
-                        'application_status_id' => $app_status_id,
-                        'urgency' => $urgency,
-                        'applicant_id' => $applicant_id,
-                        'remarks' => $comment,
-                        'date_received' => Carbon::now(),
-                        'created_on' => Carbon::now(),
-                        'created_by' => $user_id,
-                        'is_fast_track' => $results->is_fast_track
-                    );
-                    DB::table('tra_submissions')
-                        ->insert($submission_params);
-                    
-                    //send email
-                    $vars = array(
-                        '{tracking_no}' => $tracking_no
-                    );
-                    onlineApplicationNotificationMail(2, $applicant_email, $vars,$identification_no);
+            if ($is_portalupdate == 1) {
+                updatePortalParams('wb_gmp_applications', $portal_params, $portal_where);
+                $submission_params = array(
+                    'application_id' => $application_insert['record_id'],
+                    'view_id' => $view_id,
+                    'process_id' => $process_details->id,
+                    'application_code' => $application_code,
+                    //'reference_no' => $ref_no,
+                    'tracking_no' => $tracking_no,
+                    'usr_from' => $user_id,
+                    'usr_to' => $responsible_user,
+                    'previous_stage' => $workflow_details->id,
+                    'current_stage' => $workflow_details->id,
+                    'module_id' => $results->module_id,
+                    'sub_module_id' => $results->sub_module_id,
+                    'section_id' => $results->section_id,
+                    'application_status_id' => $app_status_id,
+                    'urgency' => $urgency,
+                    'applicant_id' => $applicant_id,
+                    'remarks' => $comment,
+                    'date_received' => Carbon::now(),
+                    'created_on' => Carbon::now(),
+                    'created_by' => $user_id,
+                    'is_fast_track' => $results->is_fast_track
+                );
+                DB::table('tra_submissions')
+                    ->insert($submission_params);
+
+                //send email
+                $vars = array(
+                    '{tracking_no}' => $tracking_no
+                );
+                onlineApplicationNotificationMail(2, $applicant_email, $vars, $identification_no);
             }
-           
+
             $res = array(
                 'success' => true,
                 'details' => $details,
                 'message' => 'Application saved successfully in the MIS!!'
             );
-				
         } catch (\Exception $exception) {
             DB::rollBack();
             $res = array(
@@ -1417,7 +1410,7 @@ trait GmpApplicationsTrait
         return $res;
     }
 
-    public function updateGmpOnlineApplicationDetailsOnMIS(Request $request, $app_status_id = 4,$is_portalupdate=1)
+    public function updateGmpOnlineApplicationDetailsOnMIS(Request $request, $app_status_id = 4, $is_portalupdate = 1)
     {
         $next_stage = $request->input('curr_stage_id');
         $application_id = $request->input('application_id');
@@ -1492,7 +1485,7 @@ trait GmpApplicationsTrait
                 );
                 return $res;
             }
-            $identification_no =$applicant_details->identification_no;
+            $identification_no = $applicant_details->identification_no;
             $applicant_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $applicant_details->identification_no), 'id');
             $applicant_email = $applicant_details->email;
             //site main details
@@ -1518,7 +1511,7 @@ trait GmpApplicationsTrait
                 );
                 return $res;
             }
-			
+
             $ltr_id = getSingleRecordColValue('wb_trader_account', array('identification_no' => $ltr_details->identification_no), 'id');
 
             $site_details->portal_id = $results->manufacturing_site_id;
@@ -1584,7 +1577,7 @@ trait GmpApplicationsTrait
             DB::table('gmp_productline_details')
                 ->insert($site_productdetails);
             //GMP product details
-		
+
             $gmp_productdetails = $portal_db->table('wb_product_gmpinspectiondetails')
                 ->where('manufacturing_site_id', $results->manufacturing_site_id)
                 ->select(DB::raw("id as portal_id,$site_id as manufacturing_site_id,product_id,reg_product_id,$reg_site_id as reg_site_id,gmp_productline_id,
@@ -1599,17 +1592,17 @@ trait GmpApplicationsTrait
                 ->delete();
             DB::table('tra_product_gmpinspectiondetails')
                 ->insert($gmp_productdetails);
-            if ($sub_module_id == 39) {//Withdrawal
+            if ($sub_module_id == 39) { //Withdrawal
                 //$this->syncApplicationOnlineWithdrawalReasons($application_code);
             }
-            if ($sub_module_id == 40) {//Alteration
+            if ($sub_module_id == 40) { //Alteration
                 //$this->syncApplicationOnlineVariationRequests($application_code);
             }
             //application details
             //$app_status = getApplicationInitialStatus($results->module_id, $results->sub_module_id);
             //$app_status_id = $app_status->status_id;
             $application_status = getSingleRecordColValue('par_system_statuses', array('id' => $app_status_id), 'name');
-				
+
             $application_details = array(
                 'applicant_id' => $applicant_id,
                 'application_code' => $application_code,
@@ -1631,26 +1624,26 @@ trait GmpApplicationsTrait
             DB::table('tra_gmp_applications')
                 ->where('id', $mis_application_id)
                 ->update($application_details);
-			
-			$rec = DB::table('wf_workflow_transitions as t1')
-                                        ->join('wf_workflow_actions as t2', 't1.action_id','t2.id')
-										->join('wf_workflow_stages as t3', 't1.stage_id','t3.id')
-                                        ->select('portal_status_id')
-                                        ->where(array('nextstage_id'=>$next_stage,'t3.stage_status'=>1) )
-                                        ->first();
-                            $portal_status_id = 3;
-                            if($rec){
-                                $portal_status_id = $rec->portal_status_id;
-                            }
-			$portal_params = array(
-                'application_status_id' => $portal_status_id 
+
+            $rec = DB::table('wf_workflow_transitions as t1')
+                ->join('wf_workflow_actions as t2', 't1.action_id', 't2.id')
+                ->join('wf_workflow_stages as t3', 't1.stage_id', 't3.id')
+                ->select('portal_status_id')
+                ->where(array('nextstage_id' => $next_stage, 't3.stage_status' => 1))
+                ->first();
+            $portal_status_id = 3;
+            if ($rec) {
+                $portal_status_id = $rec->portal_status_id;
+            }
+            $portal_params = array(
+                'application_status_id' => $portal_status_id
             );
-			$portal_where = array(
+            $portal_where = array(
                 'id' => $portal_application_id
             );
-			
-          
-		
+
+
+
             $details = array(
                 'application_id' => $mis_application_id,
                 'application_code' => $application_code,
@@ -1668,7 +1661,7 @@ trait GmpApplicationsTrait
                 'applicant_id' => $applicant_id
             );
             //submissions
-            if($is_portalupdate == 1){
+            if ($is_portalupdate == 1) {
                 updatePortalParams('wb_gmp_applications', $portal_params, $portal_where);
                 $submission_params = array(
                     'application_id' => $mis_application_id,
@@ -1694,21 +1687,20 @@ trait GmpApplicationsTrait
                 );
                 DB::table('tra_submissions')
                     ->insert($submission_params);
-                    $vars = array(
-                        '{tracking_no}' => $tracking_no
-                    );
-                    onlineApplicationNotificationMail(2, $applicant_email, $vars,$identification_no);
+                $vars = array(
+                    '{tracking_no}' => $tracking_no
+                );
+                onlineApplicationNotificationMail(2, $applicant_email, $vars, $identification_no);
             }
-           
+
             DB::commit();
             //send email
-            
+
             $res = array(
                 'success' => true,
                 'details' => $details,
                 'message' => 'Application submitted successfully!!'
             );
-			
         } catch (\Exception $exception) {
             DB::rollBack();
             $res = array(
@@ -1731,7 +1723,7 @@ trait GmpApplicationsTrait
             ->join('wf_tfdaprocesses as t2', 't1.process_id', '=', 't2.id')
             ->join('tra_manufacturing_sites as t3', 't1.manufacturing_site_id', '=', 't3.id')
             ->join('modules as t4', 't1.module_id', '=', 't4.id')
-            
+
             ->join('tra_application_invoices as t6', 't1.application_code', '=', 't6.application_code')
             ->select(DB::raw("t1.reference_no,t2.name as process_name,t4.invoice_desc as module_name,t6.id as invoice_id,
                      CONCAT_WS(', ',t3.name,t3.physical_address) as module_desc"))
@@ -1739,5 +1731,4 @@ trait GmpApplicationsTrait
         $invoice_details = $qry->first();
         return $invoice_details;
     }
-
 }
