@@ -17,7 +17,9 @@
 
 use Modules\Surveillance\Http\Controllers\SurveillanceController;
 
-Route::group(['prefix' => 'surveillance','middleware' => ['auth:api', 'web']], function() {
+Route::group(['prefix' => 'surveillance'], function () {
+    //Job on 29.02.24 to return the middleware
+    //Route::group(['prefix' => 'surveillance','middleware' => ['auth:api', 'web']], function() {
     Route::post('savePvReceivingBaseDetails', [SurveillanceController::class, 'savePvReceivingBaseDetails']);
     Route::post('saveSurveillanceCommonData', [SurveillanceController::class, 'saveSurveillanceCommonData']);
     Route::post('saveSurveillancePlansDetailsCommonData', [SurveillanceController::class, 'saveSurveillancePlansDetailsCommonData']);
@@ -78,5 +80,4 @@ Route::group(['prefix' => 'surveillance','middleware' => ['auth:api', 'web']], f
     Route::post('saveSampleCollectorsAssignment', [SurveillanceController::class, 'saveSampleCollectorsAssignment']);
     Route::post('getPlanSampleCollectors', [SurveillanceController::class, 'getPlanSampleCollectors']);
     Route::get('getSamplingRegions', [SurveillanceController::class, 'getSamplingRegions']);
-
 });

@@ -1777,6 +1777,8 @@ class WorkflowController extends Controller
             $where2 = convertStdClassObjToArray($where2);
             $module_id = $where2['module_id'];
             $sub_module_id = $where2['sub_module_id'];
+
+            //Job to review the below filters causing problems wrong result
             if ($module_id == 4) {
                 if ($sub_module_id  == 12 || $sub_module_id  == 83) {
                     $module_id = $where2['module_id'];
@@ -1800,6 +1802,7 @@ class WorkflowController extends Controller
                 $section_id = $where2['section_id'];
             }
 
+
             //get applicable checklist categories
 
             $qry1 = DB::table('tra_proc_applicable_checklists')
@@ -1817,6 +1820,7 @@ class WorkflowController extends Controller
             $checklist_types = $qry2->get();
             $checklist_types = convertStdClassObjToArray($checklist_types);
             $checklist_types = convertAssArrayToSimpleArray($checklist_types, 'id');
+
 
 
             if (validateIsNumeric($query_id)) {

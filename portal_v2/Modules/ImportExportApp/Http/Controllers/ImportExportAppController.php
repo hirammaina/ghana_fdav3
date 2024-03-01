@@ -643,7 +643,7 @@ class ImportExportAppController extends Controller
             //dms get sub module flder getSubModuleNodereference() 731
             $where_app = array('application_code' => $application_code);
             if (!recordExists('tra_application_documentsdefination', $where_app, 'mis_db')) {
-                initializeApplicationDMS(7, $module_id, $sub_module_id, $application_code, 'Applicatio' . rand(0, 1000), '');
+                // initializeApplicationDMS(7, $module_id, $sub_module_id, $application_code, 'Applicatio' . rand(0, 1000), '');//Jpb to return
             }
             $process_id = getSingleRecordColValue('wf_tfdaprocesses', array('module_id' => $module_id, 'section_id' => $section_id, 'sub_module_id' => $sub_module_id), 'id', 'mis_db');
 
@@ -785,7 +785,7 @@ class ImportExportAppController extends Controller
                 $record_id = $resp['record_id'];
                 $application_id = $record_id;
                 if ($resp['success']) {
-                    initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no, $trader_id);
+                    //  initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no, $trader_id);//Job to return just this line not below
                     //  saveApplicationSubmissionDetails($application_code,$table_name);  
                 }
             }
@@ -1626,14 +1626,30 @@ class ImportExportAppController extends Controller
                     $join->on('t1.application_status_id', '=', 't6.status_id')
                         ->on('t6.is_default_action', '=', DB::raw(1));
                 })
+
                 ->leftJoin('wb_statuses_actions as t7', 't6.action_id', 't7.id')
+                ->where('t1.date_added', '>', "2024-01-01")
 
                 ->orderBy('t1.date_added', 'desc');
+
+
+            if ($sub_module_id == 12 || $sub_module_id == 78) {
+                $records->where("t1.date_added", ">", "2024-02-26");
+            }
+            if ($sub_module_id == 49) {
+                $records->where("t1.dola", ">", "2024-02-26"); //Job to remove entire if after demo
+            }
             if (validateIsNumeric($trader_id)) {
                 if ($trader_id != 25) {
                     $records->where(array('t1.trader_id' => $trader_id));
                 }
             }
+
+
+            if (strpos($sub_module_id, ",")) {
+                $records->where("t1.dola", ">", "2024-02-26"); //Job to remove entire if after demo
+            }
+
 
             if (is_array($application_status_ids) && count($application_status_ids) > 0 && $application_status_id != '') {
 
@@ -3053,7 +3069,8 @@ $total_query =  DB::connection('mis_db')
                 if ($resp['success']) {
                     $where_app = array('application_code' => $generateapplication_code);
                     if (!recordExists('tra_application_documentsdefination', $where_app, 'mis_db')) {
-                        initializeApplicationDMS(7, $module_id, $sub_module_id, $generateapplication_code, 'Application' . rand(0, 1000), '');
+                        //to reinstate job on 26.02.24
+                        // initializeApplicationDMS(7, $module_id, $sub_module_id, $generateapplication_code, 'Application' . rand(0, 1000), '');
                     }
                     saveApplicationSubmissionDetails($generateapplication_code, 'wb_importexport_applications');
 

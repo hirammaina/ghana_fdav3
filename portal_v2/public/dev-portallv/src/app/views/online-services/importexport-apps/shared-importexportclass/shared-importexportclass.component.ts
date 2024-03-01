@@ -380,7 +380,8 @@ this.applicationGeneraldetailsfrm = new FormGroup({
                 productphysical_description: new FormControl('', Validators.compose([])),
                 common_name_id: new FormControl('', Validators.compose([])),
                 manufacturer_id: new FormControl('', Validators.compose([])),
-                manufacturer_name: new FormControl('', Validators.compose([Validators.required])),
+                //manufacturer_name: new FormControl('', Validators.compose([Validators.required])),
+                manufacturer_name: new FormControl('', Validators.compose([])),//Job on 26.02.24 to return previous
                 product_subcategory_id: new FormControl('', Validators.compose([])),
                 productclassification_id: new FormControl('', Validators.compose([])),
                 productdosage_id: new FormControl('', Validators.compose([])),
@@ -423,7 +424,8 @@ this.applicationGeneraldetailsfrm = new FormGroup({
                 productphysical_description: new FormControl('', Validators.compose([])),
                 common_name_id: new FormControl('', Validators.compose([Validators.required])),
                 manufacturer_id: new FormControl('', Validators.compose([])),
-                manufacturer_name: new FormControl('', Validators.compose([Validators.required])),
+                //manufacturer_name: new FormControl('', Validators.compose([Validators.required])),
+                manufacturer_name: new FormControl('', Validators.compose([])),//Job on 26.02.24 to return previous
                 product_subcategory_id: new FormControl('', Validators.compose([])),
                 productclassification_id: new FormControl('', Validators.compose([Validators.required])),
                 productdosage_id: new FormControl('', Validators.compose([])),
@@ -470,7 +472,8 @@ this.applicationGeneraldetailsfrm = new FormGroup({
                 productphysical_description: new FormControl('', Validators.compose([])),
                 common_name_id: new FormControl('', Validators.compose([])),
                 manufacturer_id: new FormControl('', Validators.compose([])),
-                manufacturer_name: new FormControl('', Validators.compose([Validators.required])),
+                 //manufacturer_name: new FormControl('', Validators.compose([Validators.required])),
+                manufacturer_name: new FormControl('', Validators.compose([])),//Job on 26.02.24 to return previous
                 product_subcategory_id: new FormControl('', Validators.compose([])),
                 productclassification_id: new FormControl('', Validators.compose([])),
                 productdosage_id: new FormControl('', Validators.compose([])),
@@ -949,13 +952,13 @@ this.applicationGeneraldetailsfrm = new FormGroup({
     }
     const uploadData = this.prepareSavePermitDoc();
 
-    this.spinner.show();
+    //this.spinner.show();
     this.appService.onSavePermitApplication(this.application_id, this.applicationGeneraldetailsfrm.value, this.tracking_no, 'importexportapp/saveImportExportApplication',uploadData)
       .subscribe(
         response => {
           this.app_resp = response.json();
           //the details 
-          this.spinner.hide();
+          //this.spinner.hide();
 
           if (this.app_resp.success) {
             this.tracking_no = this.app_resp.tracking_no;

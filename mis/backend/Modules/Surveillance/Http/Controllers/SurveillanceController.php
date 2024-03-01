@@ -38,9 +38,9 @@ class SurveillanceController extends Controller
     {
         return view('surveillance::index');
     }
-    
-    
-    
+
+
+
     public function saveSurveillanceCommonData(Request $req)
     {
         try {
@@ -142,7 +142,7 @@ class SurveillanceController extends Controller
             unset($post_data['model']);
             unset($post_data['id']);
             unset($post_data['district_ids']);
-            
+
             unset($post_data['unset_data']);
             $unsetData = $req->input('unset_data');
             if (isset($unsetData)) {
@@ -159,17 +159,13 @@ class SurveillanceController extends Controller
             );
             if (count($district_ids) > 0) {
                 foreach ($district_ids as $district_id) {
-                    
+
                     $table_data['district_id'] = $district_id;
                     $res = insertRecord($table_name, $table_data, $user_id);
-
                 }
+            } else {
+                $res = array('success' => false, 'message' => 'Data Saved Successfully');
             }
-            else{
-                $res = array('success'=>false,'message'=>'Data Saved Successfully');
-            }
-            
-           
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -182,43 +178,41 @@ class SurveillanceController extends Controller
             );
         }
         return response()->json($res);
-    } 
+    }
     public function savePmsProgramSamplingSite(Request $request)
     {
-        
+
         $program_id = $request->input('program_id');
         $site_level_id = $request->input('site_level_id');
 
         $sampling_site_ids = $request->input('sampling_site_ids');
-        
+
         $user_id = $this->user_id;
         $res = array();
         try {
-            DB::transaction(function () use ($program_id, $sampling_site_ids,$site_level_id, &$res) {
+            DB::transaction(function () use ($program_id, $sampling_site_ids, $site_level_id, &$res) {
                 $sampling_site_ids = json_decode($sampling_site_ids);
                 $params = array();
-              
+
                 if (count($sampling_site_ids) > 0) {
                     foreach ($sampling_site_ids as $sampling_site_id) {
                         $where = array(
                             'program_id' => $program_id,
-                            'site_level_id'=>$site_level_id,
+                            'site_level_id' => $site_level_id,
                             'sampling_site_id' => $sampling_site_id
                         );
                         $count = DB::table('pms_program_samplingsites')
                             ->where($where)
                             ->count();
-                            if($count == 0){
-                                $params[] = array(
-                                    'program_id' => $program_id,
-                                    'site_level_id'=>$site_level_id,
-                                    'sampling_site_id' => $sampling_site_id,
-                                    'created_on' => Carbon::now(),
-                                    'created_by' => \Auth::user()->id
-                                );
-                            }
-                      
-                       
+                        if ($count == 0) {
+                            $params[] = array(
+                                'program_id' => $program_id,
+                                'site_level_id' => $site_level_id,
+                                'sampling_site_id' => $sampling_site_id,
+                                'created_on' => Carbon::now(),
+                                'created_by' => \Auth::user()->id
+                            );
+                        }
                     }
                     DB::table('pms_program_samplingsites')
                         ->insert($params);
@@ -243,9 +237,9 @@ class SurveillanceController extends Controller
     }
     public function savePmsProgramRegions(Request $request)
     {
-        
+
         $program_id = $request->input('program_id');
-       
+
         $region_ids = $request->input('region_ids');
         $user_id = $this->user_id;
         $res = array();
@@ -253,7 +247,7 @@ class SurveillanceController extends Controller
             DB::transaction(function () use ($program_id, $region_ids, &$res) {
                 $region_ids = json_decode($region_ids);
                 $params = array();
-              
+
                 if (count($region_ids) > 0) {
                     foreach ($region_ids as $region_id) {
                         $where = array(
@@ -263,16 +257,14 @@ class SurveillanceController extends Controller
                         $count = DB::table('pms_program_regions')
                             ->where($where)
                             ->count();
-                            if($count == 0){
-                                $params[] = array(
-                                    'program_id' => $program_id,
-                                    'region_id' => $region_id,
-                                    'created_on' => Carbon::now(),
-                                    'created_by' => \Auth::user()->id
-                                );
-                            }
-                      
-                       
+                        if ($count == 0) {
+                            $params[] = array(
+                                'program_id' => $program_id,
+                                'region_id' => $region_id,
+                                'created_on' => Carbon::now(),
+                                'created_by' => \Auth::user()->id
+                            );
+                        }
                     }
                     DB::table('pms_program_regions')
                         ->insert($params);
@@ -295,14 +287,14 @@ class SurveillanceController extends Controller
         }
         return response()->json($res);
     }
-    
+
     /*
 
 
     */
     public function savePmsProgramProducts(Request $request)
     {
-        
+
         $program_id = $request->input('program_id');
         $product_ids = $request->input('product_ids');
         $user_id = $this->user_id;
@@ -311,7 +303,7 @@ class SurveillanceController extends Controller
             DB::transaction(function () use ($program_id, $product_ids, &$res) {
                 $product_ids = json_decode($product_ids);
                 $params = array();
-              
+
                 if (count($product_ids) > 0) {
                     foreach ($product_ids as $product_id) {
                         $where = array(
@@ -321,16 +313,14 @@ class SurveillanceController extends Controller
                         $count = DB::table('pms_program_products')
                             ->where($where)
                             ->count();
-                            if($count == 0){
-                                $params[] = array(
-                                    'program_id' => $program_id,
-                                    'product_id' => $product_id,
-                                    'created_on' => Carbon::now(),
-                                    'created_by' => \Auth::user()->id
-                                );
-                            }
-                      
-                       
+                        if ($count == 0) {
+                            $params[] = array(
+                                'program_id' => $program_id,
+                                'product_id' => $product_id,
+                                'created_on' => Carbon::now(),
+                                'created_by' => \Auth::user()->id
+                            );
+                        }
                     }
                     DB::table('pms_program_products')
                         ->insert($params);
@@ -354,7 +344,7 @@ class SurveillanceController extends Controller
         return response()->json($res);
     }
 
-    
+
     public function getPmsProgramSamplingSitesLevels(Request $request)
     {
         $program_id = $request->input('program_id');
@@ -366,7 +356,7 @@ class SurveillanceController extends Controller
                 ->select('t1.*',  't3.name as site_level')
                 ->where('t1.program_id', $program_id)
                 ->groupBy('t3.id');
-            
+
             $results = $qry->get();
             $res = array(
                 'success' => true,
@@ -391,7 +381,7 @@ class SurveillanceController extends Controller
         $program_id = $request->input('program_id');
         $site_level_id = $request->input('site_level_id');
         $filters = $request->input('filter');
-        
+
         try {
 
             $qry = DB::table('pms_program_samplingsites as t1')
@@ -399,19 +389,18 @@ class SurveillanceController extends Controller
                 ->leftJoin('par_site_levels as t3', 't1.site_level_id', '=', 't3.id')
                 ->select('t1.*', 't2.name as sampling_site', 't3.name as site_level');
 
-                if(validateIsNumeric($program_id)){
-                    $qry->where('t1.program_id',$program_id);
-                }
-                
-            if(validateIsNumeric($site_level_id)){
-                $qry->where('site_level_id',$site_level_id);
+            if (validateIsNumeric($program_id)) {
+                $qry->where('t1.program_id', $program_id);
             }
-            
+
+            if (validateIsNumeric($site_level_id)) {
+                $qry->where('site_level_id', $site_level_id);
+            }
+
             if ($filters != '') {
                 $filters = (array)json_decode($filters);
-             
+
                 $qry->where($filters);
-                
             }
             $results = $qry->get();
             $res = array(
@@ -487,13 +476,13 @@ class SurveillanceController extends Controller
         }
         return response()->json($res);
     }
-    
+
     public function getPmsProgramsImplementationDetails(Request $request)
     {
         $program_id = $request->input('program_id');
         $program_implementation_id = $request->program_implementation_id;
         $zone_id = $request->zone_id;
-        
+
         try {
             $qry = DB::table('pms_program_implementationplan as t12')
                 ->join('pms_program_details as t13', 't12.program_id', '=', 't13.id')
@@ -507,12 +496,12 @@ class SurveillanceController extends Controller
                 ->leftJoin('par_si_units as t6', 't1.si_unit_id', '=', 't6.id')
                 ->leftJoin('par_containers as t7', 't1.container_id', '=', 't7.id')
                 ->leftJoin('par_packaging_units as t8', 't1.packaging_unit_id', '=', 't8.id')
-                ->leftJoin('par_regions as t10', 't1.region_id', '=', 't10.id')                
+                ->leftJoin('par_regions as t10', 't1.region_id', '=', 't10.id')
                 ->leftJoin('par_districts as t11', 't1.district_id', '=', 't11.id')
                 ->leftJoin('par_site_levels as t14', 't1.site_level_id', '=', 't14.id')
                 ->select(DB::raw("t14.name as site_level, t12.*, t13.name as program_name,t13.description as program_description, t13.start_date, t13.end_date, t12.program_id,t12.id as program_implementation_id,  t12.program_id as pms_program_id,t1.*,t2.name as sampling_site,t3.name as product,t4.name as category_name,t5.name as dosage_form,t13.name as pms_program,
                 t13.start_date,t13.end_date,CONCAT_WS(' of ',t7.name,CONCAT(t1.unit_pack,t8.name)) as pack,CONCAT(t1.strength,t6.name) as strength_txt,
-                         t51.name as product_form,t52.name as device_type,(t1.number_of_brand*t1.number_of_batch*t1.number_of_unitpack) as total_samples,t1.id as pms_plan_id, t10.name as region_name, t11.name as district_name"));// t2
+                         t51.name as product_form,t52.name as device_type,(t1.number_of_brand*t1.number_of_batch*t1.number_of_unitpack) as total_samples,t1.id as pms_plan_id, t10.name as region_name, t11.name as district_name")); // t2
             if (validateIsNumeric($program_id)) {
                 $qry->where('t1.program_id', $program_id);
             }
@@ -522,7 +511,7 @@ class SurveillanceController extends Controller
             if (validateIsNumeric($zone_id)) {
                 $qry->where('t10.zone_id', $zone_id);
             }
-            
+
             $results = $qry->get();
             $res = array(
                 'success' => true,
@@ -549,14 +538,14 @@ class SurveillanceController extends Controller
         try {
             $qry = DB::table('pms_program_implementationplan as t1')
                 ->join('pms_program_details as t2', 't1.program_id', '=', 't2.id')
-                ->select('t1.*', 't2.name as program_name','t2.description as program_description', 't2.start_date', 't2.end_date', 't1.program_id','t1.id as program_implementation_id',  't1.program_id as pms_program_id' );//
+                ->select('t1.*', 't2.name as program_name', 't2.description as program_description', 't2.start_date', 't2.end_date', 't1.program_id', 't1.id as program_implementation_id',  't1.program_id as pms_program_id'); //
             if (isset($program_id) && is_numeric($program_id)) {
                 $qry->where('t1.program_id', $program_id);
             }
             if (validateIsNumeric($section_id)) {
                 $qry->where('t2.section_id', $section_id);
             }
-            
+
             $results = $qry->get();
             $res = array(
                 'success' => true,
@@ -582,7 +571,7 @@ class SurveillanceController extends Controller
         try {
             $qry = DB::table('pms_program_details as t1')
                 ->join('par_sections as t2', 't1.section_id', '=', 't2.id')
-                ->select('t1.*', 't2.name as section_name', 't1.name as pms_program','t1.id as program_id',  't1.id as pms_program_id');//
+                ->select('t1.*', 't2.name as section_name', 't1.name as pms_program', 't1.id as program_id',  't1.id as pms_program_id'); //
             if (isset($section_id) && is_numeric($section_id)) {
                 $qry->where('t1.section_id', $section_id);
             }
@@ -622,22 +611,21 @@ class SurveillanceController extends Controller
                 ->leftJoin('par_si_units as t6', 't1.si_unit_id', '=', 't6.id')
                 ->leftJoin('par_containers as t7', 't1.container_id', '=', 't7.id')
                 ->leftJoin('par_packaging_units as t8', 't1.packaging_unit_id', '=', 't8.id')
-                
+
                 ->leftJoin('par_regions as t10', 't1.region_id', '=', 't10.id')
-                
+
                 ->leftJoin('par_districts as t11', 't1.district_id', '=', 't11.id')
                 ->select(DB::raw("t1.*,t2.name as sampling_site,t3.name as product,t4.name as category_name,t5.name as dosage_form,t9.name as pms_program,
                          t9.start_date,t9.end_date,CONCAT_WS(' of ',t7.name,CONCAT(t1.unit_pack,t8.name)) as pack,CONCAT(t1.strength,t6.name) as strength_txt,
                          t51.name as product_form,t52.name as device_type,(t1.number_of_brand*t1.number_of_batch*t1.number_of_unitpack) as total_samples,t1.id as pms_plan_id, t10.name as region_name, t11.name as district_name"));
-            
+
             if (validateIsNumeric($program_implementation_id)) {
                 $qry->where('t1.program_implementation_id', $program_implementation_id);
                 $results = $qry->get();
-            }
-            else{
+            } else {
                 $results = array();
             }
-          
+
             $res = array(
                 'success' => true,
                 'results' => $results,
@@ -844,13 +832,13 @@ class SurveillanceController extends Controller
             $where_app = array(
                 'id' => $application_id
             );
-            if (validateIsNumeric($application_id)) {//Edit
+            if (validateIsNumeric($application_id)) { //Edit
                 //Application_edit
                 $application_params = array(
                     'zone_id' => $zone_id,
                     'directorate_id' => $directorate_id,
                     'region_id' => $region_id,
-                    
+
                     'program_implementation_id' => $program_implementation_id,
                     'district_id' => $district_id,
                     'program_id' => $program_id,
@@ -867,8 +855,7 @@ class SurveillanceController extends Controller
                     }
                     $previous_data = $previous_data['results'];
                     $res = updateRecord($samplesite_table, $previous_data, $where_samplesite, $samplesite_params, $user_id);
-                }
-                else{
+                } else {
                     $samplesite_res = insertRecord($samplesite_table, $samplesite_params, $user_id);
                     if ($samplesite_res['success'] == false) {
                         return \response()->json($samplesite_res);
@@ -891,9 +878,9 @@ class SurveillanceController extends Controller
                 $application_code = $app_details[0]['application_code'];
                 $ref_no = $app_details[0]['reference_no'];
                 //Sample site_edit
-               
-              
-            } else {//Create
+
+
+            } else { //Create
                 //Sample site_create
                 $samplesite_res = insertRecord($samplesite_table, $samplesite_params, $user_id);
                 if ($samplesite_res['success'] == false) {
@@ -911,6 +898,7 @@ class SurveillanceController extends Controller
                 );
                 $view_id = generateApplicationViewID();
                 $reference_details = generateApplicationTrackingNumber($sub_module_id, 1, $codes_array, $process_id, $zone_id, $user_id, true);
+
                 if ($reference_details['success'] == false) {
                     return \response()->json($reference_details);
                 }
@@ -1016,7 +1004,7 @@ class SurveillanceController extends Controller
             $pmsQry = clone $mainQry;
             $pmsQry->join('pms_program_implementationplan as t2', 't1.program_implementation_id', '=', 't2.id')
                 ->join('pms_program_details as t3', 't2.program_id', '=', 't3.id')
-                ->select('t2.*','t3.name as program_name','t3.description as program_description', 't3.*','t2.implementationstart_date', 't2.implementationend_date', 't2.program_implementation', 't3.id as pms_program_id', 't2.id as program_implementation_id', 't3.name as pms_program', 't1.sampling_site_id', 't1.district_id', 't1.region_id');
+                ->select('t2.*', 't3.name as program_name', 't3.description as program_description', 't3.*', 't2.implementationstart_date', 't2.implementationend_date', 't2.program_implementation', 't3.id as pms_program_id', 't2.id as program_implementation_id', 't3.name as pms_program', 't1.sampling_site_id', 't1.district_id', 't1.region_id');
             $sampleSiteQry = clone $mainQry;
             $sampleSiteQry->leftJoin('tra_samplecollection_sites as t4', 't1.sample_site_id', '=', 't4.id');
 
@@ -1143,9 +1131,9 @@ class SurveillanceController extends Controller
             ->leftJoin('par_samplingreasons as t8', 't1.sampling_reason_id', '=', 't8.id')
             ->leftJoin('users as t9', 't1.sample_collector_id', '=', 't9.id')
             ->leftJoin('par_sample_application_types as t10', 't1.sample_application_id', '=', 't10.id')
-            
+
             ->leftJoin('pms_program_plans as t11', 't1.pms_plan_id', '=', 't11.id')
-            
+
             ->leftJoin('par_business_types as t12', 't11.sampling_site_id', '=', 't12.id')
             ->leftJoin('par_common_names as t13', 't11.product_id', '=', 't13.id')
             ->select(DB::raw("t1.*,t1.id as sample_id,  t12.name as sampling_site,t13.name as product,  t1.sample_name as brand_name,t5.name as manufacturer,t6.name as storage, 
@@ -1195,6 +1183,7 @@ class SurveillanceController extends Controller
     {
         $application_id = $request->input('application_id');
         $analysis_type_id = $request->input('analysis_type_id');
+        $analysis_type_id = 1;
         $recommendation_id = $request->input('recommendation_id');
         $stage_id = $request->input('stage_id');
         try {
@@ -1210,18 +1199,18 @@ class SurveillanceController extends Controller
                 })
                 ->leftJoin('par_sampleanalysis_status as t25', 't24.status_id', '=', 't25.id');
 
-            if ($analysis_type_id == 1) {//PIR
+            if ($analysis_type_id == 1) { //PIR
                 $qry->leftJoin('par_pmsevaluation_decisions as t22', 't21.decision_id', '=', 't22.id');
-            } else if ($analysis_type_id == 2) {//Screening
+            } else if ($analysis_type_id == 2) { //Screening
                 $qry->leftJoin('par_pmsscreening_decisions as t22', 't21.decision_id', '=', 't22.id');
-            } else if ($analysis_type_id == 3) {//TC Meeting
+            } else if ($analysis_type_id == 3) { //TC Meeting
                 $qry->leftJoin('par_pmstcmeeting_decisions as t22', 't21.decision_id', '=', 't22.id');
-            } else if ($analysis_type_id == 4) {//Conformatory
+            } else if ($analysis_type_id == 4) { //Conformatory
                 $qry->leftJoin('par_pmsanalysis_decisions as t22', 't21.decision_id', '=', 't22.id');
-            }else if ($analysis_type_id == 6) {//Conformatory
+            } else if ($analysis_type_id == 6) { //Conformatory
                 $qry->leftJoin('par_pmsevaluation_decisions as t22', 't21.decision_id', '=', 't22.id');
             }
-            $qry->addSelect('t21.id as recomm_id','t22.name as sample_analysis_status', 't21.decision_id', 't21.comments as results_comments', 't22.name as recommendation')
+            $qry->addSelect('t21.id as recomm_id', 't22.name as sample_analysis_status', 't21.decision_id', 't21.comments as results_comments', 't22.name as recommendation')
                 ->where('t1.application_id', $application_id);
             if (validateIsNumeric($stage_id)) {
                 $qry->where('t1.stage_id', $stage_id);
@@ -1230,8 +1219,8 @@ class SurveillanceController extends Controller
                 $qry->where('t22.id', $recommendation_id);
             }
             $results = $qry->get();
-           // print_r(DB::getQueryLog());
-            
+            // print_r(DB::getQueryLog());
+
             foreach ($results as $key => $result) {
                 $results[$key]->dosage_form = getSingleRecordColValue('par_dosage_forms', array('id' => $result->dosage_form_id), 'name', 'mysql');
                 $results[$key]->product_form = getSingleRecordColValue('par_product_forms', array('id' => $result->product_form_id), 'name', 'mysql');
@@ -1239,7 +1228,7 @@ class SurveillanceController extends Controller
                 $results[$key]->class = getSingleRecordColValue('par_classifications', array('id' => $result->classification_id), 'name', 'mysql');
                 $results[$key]->packaging_unit = getSingleRecordColValue('par_packaging_units', array('id' => $result->packaging_units_id), 'name', 'mysql');
             }
-            
+
             $res = array(
                 'success' => true,
                 'results' => $results,
@@ -1265,66 +1254,77 @@ class SurveillanceController extends Controller
         $analysis_type_id = $request->input('analysis_type_id');
         $recommendation_id = $request->input('recommendation_id');
         $stage_id = $request->input('stage_id');
-        if($analysis_type_id == 1){
+        if ($analysis_type_id == 1) {
             $recomm_table = 't21';
-        }
-        else if($analysis_type_id == 2){
+        } else if ($analysis_type_id == 2) {
             $recomm_table = 't22';
-        }
-        else if($analysis_type_id == 3){
+        } else if ($analysis_type_id == 3) {
             $recomm_table = 't23';
-        }
-        else if($analysis_type_id == 4){
+        } else if ($analysis_type_id == 4) {
+            $recomm_table = 't14';
+        } else if ($analysis_type_id == 5) {
             $recomm_table = 't14';
         }
-        else if($analysis_type_id == 5){
-            $recomm_table = 't14';
-        }
-       
+
         try {
             $qry = $this->surveillanceApplicationSamplesQry()
                 ->join('tra_pmslabresult_recommendations as t21', function ($join) use ($analysis_type_id) {
                     $join->on('t1.id', '=', 't21.sample_id')
-                        ->where('t21.analysis_type_id', 1);//PIR
+                        ->where('t21.analysis_type_id', 1); //PIR
                 })
                 ->leftJoin('tra_pmslabresult_recommendations as t22', function ($join) use ($analysis_type_id) {
                     $join->on('t1.id', '=', 't22.sample_id')
-                        ->where('t22.analysis_type_id', 2);//SCREENING
-                })//left join to take care of samples that wont go through lab screening
+                        ->where('t22.analysis_type_id', 2); //SCREENING
+                }) //left join to take care of samples that wont go through lab screening
                 ->leftJoin('tra_pmslabresult_recommendations as t23', function ($join) use ($analysis_type_id) {
                     $join->on('t1.id', '=', 't23.sample_id')
-                        ->where('t23.analysis_type_id', 3);//TC MEETING
+                        ->where('t23.analysis_type_id', 3); //TC MEETING
                 })
                 ->leftJoin('tra_pmslabresult_recommendations as t14', function ($join) use ($analysis_type_id) {
                     $join->on('t1.id', '=', 't14.sample_id')
-                        ->where('t14.analysis_type_id', 4);//CONFORMATORY
+                        ->where('t14.analysis_type_id', 4); //CONFORMATORY
                 })
                 ->leftJoin('tra_pmslabresult_recommendations as t15', function ($join) use ($analysis_type_id) {
                     $join->on('t1.id', '=', 't15.sample_id')
-                        ->where('t15.analysis_type_id', 5);//APPROVAL
+                        ->where('t15.analysis_type_id', 5); //APPROVAL
                 })
                 ->join('par_pmsevaluation_decisions as t16', 't21.decision_id', '=', 't16.id')
                 ->leftJoin('par_pmsscreening_decisions as t17', 't22.decision_id', '=', 't17.id')
                 ->leftJoin('par_pmstcmeeting_decisions as t18', 't23.decision_id', '=', 't18.id')
                 ->leftJoin('par_pmsanalysis_decisions as t19', 't14.decision_id', '=', 't19.id')
                 ->leftJoin('par_pmsapproval_decisions as t20', 't15.decision_id', '=', 't20.id')
-                ->addSelect('t16.name as pir_recomm', 't17.name as screening_recomm', 't18.name as tcm_recomm', 't19.name as analysis_recomm', 't20.name as approval_recomm',
-                    't21.decision_id as pir_decision_id', 't21.comments as pir_comments',
-                    't22.decision_id as screening_decision_id', 't22.comments as screening_comments',
-                    't23.id as tc_recomm_id', 't23.decision_id as tcm_decision_id', 't23.comments as tcm_comments',
-                    't14.decision_id as analysis_decision_id', 't14.comments as analysis_comments',
-                    't15.id as recomm_id', 't15.decision_id as decision_id', 't15.comments as comments','t2.application_code','t2.id as application_id')
+                ->addSelect(
+                    't16.name as pir_recomm',
+                    't17.name as screening_recomm',
+                    't18.name as tcm_recomm',
+                    't19.name as analysis_recomm',
+                    't20.name as approval_recomm',
+                    't21.decision_id as pir_decision_id',
+                    't21.comments as pir_comments',
+                    't22.decision_id as screening_decision_id',
+                    't22.comments as screening_comments',
+                    't23.id as tc_recomm_id',
+                    't23.decision_id as tcm_decision_id',
+                    't23.comments as tcm_comments',
+                    't14.decision_id as analysis_decision_id',
+                    't14.comments as analysis_comments',
+                    't15.id as recomm_id',
+                    't15.decision_id as decision_id',
+                    't15.comments as comments',
+                    't2.application_code',
+                    't2.id as application_id'
+                )
                 ->where('t1.application_id', $application_id);
             if (isset($stage_id) && is_numeric($stage_id)) {
                 $qry->where('t1.stage_id', $stage_id);
             }
-            
+
             if (isset($recommendation_id) && is_numeric($recommendation_id)) {
                 $qry->where($recomm_table . '.decision_id', $recommendation_id);
             }
             $results = $qry->get();
             foreach ($results as $key => $result) {
-               $results[$key]->dosage_form = getSingleRecordColValue('par_dosage_forms', array('id' => $result->dosage_form_id), 'name', 'mysql');
+                $results[$key]->dosage_form = getSingleRecordColValue('par_dosage_forms', array('id' => $result->dosage_form_id), 'name', 'mysql');
                 $results[$key]->product_form = getSingleRecordColValue('par_product_forms', array('id' => $result->product_form_id), 'name', 'mysql');
                 $results[$key]->device_type = getSingleRecordColValue('medicaldevices_types', array('id' => $result->device_type_id), 'name', 'mysql');
                 $results[$key]->class = getSingleRecordColValue('par_classifications', array('id' => $result->classification_id), 'name', 'mysql');
@@ -1409,10 +1409,10 @@ class SurveillanceController extends Controller
                 ->where('t1.id', $application_id);
             $pmsQry = clone $mainQry;
             $pmsQry->join('pms_program_implementationplan as t2', 't1.program_implementation_id', '=', 't2.id')
-                    ->join('pms_program_details as t3', 't2.program_id', '=', 't3.id')
-                    ->select('t2.*','t3.name as program_name','t3.description as program_description', 't3.*','t2.implementationstart_date', 't2.implementationend_date', 't2.program_implementation', 't3.id as pms_program_id', 't2.id as program_implementation_id', 't3.name as pms_program', 't1.sampling_site_id', 't1.district_id', 't1.region_id');
-                $sampleSiteQry = clone $mainQry;
-                $sampleSiteQry->leftJoin('tra_samplecollection_sites as t4', 't1.sample_site_id', '=', 't4.id');
+                ->join('pms_program_details as t3', 't2.program_id', '=', 't3.id')
+                ->select('t2.*', 't3.name as program_name', 't3.description as program_description', 't3.*', 't2.implementationstart_date', 't2.implementationend_date', 't2.program_implementation', 't3.id as pms_program_id', 't2.id as program_implementation_id', 't3.name as pms_program', 't1.sampling_site_id', 't1.district_id', 't1.region_id');
+            $sampleSiteQry = clone $mainQry;
+            $sampleSiteQry->leftJoin('tra_samplecollection_sites as t4', 't1.sample_site_id', '=', 't4.id');
             /*
              $pmsQry->join('pms_program_implementationplan as t2', 't1.program_implementation_id', '=', 't2.id')
                 ->join('pms_program_details as t3', 't2.program_id', '=', 't3.id')
@@ -1499,15 +1499,15 @@ class SurveillanceController extends Controller
         try {
             $qry = DB::table('tra_pmssample_ingredients as t1')
                 ->join('inclusion_reason as t5', 't1.inclusion_reason_id', '=', 't5.id')
-                
+
                 ->leftJoin('par_specification_types as t6', 't1.specification_id', '=', 't6.id')
-                
+
                 ->leftJoin('par_si_units as t7', 't1.si_unit_id', '=', 't7.id')
                 ->leftJoin('par_ingredients_details as t8', 't1.ingredient_id', '=', 't8.id')
                 ->select(DB::raw("t1.*,t5.name as inclusion_reason, t6.name as specification, t7.name as strength_txt, t8.name as ingredient"))
                 ->where('t1.sample_id', $sample_id);
             $results = $qry->get();
-           
+
             $res = array(
                 'success' => true,
                 'results' => $results,
@@ -1612,18 +1612,19 @@ class SurveillanceController extends Controller
         return \response()->json($res);
     }
 
-    public function processReturnBackApplicationSubmission(Request $req){
+    public function processReturnBackApplicationSubmission(Request $req)
+    {
 
-        try{
+        try {
             $user_id = $this->user_id;
             $application_id = $req->application_id;
             $sample_id = $req->sample_id;
             $stage_id = $req->sample_stage_id;
             $reason = $req->reason;
             //application details
-            $application_details = DB::table('tra_surveillance_applications')->where('id',$application_id)->first();
+            $application_details = DB::table('tra_surveillance_applications')->where('id', $application_id)->first();
             //submission details
-            $submission_details = DB::table('tra_submissions')->where(array('application_id'=>$application_id,'current_stage'=>$application_details->workflow_stage_id,'isDone'=>0))->first();
+            $submission_details = DB::table('tra_submissions')->where(array('application_id' => $application_id, 'current_stage' => $application_details->workflow_stage_id, 'isDone' => 0))->first();
             //update submission details
             $current_stage = $submission_details->current_stage;
             $previous_stage = $submission_details->previous_stage;
@@ -1640,32 +1641,31 @@ class SurveillanceController extends Controller
             $submission_details->created_by = $user_id;
             $submission_details->created_on = Carbon::now();
             $submission_details->remarks = $reason;
-                   
-              
+
+
             $submission_details->current_stage = $previous_stage;
             $submission_details->previous_stage = $current_stage;
             $res = insertRecord('tra_submissions', (array)$submission_details, $user_id);
 
-            if($res['success']){
+            if ($res['success']) {
                 DB::table('tra_surveillance_sample_details')
-                    ->where('id',$sample_id)
-                    ->update(array('stage_id'=>$stage_id));
+                    ->where('id', $sample_id)
+                    ->update(array('stage_id' => $stage_id));
 
-            DB::commit();
-            }else{
-                  DB::rollBack();
-                  $res = array(
+                DB::commit();
+            } else {
+                DB::rollBack();
+                $res = array(
                     'success' => false,
                     'message' => 'Updating submission table failed'
                 );
-                  exit();
+                exit();
             }
 
-                $res = array(
-                    'success' => true,
-                    'message' => 'Submitted Back Successfully'
-                ); 
-
+            $res = array(
+                'success' => true,
+                'message' => 'Submitted Back Successfully'
+            );
         } catch (\Exception $exception) {
             DB::rollBack();
             $res = array(
@@ -1683,14 +1683,14 @@ class SurveillanceController extends Controller
         exit();
     }
     public function getPmsPremisesList(Request $request)
-        {
+    {
         $premise_id = $request->input('premise_id');
         $region_id = $request->input('region_id');
         $section_id = $request->input('section_id');
         $filter = $request->input('filter');
         $whereClauses = array();
         $start = $request->start;
-                $limit = $request->limit;
+        $limit = $request->limit;
 
         $filter_string = '';
         if (isset($filter)) {
@@ -1698,22 +1698,22 @@ class SurveillanceController extends Controller
             if ($filters != NULL) {
                 foreach ($filters as $filter) {
                     switch ($filter->property) {
-                        case 'name' :
+                        case 'name':
                             $whereClauses[] = "t1.name like '%" . ($filter->value) . "%'";
                             break;
-                        case 'applicant_name' :
+                        case 'applicant_name':
                             $whereClauses[] = "t3.name like '%" . ($filter->value) . "%'";
                             break;
-                        case 'premise_reg_no' :
+                        case 'premise_reg_no':
                             $whereClauses[] = "t1.premise_reg_no like '%" . ($filter->value) . "%'";
                             break;
-                        case 'permit_no' :
+                        case 'permit_no':
                             $whereClauses[] = "t2.permit_no like '%" . ($filter->value) . "%'";
                             break;
-                            case 'region_name' :
+                        case 'region_name':
                             $whereClauses[] = "t4.name like '%" . ($filter->value) . "%'";
                             break;
-                            case 'district_name' :
+                        case 'district_name':
                             $whereClauses[] = "t5.name like '%" . ($filter->value) . "%'";
                             break;
                     }
@@ -1730,11 +1730,29 @@ class SurveillanceController extends Controller
                 ->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
                 ->leftJoin('par_regions as t4', 't1.region_id', '=', 't4.id')
                 ->leftJoin('par_regions as t5', 't1.district_id', '=', 't5.id')
-                ->select( 't1.id as premise_id','t1.name', 't1.id as manufacturing_site_id', 't1.*', 't2.permit_no', 't3.name as applicant_name',
-                    't3.id as applicant_id', 't3.name as applicant_name', 't3.contact_person', 't3.tin_no',
-                    't3.country_id as app_country_id', 't3.region_id as app_region_id', 't3.district_id as app_district_id',
-                    't3.physical_address as app_physical_address', 't3.postal_address as app_postal_address','t4.name as region_name', 't5.name as district_name',
-                    't3.telephone_no as app_telephone', 't3.fax as app_fax', 't3.email as app_email', 't3.website as app_website');
+                ->select(
+                    't1.id as premise_id',
+                    't1.name',
+                    't1.id as manufacturing_site_id',
+                    't1.*',
+                    't2.permit_no',
+                    't3.name as applicant_name',
+                    't3.id as applicant_id',
+                    't3.name as applicant_name',
+                    't3.contact_person',
+                    't3.tin_no',
+                    't3.country_id as app_country_id',
+                    't3.region_id as app_region_id',
+                    't3.district_id as app_district_id',
+                    't3.physical_address as app_physical_address',
+                    't3.postal_address as app_postal_address',
+                    't4.name as region_name',
+                    't5.name as district_name',
+                    't3.telephone_no as app_telephone',
+                    't3.fax as app_fax',
+                    't3.email as app_email',
+                    't3.website as app_website'
+                );
             if (validateIsNumeric($section_id)) {
                 $qry->where('t1.section_id', $section_id);
             }
@@ -1743,18 +1761,19 @@ class SurveillanceController extends Controller
             }
             if (validateIsNumeric($premise_id)) {
                 $qry->where('t1.id', $premise_id);
-            }if (validateIsNumeric($region_id)) {
+            }
+            if (validateIsNumeric($region_id)) {
                 $qry->where('t1.region_id', $region_id);
             }
-           // $results = $qry->get();
+            // $results = $qry->get();
 
             $totalCount  = $qry->count();
-                $records = $qry->skip($start*$limit)->take($limit)->get();
-                $res = array('success'=>true, 
-                                'results'=>$records,
-                                'totalCount'=>$totalCount
-                            );
-           
+            $records = $qry->skip($start * $limit)->take($limit)->get();
+            $res = array(
+                'success' => true,
+                'results' => $records,
+                'totalCount' => $totalCount
+            );
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
@@ -1768,9 +1787,7 @@ class SurveillanceController extends Controller
         }
         return \response()->json($res);
     }
-    public function getGroupSampleAnalysisDetails(Request $req){
-
-
-        
+    public function getGroupSampleAnalysisDetails(Request $req)
+    {
     }
 }

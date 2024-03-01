@@ -2758,12 +2758,25 @@ class CommonController extends Controller
         $is_previous = $request->input('is_previous');
         $workflow_stage = $request->input('workflow_stage');
         // if ($module_id == 4 ) {Job this was initial FOR OTHER SUB MODULES IN MODULS THIS REPLACES WITH WRONG INFO
-        if ($module_id == 4 & !isset($sub_module_id)) {
-            $sub_module_id = 12;
-            $section_id = 1;
+        if ($module_id == 4) { //& !isset($sub_module_id) Job again coming to module_id=12 misses here since the module is provided from frontend 26/02/24
+            if ($sub_module_id != "82") {
+                if ($sub_module_id == "81") {
+                    $sub_module_id = 81;
+                    $section_id = 1;
+                } else {
+                    $sub_module_id = 12;
+                    $section_id = 1;
+                }
+            }
         }
+
         //Job just cause has checklist based on workflow controller getapplicable checklists assiging section id 1 to module 78 for demo just
         if ($sub_module_id == 78) {
+            $sub_module_id = 78;
+            $section_id = 1;
+        }
+        if ($sub_module_id == 82) {
+            $sub_module_id = 78;
             $section_id = 1;
         }
         //end to remove

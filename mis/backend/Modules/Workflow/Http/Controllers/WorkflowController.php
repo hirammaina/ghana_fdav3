@@ -1802,6 +1802,7 @@ class WorkflowController extends Controller
                 $section_id = $where2['section_id'];
             }
 
+
             //get applicable checklist categories
 
             $qry1 = DB::table('tra_proc_applicable_checklists')
@@ -1810,6 +1811,7 @@ class WorkflowController extends Controller
             $checklist_categories = $qry1->get();
             $checklist_categories = convertStdClassObjToArray($checklist_categories);
             $checklist_categories = convertAssArrayToSimpleArray($checklist_categories, 'checklist_category_id');
+
             //get applicable checklist types
             $qry2 = DB::table('par_checklist_types as t1')
                 ->select('t1.*')
@@ -1818,7 +1820,7 @@ class WorkflowController extends Controller
             $checklist_types = $qry2->get();
             $checklist_types = convertStdClassObjToArray($checklist_types);
             $checklist_types = convertAssArrayToSimpleArray($checklist_types, 'id');
-            dd($checklist_types);
+
 
 
             if (validateIsNumeric($query_id)) {

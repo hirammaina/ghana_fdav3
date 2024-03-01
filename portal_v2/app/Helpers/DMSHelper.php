@@ -1282,7 +1282,7 @@ class DMSHelper
     static function initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $ref_number, $trader_id)
     {
         $dms_node_details = self::getApplicationSubModuleNodeDetails($section_id, $module_id, $sub_module_id, $trader_id, 'mis_db');
-        dd($dms_node_details);
+
 
         $nodeTracking = str_replace("/", "-", $ref_number);
         $parentNode_ref = $dms_node_details[0]['node_ref'];

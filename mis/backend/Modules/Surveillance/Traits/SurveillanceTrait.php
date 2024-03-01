@@ -55,6 +55,8 @@ trait SurveillanceTrait
         $keep_status = $action_details->keep_status;
         $action_type = $action_details->action_type_id;
 
+
+
         if ($action_details->generate_refno == 1) {
             if ($refno_generated != 1) {
                 $codes_array = $this->getPmsApplicationReferenceCodes($application_details);
@@ -65,16 +67,16 @@ trait SurveillanceTrait
                 }
             }
         }
-        if ($action_type == 2) {//initial query
+        if ($action_type == 2) { //initial query
             $this->processReceivingQueriedApplicationSubmission($request);
-        } else if ($action_type == 3) {//initial rejection
+        } else if ($action_type == 3) { //initial rejection
             $this->processReceivingRejectedApplicationSubmission($request);
-        } else if ($action_type == 6) {//recommendation submission
+        } else if ($action_type == 6) { //recommendation submission
             $recommendation_table = $action_details->recommendation_table;
             $this->processRecommendationApplicationSubmission($request, $recommendation_table);
-        } else if ($action_type == 7) {//PMS Sample Selection Submission
-            $this->processApplicationSamplesSelectionSubmission($request);//processApplicationPIRSamplesSubmission($request);
-        } else if ($action_type == 8) {//PMS Sample Batch Submission
+        } else if ($action_type == 7) { //PMS Sample Selection Submission
+            $this->processApplicationSamplesSelectionSubmission($request); //processApplicationPIRSamplesSubmission($request);
+        } else if ($action_type == 8) { //PMS Sample Batch Submission
             $this->processApplicationSamplesBatchSubmission($request);
         } else {
             $this->processNormalApplicationSubmission($request, $keep_status);
@@ -91,11 +93,11 @@ trait SurveillanceTrait
         $action_type = $action_details->action_type_id;
         $approval_submission = $action_details->is_approval_submission;
 
-        if ($sub_module_id == 37) {//todo Non structured applications
+        if ($sub_module_id == 37) { //todo Non structured applications
             if ($approval_submission == 1) {
                 $this->processNewApprovalApplicationSubmission($request, $keep_status);
             }
-        } else if ($sub_module_id == 38) {//todo Structured Applications
+        } else if ($sub_module_id == 38) { //todo Structured Applications
             if ($approval_submission == 1) {
                 $this->processSubsequentApprovalApplicationSubmission($request);
             }
@@ -107,16 +109,16 @@ trait SurveillanceTrait
             echo json_encode($res);
             exit();
         }
-        if ($action_type == 4) {//manager query to customer
+        if ($action_type == 4) { //manager query to customer
             $this->submitApplicationFromManagerQueryToCustomer($request);
-        } else if ($action_type == 5) {//manager query normal submission
+        } else if ($action_type == 5) { //manager query normal submission
             $this->processManagerQueryReturnApplicationSubmission($request);
         } else {
             $this->processNormalManagersApplicationSubmission($request, $keep_status);
         }
     }
 
-    public function processSurveillanceManagersApplicationSubmission(Request $request)//samples
+    public function processSurveillanceManagersApplicationSubmission(Request $request) //samples
     {
         $action = $request->input('action');
         $sub_module_id = $request->input('sub_module_id');
@@ -126,11 +128,11 @@ trait SurveillanceTrait
         $action_type = $action_details->action_type_id;
         $approval_submission = $action_details->is_approval_submission;
 
-        if ($sub_module_id == 37) {//todo Non structured applications
+        if ($sub_module_id == 37) { //todo Non structured applications
             if ($approval_submission == 1) {
                 $this->processNewApprovalApplicationSubmission($request, $keep_status);
             }
-        } else if ($sub_module_id == 38) {//todo Structured Applications
+        } else if ($sub_module_id == 38) { //todo Structured Applications
             if ($approval_submission == 1) {
                 $this->processSubsequentApprovalApplicationSubmission($request);
             }
@@ -142,9 +144,9 @@ trait SurveillanceTrait
             echo json_encode($res);
             exit();
         }
-        if ($action_type == 4) {//manager query to customer
+        if ($action_type == 4) { //manager query to customer
             $this->submitApplicationFromManagerQueryToCustomer($request);
-        } else if ($action_type == 5) {//manager query normal submission
+        } else if ($action_type == 5) { //manager query normal submission
             $this->processManagerQueryReturnApplicationSubmission($request);
         } else {
             $this->processApplicationSamplesSubmission($request, $keep_status);
@@ -207,7 +209,7 @@ trait SurveillanceTrait
                 $recommended_update = clone $recommended_samples_qry;
                 $recommended_update->update(array('stage_id' => 2));
             } else {
-                $to_stage = 353;//static stage for TCM
+                $to_stage = 353; //static stage for TCM
             }
             $unrecommended_samples_qry = clone $samples_qry;
             $unrecommended_samples_qry->where('decision_id', 2);
@@ -218,7 +220,7 @@ trait SurveillanceTrait
                 $unrecommended_update->update(array('stage_id' => 3));
             }
             $application_status_id = getApplicationTransitionStatus($from_stage, $action, $to_stage);
-            if ($keep_status == true) {//for approvals
+            if ($keep_status == true) { //for approvals
                 $application_status_id = $application_details->application_status_id;
             }
             $where = array(
@@ -352,7 +354,7 @@ trait SurveillanceTrait
                 exit();
             }
             $application_status_id = getApplicationTransitionStatus($from_stage, $action, $to_stage);
-            if ($keep_status == true) {//for approvals
+            if ($keep_status == true) { //for approvals
                 $application_status_id = $application_details->application_status_id;
             }
             $where = array(
@@ -370,14 +372,14 @@ trait SurveillanceTrait
                 exit();
             }
             $samples_currstage = $analysis_details->samples_currstage_id;
-            $samples_nextstage = $analysis_details->samples_nextstage_id;;//getSingleRecordColValue($decision_table, array('id' => $recommendation_id), 'samples_nextstage_id');
+            $samples_nextstage = $analysis_details->samples_nextstage_id;; //getSingleRecordColValue($decision_table, array('id' => $recommendation_id), 'samples_nextstage_id');
             $samples_update = array(
                 't1.dola' => Carbon::now(),
                 't1.altered_by' => $user_id
             );
-			
-            if(validateIsNumeric($samples_nextstage)){
-                $samples_update['t1.stage_id'] =$samples_nextstage;
+
+            if (validateIsNumeric($samples_nextstage)) {
+                $samples_update['t1.stage_id'] = $samples_nextstage;
             }
             $samples_qry = DB::table('tra_surveillance_sample_details as t1')
                 ->join('tra_pmslabresult_recommendations as t2', function ($join) use ($analysis_type_id) {
@@ -529,7 +531,7 @@ trait SurveillanceTrait
                 exit();
             }
             $application_status_id = getApplicationTransitionStatus($from_stage, $action, $to_stage);
-            if ($keep_status == true) {//for approvals
+            if ($keep_status == true) { //for approvals
                 $application_status_id = $application_details->application_status_id;
             }
             $where = array(
@@ -546,7 +548,7 @@ trait SurveillanceTrait
                 echo json_encode($res);
                 exit();
             }
-			
+
             $decision_table = $analysis_details->decisions_table;
             $samples_currstage = $analysis_details->samples_currstage_id;
             $samples_nextstage = getSingleRecordColValue($decision_table, array('recommendation_id' => $recommendation_id), 'samples_nextstage_id');
@@ -562,29 +564,29 @@ trait SurveillanceTrait
                 ->where('t1.stage_id', $samples_currstage)
                 ->count();
             //end
-			
+
             if ($unrecommended_count > 0) {
                 $res = array(
                     'success' => false,
                     'message' => 'Please recommend all samples before individual batch submissions!!'
                 );
                 //echo json_encode($res);
-               // exit();
+                // exit();
             }
-           
-			 $samples_update = array(
+
+            $samples_update = array(
                 't1.dola' => Carbon::now(),
                 't1.altered_by' => $user_id
             );
-			
-            if(validateIsNumeric($samples_nextstage)){
-                $samples_update['t1.stage_id'] =$samples_nextstage;
+
+            if (validateIsNumeric($samples_nextstage)) {
+                $samples_update['t1.stage_id'] = $samples_nextstage;
             }
-			if($analysis_type_id == 6){
-				//reset for manager
-				$analysis_type_id = 1;
-			}
-			
+            if ($analysis_type_id == 6) {
+                //reset for manager
+                $analysis_type_id = 1;
+            }
+
             DB::table('tra_surveillance_sample_details as t1')
                 ->join('tra_pmslabresult_recommendations as t2', function ($join) use ($analysis_type_id) {
                     $join->on('t1.id', '=', 't2.sample_id')
@@ -606,13 +608,13 @@ trait SurveillanceTrait
                 //->where('t2.decision_id', '<>', $recommendation_id)
                 ->where('t1.stage_id', $samples_currstage)
                 ->count();
-            if ($count > 0) {//some left...dont change application workflow stage, generate view_id, lock direct access
+            if ($count > 0) { //some left...dont change application workflow stage, generate view_id, lock direct access
                 $view_id = generateApplicationViewID();
                 $app_update = array(
                     'application_status_id' => $application_status_id
                     //'is_locked' => 1
                 );
-            } else {//none left...change application workflow stage, dont generate view_id
+            } else { //none left...change application workflow stage, dont generate view_id
                 $view_id = $application_details->view_id;
                 $app_update = array(
                     'workflow_stage_id' => $to_stage,
@@ -747,19 +749,19 @@ trait SurveillanceTrait
                 exit();
             }
             $application_status_id = getApplicationTransitionStatus($from_stage, $action, $to_stage);
-            if ($keep_status == true) {//for approvals
+            if ($keep_status == true) { //for approvals
                 $application_status_id = $application_details->application_status_id;
             }
             $where = array(
                 'id' => $application_id
             );
-            
-			 $samples_update = array(
+
+            $samples_update = array(
                 'dola' => Carbon::now(),
                 'altered_by' => $user_id
             );
-            if(validateIsNumeric($tcm_recommendation_id)){
-                $samples_update['stage_id'] =$tcm_recommendation_id;
+            if (validateIsNumeric($tcm_recommendation_id)) {
+                $samples_update['stage_id'] = $tcm_recommendation_id;
             }
             DB::table('tra_surveillance_sample_details')
                 ->whereIn('id', $selected_ids)
@@ -776,13 +778,13 @@ trait SurveillanceTrait
                 ->where('t1.application_id', $application_id)
                 ->where('t2.decision_id', '<>', $tcm_recommendation_id)
                 ->count();
-            if ($count > 0) {//some left...dont change application workflow stage, generate view_id, lock direct access
+            if ($count > 0) { //some left...dont change application workflow stage, generate view_id, lock direct access
                 $view_id = generateApplicationViewID();
                 $app_update = array(
                     'application_status_id' => $application_status_id,
                     'is_locked' => 1
                 );
-            } else {//none left...change application workflow stage, dont generate view_id
+            } else { //none left...change application workflow stage, dont generate view_id
                 $view_id = $application_details->view_id;
                 $app_update = array(
                     'workflow_stage_id' => $to_stage,
@@ -871,5 +873,4 @@ trait SurveillanceTrait
         echo json_encode($res);
         exit();
     }
-
 }

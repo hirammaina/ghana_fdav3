@@ -1,35 +1,45 @@
-
 /**
  * Created by Kip on 11/12/2018.
  */
-Ext.define('Admin.view.importexportpermits.views.commoninterfaces.OnlineImportExportDetailsPnl', {
-    extend: 'Ext.tab.Panel',
-    xtype: 'onlineimportexportdetailspnl',
-    layout: {//
-        type: 'fit'
+Ext.define(
+  "Admin.view.importexportpermits.views.commoninterfaces.OnlineImportExportDetailsPnl",
+  {
+    extend: "Ext.tab.Panel",
+    xtype: "onlineimportexportdetailspnl",
+    layout: {
+      //
+      type: "card",
     },
-    defaults:{
-        margin: 3
-    },viewModel: {
-        type: 'importexportpermitsvm'
+    defaults: {
+      margin: 3,
     },
-    items: [{
-        xtype: 'onlineimportexportdetailsfrm',
+    viewModel: {
+      type: "importexportpermitsvm",
+    },
+    items: [
+      {
+        xtype: "onlineimportexportdetailsfrm",
         autoScroll: true,
-        
-        title: 'Import/Export Permit Information'
-    }, {
-        xtype: 'onlineimportexportpermitsproductsgrid',
-        title: 'Import/Export Permit Products Details',
-    },  {
-        xtype: 'senderreceiverdetailsfrm',
-        title: 'Sender/Receiver Details',
-    }, {
-        xtype: 'importexportpremisesfrm',
-        title: 'Premises Details',
-    },{
-        xtype: 'hiddenfield',
-        name: '_token',
-        value: token
-    }]
-});
+
+        title: "Import/Export Permit Information",
+      },
+      {
+        xtype: "onlineimportexportpermitsproductsgrid",
+        title: "Import/Export Permit Products Details",
+      },
+      {
+        xtype: "senderreceiverdetailsfrm",
+        title: "Sender/Receiver Details",
+      },
+      {
+        xtype: "importexportpremisesfrm",
+        title: "Premises Details",
+      },
+      {
+        xtype: "hiddenfield",
+        name: "_token",
+        value: token,
+      },
+    ],
+  }
+);

@@ -1132,7 +1132,9 @@ class ImportexportpermitsController extends Controller
                     t3.postal_address as app_postal_address, t3.telephone_no as app_telephone, t3.fax as app_fax, t3.email as app_email, t3.website as app_website,
                      t1.*,t7.current_stage as workflow_stage_id")) //job t7.current_stage as workflow_stage_id due to bug on 0 process id on tra_import to fix later after demo
                 ->whereNotIn('t1.is_dismissed', [1]);
+
             //users to causes no resulsts
+
 
 
 
@@ -1173,7 +1175,8 @@ class ImportexportpermitsController extends Controller
 
     public function getImportexportpermitsapps(Request $req)
     {
-        $where_submodule = array(12, 13, 14, 15, 16);
+        // $where_submodule = array(12, 13, 14, 15, 16);
+        $where_submodule = array(12, 13, 14, 15, 16, 78, 82);
         $res = $this->getImportExportAppsdetails($req, $where_submodule);
         return \response()->json($res);
     }
@@ -3858,14 +3861,17 @@ class ImportexportpermitsController extends Controller
         $zone_id = $req->input('zone_id');
         $user_zoneid = $this->zone_id;
 
+
+
         $table_name = 'tra_importexport_applications';
         try {
+
 
             $qry = DB::table($table_name . ' as t1')
                 ->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
                 ->leftJoin('par_system_statuses as t4', 't1.application_status_id', '=', 't4.id')
                 ->leftJoin('tra_premises as t5', 't1.premise_id', '=', 't5.id')
-                ->join('tra_submissions as t6', 't1.application_code', '=', 't6.application_code')
+                ->leftjoin('tra_submissions as t6', 't1.application_code', '=', 't6.application_code')
                 ->leftJoin('tra_managerpermits_review as t7', 't1.application_code', '=', 't7.application_code')
                 ->leftJoin('par_approval_decisions as t8', 't7.decision_id', '=', 't8.id')
                 ->leftJoin('tra_permitsrelease_recommendation as t9', 't1.application_code', '=', 't9.application_code')
@@ -3881,8 +3887,11 @@ class ImportexportpermitsController extends Controller
                     't1.id as active_application_id',
                     't8.name as recommendation'
                 )
-                ->where(array('t6.current_stage' => $workflow_stage, 'isDone' => 0, 't1.section_id' => $section_id))
+                //->where(array('t6.current_stage' => $workflow_stage, 'isDone' => 0, 't1.section_id' => $section_id))
                 ->orderBy('t1.id', 'desc');
+            if (validateIsNumeric(($workflow_stage)) && validateIsNumeric(($section_id))) {
+                $qry->where(array('t6.current_stage' => $workflow_stage, 'isDone' => 0, 't1.section_id' => $section_id));
+            }
 
 
             if (validateIsNumeric($zone_id)) {
@@ -3890,7 +3899,9 @@ class ImportexportpermitsController extends Controller
             } else if (validateIsNumeric($user_zoneid)) {
                 //$qry->where(array('t1.zone_id'=>$user_zoneid));
             }
+
             $results = $qry->get();
+
 
             $res = array(
                 'success' => true,
@@ -3923,6 +3934,8 @@ class ImportexportpermitsController extends Controller
                 ->leftJoin('par_sections as t5', 't2.section_id', '=', 't5.id')
                 ->leftJoin('par_ports_information as t6', 't1.port_id', '=', 't6.id')
                 ->leftJoin('users as t7', 't1.inspected_by', '=', 't7.id')
+                // ->where("t1.id", 3836)
+                ->where("t2.created_on", ">", "2024-02-01")
                 ->select('t1.*', 't2.id as active_application_id', 't2.reference_no', 't2.tracking_no', 't4.permit_no', 't3.name as inspection_status', 't1.created_on as date_added', 't2.proforma_invoice_no', 't1.id as poe_application_id', 't5.name as permit_section', 't6.name as port_ofentryexit', DB::raw(" CONCAT_WS(' ',decrypt(t7.first_name),decrypt(t7.last_name)) as inspection_by"));
 
             $results = $qry->get();
@@ -7229,9 +7242,11 @@ class ImportexportpermitsController extends Controller
             }
             //submission details 
 
+
             if ($res['success']) {
                 //provide for the released permits 
                 $app_record = DB::table('tra_importexport_applications')->where('application_code', $application_code)->first();
+
                 if ($app_record) {
                     $workflowaction_type_id = getSingleRecordColValue('par_poeinspection_recommendation', array('id' => $inspection_recommendation_id), 'workflowaction_type_id');
 
@@ -7266,7 +7281,9 @@ class ImportexportpermitsController extends Controller
                         );
                         $res =  insertRecord('tra_submissions', $submission_params, $user_id);
                     }
-                    updateInTraySubmissions($record->id, $application_code, $workflow_stage_id, $user_id);
+                    updateInTraySubmissions($res['record_id'], $application_code, $workflow_stage_id, $user_id); //Job on 24.02.24
+
+                    // updateInTraySubmissions($record->id, $application_code, $workflow_stage_id, $user_id);
                 }
 
 
@@ -7278,13 +7295,15 @@ class ImportexportpermitsController extends Controller
             } else {
                 $res = array(
                     'success' => true,
-                    'message' => 'Error Occurrec, POE applications were not saved'
+                    'message' => 'Error Occurrec, POE applications were not saved',
+
                 );
             }
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
-                'message' => $exception->getMessage()
+                'message' => $exception->getMessage(),
+                "line" => $exception->getLine()
             );
         } catch (\Throwable $throwable) {
             $res = array(

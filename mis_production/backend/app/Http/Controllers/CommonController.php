@@ -2757,10 +2757,31 @@ class CommonController extends Controller
         $section_id = $request->input('section_id');
         $is_previous = $request->input('is_previous');
         $workflow_stage = $request->input('workflow_stage');
-        if ($module_id == 4) {
-            $sub_module_id = 12;
+        // if ($module_id == 4 ) {Job this was initial FOR OTHER SUB MODULES IN MODULS THIS REPLACES WITH WRONG INFO
+        if ($module_id == 4) { //& !isset($sub_module_id) Job again coming to module_id=12 misses here since the module is provided from frontend 26/02/24
+            if ($sub_module_id != "82") {
+                if ($sub_module_id == "81") {
+                    $sub_module_id = 81;
+                    $section_id = 1;
+                } else {
+                    $sub_module_id = 12;
+                    $section_id = 1;
+                }
+            }
+        }
+
+        //Job just cause has checklist based on workflow controller getapplicable checklists assiging section id 1 to module 78 for demo just
+        if ($sub_module_id == 78) {
+            $sub_module_id = 78;
+            $section_id = 1;
             $section_id = 1;
         }
+        if ($sub_module_id == 82) {
+            $sub_module_id = 78;
+            $section_id = 1;
+        }
+        //end to remove
+
         $where2 = array(
             'sub_module_id' => $sub_module_id,
             'section_id' => $section_id
@@ -2797,21 +2818,25 @@ class CommonController extends Controller
                 ->select('checklist_category_id')
                 ->where($where);
 
+
             $checklist_categories = $qry1->get();
             $checklist_categoriesdata = $qry1->get();
 
 
             $checklist_categories = convertStdClassObjToArray($checklist_categories);
             $checklist_categories = convertAssArrayToSimpleArray($checklist_categories, 'checklist_category_id');
+
             //get applicable checklist types
             $qry2 = DB::table('par_checklist_types as t1')
                 ->select('t1.id')
                 ->where($where2)
                 ->whereIn('checklist_category_id', $checklist_categories);
             $checklist_types = $qry2->get();
-
             $checklist_types = convertStdClassObjToArray($checklist_types);
             $checklist_types = convertAssArrayToSimpleArray($checklist_types, 'id');
+
+
+
 
             if (validateIsNumeric($section_id)) {
                 $qry = DB::table('par_checklist_items as t1')
@@ -2841,6 +2866,7 @@ class CommonController extends Controller
             }
             //check the responses 
             $results = $qry->get();
+
 
             // $records = DB::table('checklistitems_responses')->where(array('application_code'=>$application_code))->get();
 

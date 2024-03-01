@@ -356,6 +356,7 @@ class UtilityHelper
     static function generateApplicationTrackingNumber($sub_module_id, $reference_type_id, $codes_array, $process_id, $zone_id, $user_id, $is_refno)
     {
         try {
+
             $module_id = getSingleRecordColValue('sub_modules', array('id' => $sub_module_id), 'module_id');
             $table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
             $year = date('Y');
@@ -378,8 +379,10 @@ class UtilityHelper
                 );
                 return $res;
             }
+
             $serial_num_tracker = new TrackingNoSerialTracker();
             $serial_track = $serial_num_tracker->where($where)->first();
+
             if ($serial_track == '' || is_null($serial_track)) {
                 $current_serial_id = 1;
                 $serial_num_tracker->year = $year;

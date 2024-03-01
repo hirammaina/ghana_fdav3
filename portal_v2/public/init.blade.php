@@ -42,7 +42,7 @@
 
         </div>
     </div>
-
+    scripts.f5885ad9265632b59482.js
     <app-root></app-root>
 
 </body>
@@ -51,7 +51,7 @@
 
 <script type="text/javascript" src="{{asset('public/front-end/scripts.f5885ad9265632b59482.js')}}"></script>
 
-<script type="text/javascript" src="{{asset('public/front-end/main.bff818fa35d10ea26cc9.js')}}"></script>
+<script type="text/javascript" src="{{asset('public/front-end/main.cb3b1ab6fd2e4585d008.js')}}"></script>
 
 
 <script src="{{asset('public/resources/js/jquery.min.js')}}"></script>

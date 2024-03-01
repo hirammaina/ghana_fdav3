@@ -118,6 +118,11 @@ Route::group(['middleware' => ['web'], 'prefix' => 'importexportpermits'], funct
     Route::get('getApprovedPermitRegisterDetails', [ImportexportpermitsController::class, 'getApprovedPermitRegisterDetails']);
     Route::get('getApprovedVisaApplicationDetails', [ImportexportpermitsController::class, 'getApprovedVisaApplicationDetails']);
     Route::post('onIntiateLicenseApplication', 'ImportexportpermitsController@onIntiateLicenseApplication');
+    Route::get('getApprovedImportLicenseApplicationDetails', [ImportexportpermitsController::class, 'getApprovedImportLicenseApplicationDetails']);
+    Route::post('onIntiateLicenseInspectionApplication', 'ImportexportpermitsController@onIntiateLicenseInspectionApplication');
+    Route::post('updateInspectionProductsrodrecommendtion', 'ImportexportpermitsController@updateInspectionProductsrodrecommendtion');
+
+
 
 
     //

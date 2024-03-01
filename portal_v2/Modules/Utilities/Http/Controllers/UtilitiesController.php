@@ -4,7 +4,7 @@
  * @Author: HiramMaina
  * @Create Time: 2024-01-10 10:38:56
  * @Modified by: JobMurumba
- * @Modified time: 2024-02-23 10:03:03
+ * @Modified time: 2024-02-26 12:44:41
  * @Description:
  */
 
@@ -1689,6 +1689,7 @@ class UtilitiesController extends Controller
 
     public function onPermitApplicationSubmit(Request $req)
     {
+
         try {
             $tracking_no = $req->tracking_no;
             $application_code = $req->application_code;
@@ -1740,18 +1741,19 @@ class UtilitiesController extends Controller
                         }
                     } //check for proof of payment 
 
-                    if ($has_invoice_generation == 1) {
-                        $uploadedpayment_records = DB::connection('mis_db')->table('tra_uploadedpayments_details')
-                            ->where($where_state)
-                            ->get();
-                        $payment_records = DB::connection('mis_db')->table('tra_payments')
-                            ->where($where_state)
-                            ->get();
-                        if ($uploadedpayment_records->count() == 0 && $payment_records->count() == 0) {
-                            $res = array('success' => false, 'message' => 'Kindly Upload the proof of payments on the generated Proforma Invoice for processing purposes!!');
-                            return response()->json($res);
-                        }
-                    }
+                    //to bring back Job on 24.02.24
+                    // if ($has_invoice_generation == 1) {
+                    //     $uploadedpayment_records = DB::connection('mis_db')->table('tra_uploadedpayments_details')
+                    //         ->where($where_state)
+                    //         ->get();
+                    //     $payment_records = DB::connection('mis_db')->table('tra_payments')
+                    //         ->where($where_state)
+                    //         ->get();
+                    //     if ($uploadedpayment_records->count() == 0 && $payment_records->count() == 0) {
+                    //         $res = array('success' => false, 'message' => 'Kindly Upload the proof of payments on the generated Proforma Invoice for processing purposes!!');
+                    //         return response()->json($res);
+                    //     }
+                    // }
                 }
                 //delete functionality
                 $previous_status_id = $records->application_status_id;
@@ -4178,7 +4180,7 @@ class UtilitiesController extends Controller
                 exit();
             }
 
-            $invoice_feessql = DB::select(DB::raw($data_query . ' where t1.application_code= ' . $application_code));
+            $invoice_feessql = DB::select(($data_query . ' where t1.application_code= ' . $application_code));
 
 
             if (is_array($invoice_feessql) && count((array)$invoice_feessql) > 0) {
@@ -4440,7 +4442,8 @@ class UtilitiesController extends Controller
             } else {
                 $res = array(
                     'success' => false,
-                    'message' => 'The application fees and charges have not been configured, contact the authority for action!!'
+                    'message' => 'The application fees and charges have not been configured, contact the authority for action!!',
+
                 );
             }
         } else {
@@ -4613,12 +4616,14 @@ class UtilitiesController extends Controller
         } catch (\Exception $exception) {
             $res = array(
                 'success' => false,
-                'message' => $exception->getMessage()
+                'message' => $exception->getMessage(),
+                'line' => $exception->getLine()
             );
         } catch (\Throwable $throwable) {
             $res = array(
                 'success' => false,
-                'message' => $throwable->getMessage()
+                'message' => $throwable->getMessage(),
+                'line' => $throwable->getLine()
             );
         }
         return response()->json($res);

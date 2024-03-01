@@ -994,6 +994,7 @@ class DashboardController extends Controller
                 ->leftJoin('wb_statuses as t5', 't1.application_status_id', '=', 't5.id') //Job 23//11/2023,status table copied to mis tables, since psql does not support cross references,db link not secure
                 ->leftJoin('par_zones as t6', 't1.zone_id', '=', 't6.id')
                 ->leftJoin('wb_trader_account as t9', 't1.applicant_id', '=', 't9.id')
+                ->where("t1.date_submitted", ">", "2024-02-23") //Job on 26.02.24 to remove
                 ->select(DB::raw("t1.*, t1.current_stage as workflow_stage_id, t1.application_id as active_application_id, t2.name as process_name,
                      t4.name as workflow_stage,t4.is_general,t5.name as application_status,
                     t9.name as applicant_name, t6.name as zone_name"));

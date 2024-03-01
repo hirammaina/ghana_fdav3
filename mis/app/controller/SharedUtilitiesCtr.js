@@ -651,6 +651,9 @@ Ext.define("Admin.controller.SharedUtilitiesCtr", {
       "newpremiseinspectionpanel button[name=comments_btn]": {
         click: "showApplicationCommentsWin",
       },
+      "preclinicaltrialassessmentpanel button[name=comments_btn]": {
+        click: "showApplicationCommentsWin",
+      },
       "renewpremiseinspectionpanel button[name=comments_btn]": {
         click: "showApplicationCommentsWin",
       },
@@ -4299,6 +4302,7 @@ Ext.define("Admin.controller.SharedUtilitiesCtr", {
         .down("form")
         .down("hiddenfield[name=id]")
         .getValue();
+
     store.getProxy().extraParams = {
       table_name: table_name,
       workflow_stage_id: workflow_stage_id,
