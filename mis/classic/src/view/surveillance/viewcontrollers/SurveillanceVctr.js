@@ -983,6 +983,22 @@ Ext.define("Admin.view.surveillance.viewcontrollers.SurveillanceVctr", {
     childObject
       .down("hiddenfield[name=decision_table]")
       .setValue(decision_table);
+
+    if (analysis_type_id == 2) {
+      (recomm_id = record.get("recomm_id_screening")),
+        (decision_id = record.get("decision_id_screening")),
+        (comments = record.get("results_comments_screening"));
+    }
+    if (analysis_type_id == 3) {
+      (recomm_id = record.get("recomm_id_tc_meeting")),
+        (decision_id = record.get("decision_id_tc_meeting")),
+        (comments = record.get("results_comments_tc_meeting"));
+    }
+    if (analysis_type_id == 4 || analysis_type_id == 6) {
+      (recomm_id = record.get("recomm_id_confirmatory")),
+        (decision_id = record.get("decision_id_confirmatory")),
+        (comments = record.get("results_comments_confirmatory"));
+    }
     childObject.down("button[name=save_btn]").storeID = storeID;
     childObject.down("hiddenfield[name=id]").setValue(recomm_id);
     childObject.down("hiddenfield[name=sample_id]").setValue(sample_id);

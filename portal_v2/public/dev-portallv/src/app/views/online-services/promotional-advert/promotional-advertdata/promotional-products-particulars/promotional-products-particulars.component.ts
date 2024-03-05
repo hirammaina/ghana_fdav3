@@ -28,6 +28,7 @@ export class PromotionalProductsParticularsComponent  extends SharedpromotionalA
   isproductManufacturerModalShow:boolean;
 
   ngOnInit() {
+    console.log(this.application_id)
     this.addproductGenericNamesFrm = new FormGroup({
       name: new FormControl('', Validators.compose([Validators.required])),
       therapeutic_code: new FormControl('', Validators.compose([])),

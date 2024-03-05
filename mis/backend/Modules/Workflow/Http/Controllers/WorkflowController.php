@@ -700,6 +700,7 @@ class WorkflowController extends Controller
 
             $qry->where($where);
             $results = $qry->first();
+
             //initial status details
             $statusDetails = getApplicationInitialStatus($module_id, $sub_module_id);
             $results->initialAppStatus = $statusDetails->name;

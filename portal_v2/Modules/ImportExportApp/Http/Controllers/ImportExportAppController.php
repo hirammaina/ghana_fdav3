@@ -1430,6 +1430,8 @@ class ImportExportAppController extends Controller
                 //->where(array('t1.trader_id' => $trader_id))
                 ->orderBy('t1.date_added', 'desc');
 
+
+            //  dd($records->get());
             if (validateIsNumeric($trader_id)) {
                 if ($trader_id != 25) {
                     $records->where(array('t1.trader_id' => $trader_id));

@@ -41,6 +41,7 @@ Ext.define("Admin.Application", {
     "SystemAdministrationProcessCtr",
     "DocumentContolManCtr",
     "PvCtr",
+    "EnforcementCtr",
   ],
   defaultToken: "dashboard",
 

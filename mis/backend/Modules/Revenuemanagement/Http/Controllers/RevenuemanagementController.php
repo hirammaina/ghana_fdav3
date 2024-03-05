@@ -1873,11 +1873,13 @@ class RevenuemanagementController extends Controller
 
         $fees_data = array();
 
+
         if ($module_data) {
             $data_query = $module_data->data_query;
             //changed associated records of data query ie put double quotes in section_id
             //$invoice_feessql = DB::select(DB::raw($data_query.' where t1.application_code= '.$application_code));
             $invoice_feessql = DB::select(($data_query . ' where t1.application_code= ' . $application_code)); //Job 25.06.24
+
 
 
 

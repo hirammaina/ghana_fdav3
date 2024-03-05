@@ -1212,7 +1212,7 @@ class ImportexportpermitsController extends Controller
                 ->join('wf_workflow_stages as t5', 't7.current_stage', '=', 't5.id')
                 ->leftJoin('par_system_statuses as t6', 't1.application_status_id', '=', 't6.id')
                 ->join('users as t8', 't7.usr_from', '=', 't8.id')
-                ->join('users as t9', 't7.usr_to', '=', 't9.id')
+                ->leftjoin('users as t9', 't7.usr_to', '=', 't9.id')
                 ->select(DB::raw("CONCAT_WS(' ',decrypt(t8.first_name),decrypt(t8.last_name)) as from_user,CONCAT_WS(' ',decrypt(t9.first_name),decrypt(t9.last_name)) as to_user,  t1.id as active_application_id, t1.application_code, t4.module_id, t4.sub_module_id, t4.section_id,
                     t6.name as application_status, t3.name as applicant_name, t4.name as process_name, t5.name as workflow_stage, t5.is_general, t3.contact_person,
                     t3.tin_no, t3.country_id as app_country_id, t3.region_id as app_region_id, t3.district_id as app_district_id, t3.physical_address as app_physical_address,
@@ -2820,7 +2820,7 @@ class ImportexportpermitsController extends Controller
 
                 if ($res['success']) {
 
-                    initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no, $user_id);
+                    // initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no, $user_id);//Job to reinstate 4.03.2024
                 }
             }
         } catch (\Exception $exception) {

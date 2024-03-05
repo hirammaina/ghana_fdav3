@@ -1,6 +1,6 @@
 var app_connection = 'production';
 if(window.location.hostname =='localhost'){
- //var app_connection = 'development';
+ var app_connection = 'development';
 }
 if(app_connection == 'development'){
 

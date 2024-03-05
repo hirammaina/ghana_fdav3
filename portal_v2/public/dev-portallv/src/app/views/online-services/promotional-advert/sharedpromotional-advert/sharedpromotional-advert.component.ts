@@ -702,6 +702,7 @@ export class SharedpromotionalAdvertComponent implements OnInit {
     if (this.promotionalProductparticularsfrm.invalid) {
       return;
     }
+    console.log(this.application_id)
     this.promotionalProductparticularsfrm.patchValue({application_id:this.application_id});
     this.appService.onSavePromotionalAdvertapplication(this.promotionalProductparticularsfrm.value, 'promotionadverts/OnSavePromotionalProductParticulars')
       .subscribe(

@@ -1183,7 +1183,6 @@ class SurveillanceController extends Controller
     {
         $application_id = $request->input('application_id');
         $analysis_type_id = $request->input('analysis_type_id');
-        $analysis_type_id = 1;
         $recommendation_id = $request->input('recommendation_id');
         $stage_id = $request->input('stage_id');
         try {
@@ -1203,13 +1202,18 @@ class SurveillanceController extends Controller
                 $qry->leftJoin('par_pmsevaluation_decisions as t22', 't21.decision_id', '=', 't22.id');
             } else if ($analysis_type_id == 2) { //Screening
                 $qry->leftJoin('par_pmsscreening_decisions as t22', 't21.decision_id', '=', 't22.id');
+                $qry->addSelect("t21.id as recomm_id_screening", "t21.decision_id as decision_id_screening", "t21.comments as results_comments_screening");
             } else if ($analysis_type_id == 3) { //TC Meeting
                 $qry->leftJoin('par_pmstcmeeting_decisions as t22', 't21.decision_id', '=', 't22.id');
+                $qry->addSelect("t21.id as recomm_id_tc_meeting", "t21.decision_id as decision_id_tc_meeting", "t21.comments as results_comments_tc_meeting");
             } else if ($analysis_type_id == 4) { //Conformatory
                 $qry->leftJoin('par_pmsanalysis_decisions as t22', 't21.decision_id', '=', 't22.id');
+                $qry->addSelect("t21.id as recomm_id_confirmatory", "t21.decision_id as decision_id_confirmatory", "t21.comments as results_comments_confirmatory");
             } else if ($analysis_type_id == 6) { //Conformatory
                 $qry->leftJoin('par_pmsevaluation_decisions as t22', 't21.decision_id', '=', 't22.id');
+                $qry->addSelect("t21.id as recomm_id_confirmatory", "t21.decision_id as decision_id_confirmatory", "t21.comments as results_comments_confirmatory");
             }
+
             $qry->addSelect('t21.id as recomm_id', 't22.name as sample_analysis_status', 't21.decision_id', 't21.comments as results_comments', 't22.name as recommendation')
                 ->where('t1.application_id', $application_id);
             if (validateIsNumeric($stage_id)) {
