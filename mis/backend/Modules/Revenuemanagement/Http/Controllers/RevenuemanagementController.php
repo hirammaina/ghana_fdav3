@@ -738,8 +738,11 @@ class RevenuemanagementController extends Controller
         $application_code = $request->input('application_code');
 
         try {
+            // $rec = DB::table('tra_invoicecancellation_requests as t1')
+            //     ->where(array('id' => $cancellation_id, 'application_code' => $application_code))
+            //     ->first();
             $rec = DB::table('tra_invoicecancellation_requests as t1')
-                ->where(array('id' => $cancellation_id, 'application_code' => $application_code))
+                ->where(array('application_code' => $application_code))
                 ->first();
             if ($rec) {
                 $invoice_id = $rec->invoice_id;
@@ -786,7 +789,9 @@ class RevenuemanagementController extends Controller
                     'workflow_stage_id' => 0,
                     'dola' => Carbon::now()
                 );
-                DB::table('tra_invoicecancellation_requests')->where(array('id' => $cancellation_id, 'application_code' => $application_code))->update($data);
+                DB::table('tra_invoicecancellation_requests')->where(array('application_code' => $application_code))->update($data);
+
+                //DB::table('tra_invoicecancellation_requests')->where(array('id' => $cancellation_id, 'application_code' => $application_code))->update($data);
 
                 //close and disable the invoices 
                 $where = array('application_id' => $cancellation_id, 'application_code' => $application_code);
@@ -817,7 +822,9 @@ class RevenuemanagementController extends Controller
         $table_name = 'tra_paymentreversal_requests';
         try {
             $rec = DB::table($table_name . '  as t1')
-                ->where(array('id' => $cancellation_id, 'application_code' => $application_code))
+                ->where(array('application_code' => $application_code)) //Job to return 
+                // ->where(array('id' => $cancellation_id, 'application_code' => $application_code))
+
                 ->first();
             if ($rec) {
                 $receipt_id = $rec->receipt_id;
@@ -842,7 +849,7 @@ class RevenuemanagementController extends Controller
                     'workflow_stage_id' => 0,
                     'dola' => Carbon::now()
                 );
-                DB::table($table_name)->where(array('id' => $cancellation_id, 'application_code' => $application_code))->update($data);
+                DB::table($table_name)->where(array('application_code' => $application_code))->update($data);
 
                 //close and disable the invoices 
                 $where = array('application_id' => $cancellation_id, 'application_code' => $application_code);
@@ -1846,6 +1853,7 @@ class RevenuemanagementController extends Controller
             ->select('t1.*')
             ->where('application_code', $application_code)
             ->first();
+
         $sub_module_id = $rec->sub_module_id;
         $module_id = $rec->module_id;
         $section_id = $rec->section_id;

@@ -32,6 +32,53 @@ class DbHelper
         DB::connection('audit_db')->table('tra_misaudit_trail')->insert($audit_detail);
         return $record_id;
     }
+
+
+    static function updateRecordNoPrevious($table_name, $where_opt, $current_data, $user_id, $con)
+    {
+        $res = array();
+        if ($user_id == null) {
+            $user_id = \Auth::user()->id;
+        }
+        try {
+            $previous_data = self::getPreviousRecords($table_name, $where_opt, $con);
+            if ($previous_data['success'] == false) {
+                $previous_data = [];
+            }
+            $previous_data = $previous_data['results'];
+            if (!isset($current_data['dola'])) {
+                $current_data['dola'] = Carbon::now();
+            }
+            if (!isset($current_data['altered_by'])) {
+                $current_data['altered_by'] = $user_id;
+            }
+            //unset just in case they were passed during update
+            unset($current_data['created_on']);
+            unset($current_data['created_by']);
+
+            DB::transaction(function () use ($con, $table_name, $previous_data, $where_opt, $current_data, $user_id, &$res) {
+                $update = self::updateRecordNoTransaction($con, $table_name, $previous_data, $where_opt, $current_data, $user_id);
+                if ($update['success'] == true) {
+                    $res = array(
+                        'success' => true,
+                        'record_id' => $update['record_id'],
+                        'message' => 'Data updated Successfully!!'
+                    );
+                } else {
+                    $res = $update;
+                }
+            }, 5);
+        } catch (\PDOException $exception) {
+            //the previous one ended
+            $res = self::sys_error_handler($exception->getMessage(), 3, "Database Error Check error for details", "updateRecord", explode('\\', __CLASS__), \Auth::user()->id);
+        } catch (\Exception $exception) {
+            $res = self::sys_error_handler($exception->getMessage(), 3, "Database Error Check error for details", "updateRecord", explode('\\', __CLASS__), \Auth::user()->id);
+        } catch (\Throwable $throwable) {
+        }
+        return $res;
+    }
+
+
     public static function updateRecordNoTransaction($con, $table_name, $previous_data, $where_data, $current_data, $user_id)
     {
         try {
@@ -883,6 +930,99 @@ class DbHelper
         }
         return $array;
     }
+
+
+    static function insertMultipleRecords($table_name, $table_data, $user_id, $con)
+    {
+        $res = array();
+        if ($user_id == null) {
+            $user_id = \Auth::user()->id;
+        }
+        try {
+
+            DB::transaction(function () use ($con, $table_name, $table_data, $user_id, &$res) {
+
+                $res = array(
+                    'success' => true,
+                    'affected_rows' => self::insertMultipleRecordNoTransaction($table_name, $table_data, $user_id, $con),
+                    'message' => 'Data Saved Successfully!!'
+                );
+            }, 5);
+        } catch (\Exception $exception) {
+            $res = array(
+                'success' => false,
+                'message' => $exception->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return $res;
+    }
+
+    public static function insertMultipleRecordNoTransaction($table_name, $table_data, $user_id, $con = 'mysql')
+    {
+        $record_id = DB::connection($con)->table($table_name)->insert($table_data);
+        $data = serialize($table_data);
+        $audit_detail = array(
+            'table_name' => $table_name,
+            'table_action' => 'insert',
+            'record_id' => $record_id,
+            'current_tabledata' => $data,
+            'ip_address' => self::getIPAddress(),
+            'created_by' => $user_id,
+            'created_at' => Carbon::now()
+        );
+        self::logAuditedTables($table_name, $record_id, $user_id, "Insert");
+        DB::connection('audit_db')->table('tra_misaudit_trail')->insert($audit_detail);
+        return $record_id;
+    }
+
+    static function logAuditedTables($table_name, $record_id, $user_id, $event)
+    {
+
+        $table_array = DB::table('par_audited_tables')->select('audited_table_name')->get();
+        $logged_tables = $table_array->pluck('audited_table_name');
+        $logged_tables_array = self::convertStdClassObjToArray($logged_tables);
+        // dd($logged_tables_array);
+        if (in_array($table_name, $logged_tables_array)) {
+            $loggind_data = DB::table('par_audited_tables')->where('audited_table_name', $table_name)->first();
+            $qry = $loggind_data->logging_query;
+            $log_data = DB::select($qry . " where t1.id = " . $record_id);
+            $log_data_array = convertStdClassObjToArray($log_data);
+            if (isset($log_data_array[0])) {
+                $flat_log_data_array = $log_data_array[0];
+            } else {
+                $flat_log_data_array = [];
+            }
+
+            $flat_log_data_array['event'] = $event;
+            $flat_log_data_array['action_by'] = $user_id;
+            $flat_log_data_array['action_date'] = Carbon::now();
+            $flat_log_data_array['new_id'] = $record_id;
+            unset($flat_log_data_array['id']);
+            //incase empty data resulted.
+            if (empty($flat_log_data_array)) {
+                DB::table('error_logs')->insert(['error' => "error logging the set" . $event . " on table " . $table_name . " for record id " . $record_id . " a critical issue on audit process", 'error_level_id' => 1, 'originated_from_user_id' => $user_id]);
+            }
+            //check if log table exists
+            $log_table = $table_name . "_sys_logs";
+            if (DB::getSchemaBuilder()->hasTable($log_table)) {
+                DB::table($table_name . "_sys_logs")->insert($flat_log_data_array);
+            } else {
+                //create table based on data
+                $createTbl = DB::select("CREATE TABLE " . $log_table . " (`id` INT(10) UNSIGNED NOT NULL)");
+                DB::unprepared("ALTER TABLE " . $log_table . " MODIFY id INT AUTO_INCREMENT PRIMARY KEY");
+                foreach ($flat_log_data_array as $key => $value) {
+                    DB::unprepared("ALTER TABLE " . $log_table . " ADD COLUMN `" . $key . "` TEXT NULL DEFAULT NULL");
+                }
+                DB::table($table_name . "_sys_logs")->insert($flat_log_data_array);
+            }
+        }
+    }
+
 
     static function createInitialRegistrationRecord($reg_table, $application_table, $reg_params, $application_id, $reg_column)
     {

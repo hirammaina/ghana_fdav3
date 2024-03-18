@@ -355,6 +355,7 @@ export class SharedProductregistrationclassComponent implements OnInit {
  
             for (let form_field of this.form_fielddata) {
               let field_name = form_field['field_name'];
+              console.log(field_name)
               if(form_field['is_mandatory'] ==1){
                 me.productGeneraldetailsfrm.addControl(field_name,new FormControl('', Validators.required));
 

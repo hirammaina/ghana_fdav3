@@ -932,7 +932,7 @@ class ImportExportAppController extends Controller
                 $application_id = $record_id;
 
                 if ($resp['success']) {
-                    initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no, $trader_id);
+                    // initializeApplicationDMS($section_id, $module_id, $sub_module_id, $application_code, $tracking_no, $trader_id);//to reinstate
                     saveApplicationSubmissionDetails($application_code, $table_name);
                 }
             }

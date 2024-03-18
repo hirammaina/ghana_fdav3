@@ -560,6 +560,7 @@ Ext.define("Admin.controller.EnforcementCtr", {
       "*": {
         onNewEnforcementApplication: "onNewEnforcementApplication",
         setCompStore: "setCompStore",
+        setGridStore: "setGridStore",
 
         onMonitoringComplianceApplication: "onMonitoringComplianceApplication",
         onNewJointOperationsApplication: "onNewJointOperationsApplication",
@@ -604,6 +605,22 @@ Ext.define("Admin.controller.EnforcementCtr", {
         config
       );
     me.setStore(store);
+    if (isLoad === true || isLoad == true) {
+      store.removeAll();
+      store.load();
+    }
+  },
+
+  setGridStore: function (me, options) {
+    var config = options.config,
+      isLoad = options.isLoad,
+      toolbar = me.down("pagingtoolbar"),
+      store = Ext.create(
+        "Admin.store.gmpApplications.GmpAppGridAbstractStore",
+        config
+      );
+    me.setStore(store);
+    toolbar.setStore(store);
     if (isLoad === true || isLoad == true) {
       store.removeAll();
       store.load();
@@ -1983,6 +2000,7 @@ Ext.define("Admin.controller.EnforcementCtr", {
         .down("hiddenfield[name=active_application_code]")
         .getValue(),
       valid = true,
+      gridXtype = btn.gridXtype,
       storeID = getApplicationStore(module_id, section_id),
       //table_name = getApplicationTable(module_id);
       table_name = "tra_enforcement_applications";
@@ -1990,13 +2008,26 @@ Ext.define("Admin.controller.EnforcementCtr", {
       table_name = "tra_enforcement_applications";
     }
     if (valid == true || valid === true) {
+      //   showWorkflowSubmissionWin(
+      //     application_id,
+      //     application_code,
+      //     table_name,
+      //     "workflowsubmissionmanagersgenericfrm",
+      //     winWidth,
+      //     storeID,
+      //     null,
+      //     gridXtype
+      //   );
+      ///Job to reinstate below,remove
       showWorkflowSubmissionWin(
         application_id,
         application_code,
         table_name,
         "workflowinvestigationsubmissionsfrm",
         winWidth,
-        storeID
+        storeID,
+        null,
+        gridXtype
       );
     } else {
       Ext.getBody().unmask();

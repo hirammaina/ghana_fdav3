@@ -23,6 +23,7 @@ use Modules\Parameters\Entities\Locations\SubCounty;
 use Modules\Parameters\Entities\Locations\City;
 use Modules\Parameters\Entities\PortalParameter;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class CommonParameterController extends BaseController
 {
@@ -793,7 +794,12 @@ class CommonParameterController extends BaseController
                 $qry = DB::connection($db_con)
                     ->table($table_name . ' as t1')
                     ->leftJoin('par_currencies as t3', 't1.currency_id', '=', 't3.id')
-                    ->select('t1.*', 't3.name as currency_name');
+                    ->select(
+                        't1.*',
+                        't3.name as currency_name',
+                        DB::raw('DATEDIFF(NOW(), t1.dola) AS days_since_last_change'),
+                        DB::raw('(DATEDIFF(NOW(), t1.dola)) % 15 AS number_of_days')
+                    );
             } else if ($table_name == 'par_servicecharter_configurations') {
                 $qry = DB::connection($db_con)
                     ->table($table_name . ' as t1')

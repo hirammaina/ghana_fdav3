@@ -27,6 +27,17 @@ Ext.define(
             xtype: "productlinedetailsinspectiongrid",
             title: "Manufacturing Site Product Line Details Recommendations",
           },
+
+          {
+            title: "Inspection Checklists",
+            layout: "fit",
+            items: [
+              {
+                xtype: "productscreeninggrid",
+              },
+            ],
+          },
+
           {
             xtype: "panel",
             title: "Inspection Details & Inspectors",

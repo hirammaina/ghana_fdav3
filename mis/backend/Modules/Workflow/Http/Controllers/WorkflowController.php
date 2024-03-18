@@ -18,7 +18,7 @@ use Modules\Importexportpermits\Traits\ImportexportpermitsTraits;
 use Modules\Reports\Traits\ReportsTrait;
 use Modules\PromotionMaterials\Traits\PromotionMaterialsTrait;
 use Modules\ProductNotification\Traits\ProductsNotificationTrait;
-
+use Modules\Enforcement\Traits\EnforcementTrait;
 use Modules\Revenuemanagement\Traits\RevenuemanagementTrait;
 use Illuminate\Support\Arr;
 
@@ -35,6 +35,7 @@ class WorkflowController extends Controller
     use PromotionMaterialsTrait;
     use ProductsNotificationTrait;
     use RevenuemanagementTrait;
+    use EnforcementTrait;
 
     protected $base_url;
     public function __construct(Request $req)
@@ -2785,6 +2786,8 @@ class WorkflowController extends Controller
             $this->processImportExportApplicationSubmission($request);
         } else if ($module_id == 23) { //PV
             $this->processClinicalTrialApplicationsSubmission($request);
+        } else if ($module_id == 30) { //LAW ENFORCEMENT
+            $this->processNormalApplicationSubmission($request);
         } else {
             echo "module not set";
         }
@@ -2813,6 +2816,8 @@ class WorkflowController extends Controller
             $this->processImportExportManagersApplicationSubmission($request);
         } else if ($module_id == 23) { //CLINICAL TRIAL
             $this->processClinicalTrialManagersApplicationSubmission($request);
+        } else if ($module_id == 30) { //Enforcement
+            $this->processManagerInvestigationApplicationSubmission($request);
         } else {
             //unknown module
             echo "module not set";

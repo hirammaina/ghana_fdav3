@@ -1225,6 +1225,7 @@ class ImportexportpermitsController extends Controller
 
             if (validateIsNumeric($section_id)) {
                 $qry->where('t1.section_id', $section_id);
+                //$qry->where("t7.id", "116304");
             }
             if (validateIsNumeric($sub_module_id)) {
                 $qry->where('t1.sub_module_id', $sub_module_id);
@@ -3864,6 +3865,7 @@ class ImportexportpermitsController extends Controller
 
 
         $table_name = 'tra_importexport_applications';
+
         try {
 
 
@@ -3871,7 +3873,7 @@ class ImportexportpermitsController extends Controller
                 ->leftJoin('wb_trader_account as t3', 't1.applicant_id', '=', 't3.id')
                 ->leftJoin('par_system_statuses as t4', 't1.application_status_id', '=', 't4.id')
                 ->leftJoin('tra_premises as t5', 't1.premise_id', '=', 't5.id')
-                ->leftjoin('tra_submissions as t6', 't1.application_code', '=', 't6.application_code')
+                //->leftjoin('tra_submissions as t6', 't1.application_code', '=', 't6.application_code');
                 ->leftJoin('tra_managerpermits_review as t7', 't1.application_code', '=', 't7.application_code')
                 ->leftJoin('par_approval_decisions as t8', 't7.decision_id', '=', 't8.id')
                 ->leftJoin('tra_permitsrelease_recommendation as t9', 't1.application_code', '=', 't9.application_code')
@@ -3886,9 +3888,11 @@ class ImportexportpermitsController extends Controller
                     't10.description as release_recommendation',
                     't1.id as active_application_id',
                     't8.name as recommendation'
-                )
-                //->where(array('t6.current_stage' => $workflow_stage, 'isDone' => 0, 't1.section_id' => $section_id))
-                ->orderBy('t1.id', 'desc');
+                );
+            // //->where(array('t6.current_stage' => $workflow_stage, 'isDone' => 0, 't1.section_id' => $section_id))
+            // ->orderBy('t1.id', 'desc');
+
+
             if (validateIsNumeric(($workflow_stage)) && validateIsNumeric(($section_id))) {
                 $qry->where(array('t6.current_stage' => $workflow_stage, 'isDone' => 0, 't1.section_id' => $section_id));
             }

@@ -778,9 +778,16 @@ h1 {
 
 .x-panel-header-default-framed-top {
     padding: 6px 8px 6px 8px !important;
+    background-color: #167abc !important;
 }
 
 .x-panel-header-default-horizontal.x-header-noborder {
     padding: 6px 8px 6px 8px !important;
+}
+
+
+.x-title-text-default-framed
+{
+    background-color: #167abc !important;
 }
 

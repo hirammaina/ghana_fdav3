@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: softclans
@@ -37,18 +38,19 @@ class BaseController extends Controller
         }
     }
 
-    protected function validateParameterRequest($request, $foreignKey = null) {
+    protected function validateParameterRequest($request, $foreignKey = null)
+    {
         $validator = null;
 
-        if($request->isMethod("PUT")) {
-            if(!$foreignKey) {
-                $validator = Validator::make($request -> all(), [
+        if ($request->isMethod("PUT")) {
+            if (!$foreignKey) {
+                $validator = Validator::make($request->all(), [
                     "id" => "required|Integer",
                     "name" => "required|max:255",
                     "description" => "sometimes|max:255"
                 ]);
             } else {
-                $validator = Validator::make($request -> all(), [
+                $validator = Validator::make($request->all(), [
                     "id" => "required|Integer",
                     "name" => "required|max:255",
                     "description" => "sometimes|max:255",
@@ -56,7 +58,7 @@ class BaseController extends Controller
                 ]);
             }
         } else {
-            if(!$foreignKey) {
+            if (!$foreignKey) {
                 $validator = Validator::make($request->all(), [
                     "name" => "required|max:255",
                     "description" => "sometimes|max:255"
@@ -73,9 +75,10 @@ class BaseController extends Controller
         return $validator;
     }
 
-    protected function tryAndHandleErrorException(\ErrorException $e, $action, $entity) {
-        if(strtolower(trim($e->getMessage())) === trim("undefined index: $action-$entity")) {
-            return response() -> json([
+    protected function tryAndHandleErrorException(\ErrorException $e, $action, $entity)
+    {
+        if (strtolower(trim($e->getMessage())) === trim("undefined index: $action-$entity")) {
+            return response()->json([
                 "success" =>  false,
                 "message" => "The entity specified does not exist"
             ]);
@@ -125,45 +128,44 @@ class BaseController extends Controller
      */
     public function getParameters(Request $request, $entity)
     {
-      
-        $validator = Validator::make($request -> all(), [
+
+        $validator = Validator::make($request->all(), [
             "start" => "sometimes|Integer",
             "limit" => "sometimes|Integer"
         ]);
 
-        if($validator->fails()) {
-            return response() -> json([
+        if ($validator->fails()) {
+            return response()->json([
                 "success" =>  false,
                 "message" => "Request has errors",
-                "errors" => $validator -> errors()
+                "errors" => $validator->errors()
             ]);
         }
 
-        $start = $request -> input('start');
-        $limit = $request -> input('limit');
-        $filter = $request -> input('filter');
+        $start = $request->input('start');
+        $limit = $request->input('limit');
+        $filter = $request->input('filter');
 
         $doRetrieveAll = false;
         $all = $request->input('all');
-        if($all && $all == 1) {
+        if ($all && $all == 1) {
             $doRetrieveAll = true;
         }
         $entity = strtolower($entity);
         $response = null;
         try {
-            $handler = $this->invoker['get-'.$entity];
-            if($filter) {
+            $handler = $this->invoker['get-' . $entity];
+            if ($filter) {
                 $response = $handler($start, $limit, $doRetrieveAll, $filter);
             } else {
                 $response = $handler($start, $limit, $doRetrieveAll);
             }
-
         } catch (\ErrorException $e) {
-            
+
             return $this->tryAndHandleErrorException($e, "get", $entity);
         }
 
-        return response() -> json([
+        return response()->json([
             "success" => true,
             "message" => count($response["records"]) . " $entity(s) have been retrieved",
             "total" => $response["total"],
@@ -172,26 +174,27 @@ class BaseController extends Controller
         ]);
     }
 
-    public function merge(Request $request, $entity) {
-        $validator = Validator::make($request -> all(), [
+    public function merge(Request $request, $entity)
+    {
+        $validator = Validator::make($request->all(), [
             "mergeToId" => "required|Integer",
             "ids" => "required|Array",
             "ids.*" => 'integer'
         ]);
 
-        if($validator->fails()) {
-            return response() -> json([
+        if ($validator->fails()) {
+            return response()->json([
                 "success" =>  false,
                 "message" => "Request has errors",
-                "errors" => $validator -> errors()
+                "errors" => $validator->errors()
             ]);
         }
 
         $entity = strtolower($entity);
 
         try {
-            $handler = $this->invoker['merge-'.$entity];
-            return response() -> json($handler($request));
+            $handler = $this->invoker['merge-' . $entity];
+            return response()->json($handler($request));
         } catch (\ErrorException $e) {
             return $this->tryAndHandleErrorException($e, "merge", $entity);
         }
@@ -202,35 +205,37 @@ class BaseController extends Controller
         $entity = strtolower($entity);
 
         try {
-            $handler = $this->invoker['delete-'.$entity];
-            return response() -> json($handler($id, $action));
+            $handler = $this->invoker['delete-' . $entity];
+            return response()->json($handler($id, $action));
         } catch (\ErrorException $e) {
             return $this->tryAndHandleErrorException($e, "delete", $entity);
         }
     }
 
-    public function parseFilter($filter){
-       return json_decode($filter,true);
+    public function parseFilter($filter)
+    {
+        return json_decode($filter, true);
     }
 
-    public function parseFilter1($filterStr) {
-        $filterStr = rtrim($filterStr, ';').';';
+    public function parseFilter1($filterStr)
+    {
+        $filterStr = rtrim($filterStr, ';') . ';';
         $regex = '/^([a-zA-Z_]+:([a-zA-Z0-9]+(,[a-zA-Z0-9]+)*);)+$/';
         $match = preg_match_all($regex, $filterStr);
-        if(!$match) {
+        if (!$match) {
             throw new \Exception("The filter is in the wrong format");
         }
         $filterStr = substr($filterStr, 0, -1);
         $filter = [];
         $filterParams = explode(";", $filterStr);
-        foreach($filterParams as $filterParam) {
+        foreach ($filterParams as $filterParam) {
             $paramNameAndValues = explode(",", $filterParam);
             $paramNameAndFirstValue = explode(":", $paramNameAndValues[0]);
             $values = [
                 $paramNameAndFirstValue[1]
             ];
 
-            for($i = 1; $i < count($paramNameAndValues); $i++) {
+            for ($i = 1; $i < count($paramNameAndValues); $i++) {
                 array_push($values, $paramNameAndValues[$i]);
             }
             $filter[$paramNameAndFirstValue[0]] = $values;

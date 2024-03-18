@@ -2720,7 +2720,7 @@ class CommonController extends Controller
     {
         $application_code = $request->input('application_code');
         try {
-            $invoiceIsGenerated = true; //revert to false on the deployment 
+            $invoiceIsGenerated = false; //revert to false on the deployment 
             $records = DB::table('tra_application_invoices')
                 ->where('application_code', $application_code)
                 ->get();

@@ -83,6 +83,9 @@ export class MedicaldevicesProductsdetailsComponent  extends SharedProductregist
   isHasMedicalFamily:boolean = false;
   isonHasReagents_accessories:boolean = false;
 
+  //Job on 18.03.24
+  classification_id:number;
+
  
   ngOnInit() {
     this.onLoadGmdnCodeData(this.section_id);
@@ -284,6 +287,9 @@ onclassificationDevTypeDataSelect($event) {
   let device_type_id =  this.productGeneraldetailsfrm.get('device_type_id').value;
   let classification_id =  this.productGeneraldetailsfrm.get('classification_id').value;
   this.onLoadreasonForClassificationData(device_type_id,classification_id);
+  console.log(classification_id)
+  this.classification_id=classification_id;
+  console.log(this.classificationData)
 }
 
 }

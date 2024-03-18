@@ -61,7 +61,9 @@ Route::group(['prefix' => 'revenuemanagement', 'middleware' => ['auth:api', 'web
     Route::get('getRetentionPendingInvoicesdetails', [RevenuemanagementController::class, 'getRetentionPendingInvoicesdetails']);
     Route::get('getRetentionAplicantsDetails', [RetentionmanagementController::class, 'getRetentionAplicantsDetails']);
     Route::get('getRetentionChargesPaymentsdetails', [RetentionmanagementController::class, 'getRetentionChargesPaymentsdetails']);
-    Route::get('prepareAdhocInvoiceRequestpnl', [RetentionmanagementController::class, 'prepareAdhocInvoiceRequestpnl']);
+    // Route::get('prepareAdhocInvoiceRequestpnl', [RetentionmanagementController::class, 'prepareAdhocInvoiceRequestpnl']);
+    Route::get('prepareAdhocInvoiceRequestpnl', [RevenuemanagementController::class, 'prepareAdhocInvoiceRequestpnl']);
+
     Route::post('saveAdhocApplicationInvoiceDetails', [RevenuemanagementController::class, 'saveAdhocApplicationInvoiceDetails']);
 
     Route::post('saveapplicationreceiceinvoiceDetails', [RevenuemanagementController::class, 'saveapplicationreceiceinvoiceDetails']);

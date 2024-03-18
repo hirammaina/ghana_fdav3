@@ -502,6 +502,13 @@ if (!function_exists('unsetArrayData')) {
     }
 }
 
+if (!function_exists('insertMultipleRecords')) {
+    function insertMultipleRecords($table_name, $table_data, $user_id = 0, $con = 'mysql')
+    {
+
+        return DbHelper::insertMultipleRecords($table_name, $table_data, $user_id, $con);
+    }
+}
 if (!function_exists('formatBytes')) {
     function formatBytes($size, $precision = 2)
     {
@@ -1241,6 +1248,12 @@ if (!function_exists('funcSaveOnlineDisposalOtherdetails')) {
     function funcSaveOnlineDisposalOtherdetails($application_code, $user_id)
     {
         return UtilityHelper::funcSaveOnlineDisposalOtherdetails($application_code, $user_id);
+    }
+}
+if (!function_exists('updateRecordNoPrevious')) {
+    function updateRecordNoPrevious($table_name, $where, $table_data, $user_id = null, $con = 'mysql')
+    {
+        return DbHelper::updateRecordNoPrevious($table_name, $where, $table_data, $user_id, $con);
     }
 }
 

@@ -8,15 +8,15 @@ use Illuminate\Http\Request;
 
 trait RevenuemanagementTrait
 {
-    
+
     public function processRevenueApplicationSubmission(Request $request)
-    {   
+    {
 
         $user_id = $this->user_id;
         $directive_id = $request->input('directive_id');
         $action = $request->input('action');
         $prev_stage = $request->input('curr_stage_id');
-        
+
         $next_stage = $request->input('next_stage');
         $section_id = $request->input('section_id');
         $sub_module_id = $request->input('sub_module_id');
@@ -25,171 +25,170 @@ trait RevenuemanagementTrait
         $keep_status = $request->input('keep_status');
         $application_id = $request->input('application_id');
         $process_id = $request->input('process_id');
-        try{
-                $data = DB::table('wf_workflow_actions')
-                        ->where(array('stage_id'=>$request->curr_stage_id,'id'=>$request->action))
-                        ->select('*')
-                        ->first();
-                       
-                if($data){
-                    
-                    $view_id = generateApplicationViewID();
-                    if ($sub_module_id == 43) {
-                        $table_name = 'tra_paymentreversal_requests';
-                        $data = array('application_code'=>$request->application_code, 
-                                        'receipt_id'=>$request->receipt_id,
-                                        'requested_by_id'=>$this->user_id,
-                                        'requested_on'=>Carbon::now(),
-                                        'view_id'=>$view_id,'process_id' => $process_id,
-                                        'reason_for_cancellation'=>$request->reason_for_cancellation,
-                                        'created_on'=>Carbon::now(),
-                                        'created_by'=>$this->user_id,
-                                        'workflow_stage_id'=>$next_stage
-                                );
-                                $res = insertRecord($table_name, $data, $this->user_id);
-                                $application_id = $res['record_id'];
+        try {
+            $data = DB::table('wf_workflow_actions')
+                ->where(array('stage_id' => $request->curr_stage_id, 'id' => $request->action))
+                ->select('*')
+                ->first();
 
+            if ($data) {
 
-                    }
-                    else if ($sub_module_id == 42){
-                        $table_name = 'tra_invoicecancellation_requests';
-                        $data = array('application_code'=>$request->application_code, 
-                                            'invoice_id'=>$request->invoice_id,
-                                            'requested_by_id'=>$this->user_id,
-                                            'requested_on'=>Carbon::now(),
-                                            'view_id'=>$view_id,'process_id' => $process_id,
-                                            'reason_for_cancellation'=>$request->reason_for_cancellation,
-                                            'created_on'=>Carbon::now(),
-                                            'created_by'=>$this->user_id,
-                                            'workflow_stage_id'=>$next_stage
-                                    );
-                                    $res = insertRecord($table_name, $data, $this->user_id);
-                                    $application_id = $res['record_id'];
-                    }else if ($sub_module_id == 44){
-                        $table_name = 'tra_paymentcreditnote_requests';
-                         $data = array('application_code'=>$request->application_code, 
-                                            'invoice_id'=>$request->invoice_id,
-                                            'requested_by_id'=>$this->user_id,
-                                            'requested_on'=>Carbon::now(),
-                                            'view_id'=>$view_id,'process_id' => $process_id,
-                                            'reason_for_request'=>$request->reason_for_request,
-                                            'credit_note_amount'=>$request->credit_note_amount,
-                                            'currency_id'=>$request->currency_id,
-                                            'exchange_rate'=>$request->exchange_rate,
-                                            'created_on'=>Carbon::now(),
-                                            'created_by'=>$this->user_id,
-                                            'workflow_stage_id'=>$next_stage
-                                    );
-                                    $res = insertRecord($table_name, $data, $this->user_id);
-                                $application_id = $res['record_id'];
-                    }else{
-                        $table_name = 'tra_adhocinvoices_applications';
-                    }
-                        
-                       
-                        $from_stage = $request->input('curr_stage_id');
-                        $to_stage = $request->input('next_stage');
-                        $responsible_user = $request->input('responsible_user');
-                        $remarks = $request->input('remarks');
-                        $urgency = $request->input('urgency');
-                        $directive_id = $request->input('directive_id');
-                        //application details
-
-                        $application_code = $request->application_code;
-                        $ref_no = $request->reference_no;
-                        $tracking_no = $request->tracking_no;
-                        $applicant_id = $request->applicant_id;
-                        //process other details
-                        $module_id = $request->module_id;
-                        $sub_module_id = $request->sub_module_id;
-                        $section_id = $request->section_id;
-                        $application_status_id = $request->application_status_id;
-
-                        //transitions
-                        $transition_params = array(
-                            'application_id' => $application_id,
-                            'application_code' => $application_code,
-                            'application_status_id' => $application_status_id,
-                            'process_id' => $process_id,
-                            'from_stage' => $from_stage,
-                            'to_stage' => $to_stage,
-                            'author' => $user_id,
-                            'remarks' => $remarks,
-                            'directive_id' => $directive_id,
-                            'created_on' => Carbon::now(),
-                            'created_by' => $user_id
-                        );
-                        
-                        DB::table('tra_applications_transitions')
-                            ->insert($transition_params);
-                        //submissions
-                        $submission_params = array(
-                            'application_id' => $application_id,
-                            'process_id' => $process_id,
-                            'view_id' => $view_id,
-                            'application_code' => $application_code,
-                            'reference_no' => $ref_no,
-                            'tracking_no' => $tracking_no,
-                            'usr_from' => $user_id,
-                            'usr_to' => $responsible_user,
-                            'previous_stage' => $from_stage,
-                            'current_stage' => $to_stage,
-                            'module_id' => $module_id,
-                            'sub_module_id' => $sub_module_id,
-                            'section_id' => $section_id,
-                            'application_status_id' => $application_status_id,
-                            'urgency' => $urgency,
-                            'applicant_id' => $applicant_id,
-                            'remarks' => $remarks,
-                            'directive_id' => $directive_id,
-                            'date_received' => Carbon::now(),
-                            'created_on' => Carbon::now(),
-                            'created_by' => $user_id
-                        );
-                        DB::table('tra_submissions')
-                            ->insert($submission_params);
-                        updateInTraySubmissions($application_id, $application_code, $from_stage, $user_id);
-                        DB::commit();
-                        
-                        $where = array(
-                            'application_code' => $application_code
-                        );
-                        $app_update = array(
-                            'workflow_stage_id' => $to_stage,
-                            'application_status_id' => $application_status_id
-                        );
-                        $prev_data = getPreviousRecords($table_name, $where);
-                        if ($prev_data['success'] == false) {
-                            echo json_encode($prev_data);
-                            exit();
-                        }
-                        $update_res = updateRecord($table_name, $prev_data['results'], $where, $app_update, $user_id);
-                        $res = array(
-                            'success' => true,
-                            'message' => 'Application Submitted Successfully!!'
-                        );
+                $view_id = generateApplicationViewID();
+                if ($sub_module_id == 43) {
+                    $table_name = 'tra_paymentreversal_requests';
+                    $data = array(
+                        'application_code' => $request->application_code,
+                        'receipt_id' => $request->receipt_id,
+                        'requested_by_id' => $this->user_id,
+                        'requested_on' => Carbon::now(),
+                        'view_id' => $view_id, 'process_id' => $process_id,
+                        'reason_for_cancellation' => $request->reason_for_cancellation,
+                        'created_on' => Carbon::now(),
+                        'created_by' => $this->user_id,
+                        'workflow_stage_id' => $next_stage
+                    );
+                    $res = insertRecord($table_name, $data, $this->user_id);
+                    $application_id = $res['record_id'];
+                } else if ($sub_module_id == 42) {
+                    $table_name = 'tra_invoicecancellation_requests';
+                    $data = array(
+                        'application_code' => $request->application_code,
+                        'invoice_id' => $request->invoice_id,
+                        'requested_by_id' => $this->user_id,
+                        'requested_on' => Carbon::now(),
+                        'view_id' => $view_id, 'process_id' => $process_id,
+                        'reason_for_cancellation' => $request->reason_for_cancellation,
+                        'created_on' => Carbon::now(),
+                        'created_by' => $this->user_id,
+                        'workflow_stage_id' => $next_stage
+                    );
+                    $res = insertRecord($table_name, $data, $this->user_id);
+                    $application_id = $res['record_id'];
+                } else if ($sub_module_id == 44) {
+                    $table_name = 'tra_paymentcreditnote_requests';
+                    $data = array(
+                        'application_code' => $request->application_code,
+                        'invoice_id' => $request->invoice_id,
+                        'requested_by_id' => $this->user_id,
+                        'requested_on' => Carbon::now(),
+                        'view_id' => $view_id, 'process_id' => $process_id,
+                        'reason_for_request' => $request->reason_for_request,
+                        'credit_note_amount' => $request->credit_note_amount,
+                        'currency_id' => $request->currency_id,
+                        'exchange_rate' => $request->exchange_rate,
+                        'created_on' => Carbon::now(),
+                        'created_by' => $this->user_id,
+                        'workflow_stage_id' => $next_stage
+                    );
+                    $res = insertRecord($table_name, $data, $this->user_id);
+                    $application_id = $res['record_id'];
+                } else {
+                    $table_name = 'tra_adhocinvoices_applications';
                 }
+
+
+                $from_stage = $request->input('curr_stage_id');
+                $to_stage = $request->input('next_stage');
+                $responsible_user = $request->input('responsible_user');
+                $remarks = $request->input('remarks');
+                $urgency = $request->input('urgency');
+                $directive_id = $request->input('directive_id');
+                //application details
+
+                $application_code = $request->application_code;
+                $ref_no = $request->reference_no;
+                $tracking_no = $request->tracking_no;
+                $applicant_id = $request->applicant_id;
+                //process other details
+                $module_id = $request->module_id;
+                $sub_module_id = $request->sub_module_id;
+                $section_id = $request->section_id;
+                $application_status_id = $request->application_status_id;
+
+                //transitions
+                $transition_params = array(
+                    'application_id' => $application_id,
+                    'application_code' => $application_code,
+                    'application_status_id' => $application_status_id,
+                    'process_id' => $process_id,
+                    'from_stage' => $from_stage,
+                    'to_stage' => $to_stage,
+                    'author' => $user_id,
+                    'remarks' => $remarks,
+                    'directive_id' => $directive_id,
+                    'created_on' => Carbon::now(),
+                    'created_by' => $user_id
+                );
+
+                DB::table('tra_applications_transitions')
+                    ->insert($transition_params);
+                //submissions
+                $submission_params = array(
+                    'application_id' => $application_id,
+                    'process_id' => $process_id,
+                    'view_id' => $view_id,
+                    'application_code' => $application_code,
+                    'reference_no' => $ref_no,
+                    'tracking_no' => $tracking_no,
+                    'usr_from' => $user_id,
+                    'usr_to' => $responsible_user,
+                    'previous_stage' => $from_stage,
+                    'current_stage' => $to_stage,
+                    'module_id' => $module_id,
+                    'sub_module_id' => $sub_module_id,
+                    'section_id' => $section_id,
+                    'application_status_id' => $application_status_id,
+                    'urgency' => $urgency,
+                    'applicant_id' => $applicant_id,
+                    'remarks' => $remarks,
+                    'directive_id' => $directive_id,
+                    'date_received' => Carbon::now(),
+                    'created_on' => Carbon::now(),
+                    'created_by' => $user_id
+                );
+                DB::table('tra_submissions')
+                    ->insert($submission_params);
+                updateInTraySubmissions($application_id, $application_code, $from_stage, $user_id);
                 DB::commit();
+
+                $where = array(
+                    'application_code' => $application_code
+                );
+                $app_update = array(
+                    'workflow_stage_id' => $to_stage,
+                    'application_status_id' => $application_status_id
+                );
+                $prev_data = getPreviousRecords($table_name, $where);
+                if ($prev_data['success'] == false) {
+                    echo json_encode($prev_data);
+                    exit();
+                }
+                $update_res = updateRecord($table_name, $prev_data['results'], $where, $app_update, $user_id);
                 $res = array(
                     'success' => true,
                     'message' => 'Application Submitted Successfully!!'
                 );
-    } catch (\Exception $exception) {
-        DB::rollBack();
-        $res = array(
-            'success' => false,
-            'message' => $exception->getMessage()
-        );
-    } catch (\Throwable $throwable) {
-        DB::rollBack();
-        $res = array(
-            'success' => false,
-            'message' => $throwable->getMessage()
-        );
-    }
-    echo json_encode($res);
-    return true;
-        
+            }
+            DB::commit();
+            $res = array(
+                'success' => true,
+                'message' => 'Application Submitted Successfully!!'
+            );
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            $res = array(
+                'success' => false,
+                'message' => $exception->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            DB::rollBack();
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        echo json_encode($res);
+        return true;
     }
     public function getAdhocInvoiceDetails($application_id)
     {
@@ -201,19 +200,18 @@ trait RevenuemanagementTrait
             ->where('t1.id', $application_id);
         $invoice_details = $qry->first();
         return $invoice_details;
-        
     }
-     public function saveAdhocInvoiceApplicationDetails(Request $request)
+    public function saveAdhocInvoiceApplicationDetails(Request $request)
     {
         $application_id = $request->input('application_id');
         $application_code = $request->input('application_code');
-      //  $reference_no = $request->input('reference_no');
-      //  $invoice_id = $request->input('invoice_id');
+        //  $reference_no = $request->input('reference_no');
+        //  $invoice_id = $request->input('invoice_id');
         $module_id = $request->input('module_id');
-       // $applicant_id = $request->input('applicant_id');
+        // $applicant_id = $request->input('applicant_id');
         $paying_currency_id = $request->input('paying_currency_id');
-       // $isLocked =0;
-       // $isSubmission = $request->input('isSubmission');
+        // $isLocked =0;
+        // $isSubmission = $request->input('isSubmission');
         $is_fast_track = 0;
         //$fob = $request->fob;
         $details = $request->input();
@@ -222,14 +220,14 @@ trait RevenuemanagementTrait
         unset($details['application_id']);
         unset($details['application_code']);
         unset($details['paying_currency_id']);
-        unset($details['module_id']);      
-       
+        unset($details['module_id']);
+
         try {
             $res = array();
 
             DB::transaction(function () use (&$res, $module_id, $user_id, $paying_currency_id, $application_id, $application_code, $details) {
                 $table_name = getSingleRecordColValue('modules', array('id' => $module_id), 'table_name');
-               $app_details =  DB::table($table_name)
+                $app_details =  DB::table($table_name)
                     ->where('id', $application_id)
                     ->first();
 
@@ -238,7 +236,7 @@ trait RevenuemanagementTrait
                 $section_id = $app_details->section_id;
                 $applicant_id = $app_details->applicant_id;
                 $sub_module_id = $app_details->sub_module_id;
-                
+
                 $applicant_details = getTableData('wb_trader_account', array('id' => $applicant_id));
                 if (is_null($applicant_details)) {
                     $res = array(
@@ -262,30 +260,31 @@ trait RevenuemanagementTrait
                     'applicant_name' => $applicant_name,
                     'paying_currency_id' => $paying_currency_id,
                     'paying_exchange_rate' => $paying_exchange_rate,
-                    'reference_no'=>$reference_no,
-                    'module_id'=>$module_id,
-                    'section_id'=>$section_id,
-                    'sub_module_id'=>$sub_module_id,
-                    'tracking_no'=>$tracking_no,
-                    'date_of_invoicing'=>$invoicing_date,
+                    'reference_no' => $reference_no,
+                    'module_id' => $module_id,
+                    'section_id' => $section_id,
+                    'sub_module_id' => $sub_module_id,
+                    'tracking_no' => $tracking_no,
+                    'date_of_invoicing' => $invoicing_date,
                     'payment_terms' => 'Due in ' . $due_date_counter . ' Days',
                     'created_on' => Carbon::now()
                 );
-                    $invoice_params['prepared_by'] = $prepared_by;
-                    $invoice_params['due_date'] = $due_date;
-               
+                $invoice_params['prepared_by'] = $prepared_by;
+                $invoice_params['due_date'] = $due_date;
 
-                    $invoice_no = generateInvoiceNo($user_id);
-                    $invoice_params['invoice_no'] = $invoice_no;
-                    $invoice_params['application_id'] = $application_id;
-                    $invoice_params['application_code'] = $application_code;
-                    $invoice_params['applicant_id'] = $applicant_id;
-                    $res = insertRecord('tra_application_invoices', $invoice_params, $user_id);
-                    if ($res['success'] == false) {
-                        return \response()->json($res);
-                    }
-                    $invoice_id = $res['record_id'];
-                
+
+                $invoice_no = generateInvoiceNo($user_id);
+                $invoice_params['invoice_no'] = $invoice_no;
+                $invoice_params['application_id'] = $application_id;
+                $invoice_params['application_code'] = $application_code;
+                $invoice_params['applicant_id'] = $applicant_id;
+                $invoice_params['invoice_amount'] = $details['cost']; //Job on 14.03.2024
+                $res = insertRecord('tra_application_invoices', $invoice_params, $user_id);
+                if ($res['success'] == false) {
+                    return \response()->json($res);
+                }
+                $invoice_id = $res['record_id'];
+
 
                 $params = array();
                 $invoice_amount = 0;
@@ -296,9 +295,11 @@ trait RevenuemanagementTrait
                     'invoice_id' => $invoice_id,
                     'element_costs_id' => $element_costs_id
                 );
-                if (DB::table('tra_invoice_details')
-                        ->where($where_check)
-                        ->count() < 1) {
+                if (
+                    DB::table('tra_invoice_details')
+                    ->where($where_check)
+                    ->count() < 1
+                ) {
                     $params[] = array(
                         'invoice_id' => $invoice_id,
                         'element_costs_id' => $element_costs_id,
@@ -308,6 +309,8 @@ trait RevenuemanagementTrait
                         'quantity' => 1,
                         'total_element_amount' => ($details['cost'])
                     );
+                    DB::table("tra_invoice_details")->insert($params[0]); //Job on 14.03.2024
+                    // Db::table("tra_application_invoices")->where("id", $invoice_id)->update(array("invoice_amount" => $details['cost']));
                 } else {
                     $update = array(
                         'quantity' => $details['quantity'],
@@ -340,5 +343,4 @@ trait RevenuemanagementTrait
         }
         return $res;
     }
-	
 }

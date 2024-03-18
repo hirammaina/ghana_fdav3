@@ -32,6 +32,10 @@ Ext.define("Admin.view.Enforcement.viewController.EnforcementVctr", {
     this.fireEvent("getEnforcementApplicationApprovalDetails", item);
   },
 
+  setParamCombosStore: function (obj, options) {
+    this.fireEvent("setParamCombosStore", obj, options);
+  },
+
   showRecommendationWin: function (item) {
     var btn = item.up("button"),
       record = btn.getWidgetRecord(),

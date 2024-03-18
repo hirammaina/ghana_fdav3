@@ -4,7 +4,7 @@
  * @Author: HiramMaina
  * @Create Time: 2024-01-10 10:38:56
  * @Modified by: JobMurumba
- * @Modified time: 2024-02-26 12:44:41
+ * @Modified time: 2024-03-11 14:38:58
  * @Description:
  */
 
@@ -2405,6 +2405,9 @@ class UtilitiesController extends Controller
             } else {
                 //check the sub_module_id
                 $record = DB::table('wb_importexport_applications')->where('application_code', $application_code)->first();
+                if ($table_name == "wb_disposal_products") {
+                    $record = DB::table('wb_disposal_applications')->where('application_code', $application_code)->first();
+                }
                 if ($record) {
                     //
                     $sub_module_id = $record->sub_module_id;
@@ -2415,14 +2418,19 @@ class UtilitiesController extends Controller
                         );
                     } else {
 
-                        $counter = DB::table($table_name)
-                            ->where(array('application_code' => $application_code))
-                            ->where(function ($query) {
 
-                                $query->whereNull('product_batch_no')
-                                    ->orWhere('product_batch_no', '');
-                            })
-                            ->count();
+                        if ($table_name != "wb_disposal_products") {
+                            $counter = DB::table($table_name)
+                                ->where(array('application_code' => $application_code))
+                                ->where(function ($query) {
+
+                                    $query->whereNull('product_batch_no')
+                                        ->orWhere('product_batch_no', '');
+                                })
+                                ->count();
+                        } else {
+                            $counter = 1; //Job on 03.11.24, initial wa only above.
+                        }
                         if ($counter > 0) {
                             $res = array(
                                 'success' => true,

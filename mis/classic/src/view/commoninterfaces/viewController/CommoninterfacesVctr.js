@@ -2725,6 +2725,15 @@ Ext.define("Admin.view.commoninterfaces.viewControllers.CommoninterfacesVctr", {
       },
     });
   },
+  AddCaseDecision: function (argument) {
+    var form = Ext.widget("casedecisionFrm");
+    funcShowOnlineCustomizableWindow(
+      "Investigation Decisions",
+      "50%",
+      form,
+      "customizablewindow"
+    );
+  },
   showAddchecklistitemsqueriefrm: function (btn) {
     var form = Ext.widget("applicationunstructuredqueriesfrm"),
       grid = btn.up("grid"),

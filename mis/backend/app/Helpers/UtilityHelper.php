@@ -1524,7 +1524,7 @@ class UtilityHelper
         $sub_module_id = 7; //primary sub-module
         //check on the registered products 
         $primary_ref = '';
-        $reg_product_id = $where_statement['t1.reg_product_id'];
+        $reg_product_id = $where_statement['t1.reg_product_id'] ?? 0;
         $record = DB::table('tra_registered_products as t1')
             ->where(array('id' => $reg_product_id))
             ->first();
@@ -1663,8 +1663,10 @@ class UtilityHelper
             ->delete();
 
         $portal_db = DB::connection('portal_db');
-        $previous_permitdetails = $portal_db->table('wb_disposal_products as t2')
-            ->select(DB::raw("application_code,product_id,product_description,quantity,packaging_unit_id,estimated_value,currency_id,id as portal_id, $user_id as created_by, now() as created_on"))
+        $previous_permitdetails = $portal_db->table('wb_disposal_products as t2') //Job on 11.03.24
+            ->select(DB::raw("application_code,product_id,quantity,packaging_unit_id,estimated_value,id as portal_id, $user_id as created_by, now() as created_on"))
+
+            // ->select(DB::raw("application_code,product_id,product_description,quantity,packaging_unit_id,estimated_value,currency_id,id as portal_id, $user_id as created_by, now() as created_on"))
             ->where('application_code', $application_code)
             ->get();
 

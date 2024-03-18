@@ -21,8 +21,9 @@ class ExchangeRate extends AbstractParameter
 
     protected $table = "par_exchange_rates";
 
-    public function currency() {
-        $this -> belongsTo("Currency");
+    public function currency()
+    {
+        $this->belongsTo("Currency");
     }
 
     /**
@@ -32,19 +33,20 @@ class ExchangeRate extends AbstractParameter
      * @return array response indicating success or failure (boolean)
      *         and a text message
      */
-    public static function saveExchangeRate($request, $id) {
-        if($id != null) {
-            $exchange_rate = DB::table('par_exchange_rates')-> where('id', $id) -> get();
-            if($exchange_rate == null) {
+    public static function saveExchangeRate($request, $id)
+    {
+        if ($id != null) {
+            $exchange_rate = DB::table('par_exchange_rates')->where('id', $id)->get();
+            if ($exchange_rate == null) {
                 return [
                     "success" =>  false,
                     "message" => "A record with that id does not exist"
                 ];
             }
             $previousData = convertStdClassObjToArray($exchange_rate);
-            return updateRecord('par_exchange_rates', $previousData,[
+            return updateRecord('par_exchange_rates', $previousData, [
                 ['id', '=', $id]
-            ],[
+            ], [
                 'rate' => $request->input('rate'),
                 'description' => $request->input('description'),
                 'currency_id' => $request->input('currency_id'),
@@ -54,8 +56,8 @@ class ExchangeRate extends AbstractParameter
         } else {
             return insertRecord('par_exchange_rates', [
                 'id' => $id,
-                'rate' => $request -> input('rate'),
-                'description' => $request -> input('description'),
+                'rate' => $request->input('rate'),
+                'description' => $request->input('description'),
                 'currency_id' => $request->input('currency_id'),
                 'altered_by' => \Auth::user()->id,
                 'dola' => Carbon::now()->format('Y-m-d H:i:s'),
@@ -65,7 +67,8 @@ class ExchangeRate extends AbstractParameter
         }
     }
 
-    public static function getData($start, $limit, $doRetrieveAll, $filter) {
+    public static function getData($start, $limit, $doRetrieveAll, $filter)
+    {
         $join = [
             "table_fk" => "currencies",
             "table_col_alias" => "currency_name",

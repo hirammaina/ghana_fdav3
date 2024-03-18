@@ -720,6 +720,9 @@ Ext.define("Admin.controller.SharedUtilitiesCtr", {
       "renewgmpinspectionpanel button[name=docs_btn]": {
         click: "showApplicationUploads",
       },
+      "enforcementApprovalRecommFrm button[name=save_recommendation]": {
+        click: "saveApplicationApprovalDetails",
+      },
       "approvalrecommendationfrm button[name=save_recommendation]": {
         click: "saveApplicationApprovalDetails",
       },
@@ -7813,6 +7816,7 @@ Ext.define("Admin.controller.SharedUtilitiesCtr", {
   },
 
   saveApplicationApprovalDetails: function (btn) {
+    console.log(btn);
     var me = this,
       mainTabPanel = me.getMainTabPanel(),
       activeTab = mainTabPanel.getActiveTab(),

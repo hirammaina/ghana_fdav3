@@ -54,6 +54,9 @@ Ext.define("Admin.controller.WorkflowManagementCtr", {
       "workflowsubmissionmanagersgenericfrm button[name=app_submission_btn]": {
         click: "funcSubmitManagerApplicationsGeneric",
       },
+      "workflowinvestigationsubmissionsfrm button[name=app_submission_btn]": {
+        click: "funcSubmitManagerApplicationsGeneric",
+      },
       "workflowsubmissionsinspectionsfrm button[name=app_submission_btn]": {
         click: "funcSubmitManagerApplicationsGeneric",
       },

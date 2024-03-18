@@ -47,6 +47,24 @@
            </dx-button>
          </div>
        </div>
+
+       
+
+
+       <div class="col-lg-4 input-group"  *ngIf="classification_id == 84 || classification_id == 85 || classification_id == 86 " >
+        <label class="control-label">Size(s)</label>
+        <dx-text-box formControlName="sizes" placeholder="Size(s)"  [readOnly]= "isReadOnly" [showClearButton]="true">
+        </dx-text-box>
+       </div>
+       <div class="col-lg-4 input-group"  *ngIf="classification_id == 84 || classification_id == 85 || classification_id == 86 " >
+        <label class="control-label">Color(s)</label>
+        <dx-text-box formControlName="colors" placeholder="Size(s)"  [readOnly]= "isReadOnly" [showClearButton]="true">
+        </dx-text-box>
+       </div>
+
+
+
+
        <div class="col-lg-4">
         <label class="control-label">Product Strength</label>
 
