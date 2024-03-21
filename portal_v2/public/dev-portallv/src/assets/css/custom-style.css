@@ -724,9 +724,9 @@ height: 100%;
   background:url(../images/loading_logo.png) no-repeat center;
   text-align: center;
  /* Set the initial rotation angle to 0 degrees */
- transform: rotate(0deg);
+ /* transform: rotate(0deg); */
  /* relate to below keyframe spin */
- animation: spin 2s linear infinite;
+ /* animation: spin 2s linear infinite; */
 }
 @keyframes spin {
   0% { transform: rotate(0deg); }
@@ -1655,4 +1655,35 @@ ul .steps-indicator{
 .steps-indicator li > .optional{
   background: #ccc !important;
   color: #000  !important;
+}
+
+
+.progress-container {
+  width: 50%;
+  height: 30px;
+  background-color: #f0f0f0;
+  
+  
+  overflow: hidden;
+  margin: 0 auto;
+ 
+}
+
+.progress-bar {
+  width: 30%; /* Start with 100% width */
+  height: 100%;
+  margin: 0 auto;
+  background-color: #4caf50;
+  border-radius: 5px;
+  animation: progress-animation 1s infinite;
+  box-sizing: border-box; /* Include padding and border in the total width */
+}
+
+@keyframes progress-animation {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
 }

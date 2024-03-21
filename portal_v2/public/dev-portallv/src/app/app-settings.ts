@@ -6,9 +6,9 @@ if(app_connection == 'development'){
 
   var s2bpayjs = 'https://test-s2bpay.sc.com/s2bpaysit/resources/merchant/js/s2bpay.js';
 
-  var base_url = 'http://localhost:8090/IRIMSV2/ghana_fdav2/portal_v2/'
- var  assets_url = 'http://localhost:8090/IRIMSV2/ghana_fdav2/portal_v2/public/resources/';
-  var mis_url = 'localhost:8090/IRIMSV2/ghana_fdav2/mis/';
+  var base_url = 'http://localhost:80/ghana_fdav3/portal_v2/'
+ var  assets_url = 'http://localhost:80/ghana_fdav3/portal_v2/public/resources/';
+  var mis_url = 'localhost:80/ghana_fdav3/mis/';
   var siteKey = '6LcoH54UAAAAAOqpAGCXC4cmup6N2c5KseVHmv1c';
 }
 else if(app_connection == 'fixed_acess'){

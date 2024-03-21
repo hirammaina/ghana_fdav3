@@ -2205,8 +2205,9 @@ class UtilitiesController extends Controller
                 ->leftJoin('users as t8', 't1.usr_to', '=', 't8.id')
                 ->leftJoin('wb_trader_account as t9', 't1.applicant_id', '=', 't9.id')
                 ->select(DB::raw("t1.id, t2.name as process_name,t1.reference_no,t5.name as process_status,
-                    t3.description as prev_stage, t4.description as current_stage, t1.date_received as processing_date,\"t1\".\"isDone\""))
+                    t3.description as prev_stage, t4.description as current_stage, t1.date_received as processing_date,t1.isDone"))
                 ->where('application_code', $application_code);
+                //t3.description as prev_stage, t4.description as current_stage, t1.date_received as processing_date,\"t1\".\"isDone\""))
 
             $qry->orderBy('t1.id', 'ASC');
             $results = $qry->get();
