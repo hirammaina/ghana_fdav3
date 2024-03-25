@@ -317,6 +317,19 @@ class ProductRegistrationController extends Controller
             'manufacturing_country_id' => $req->manufacturing_country_id,
             'vetmedicines_registrationtype_id' => $req->vetmedicines_registrationtype_id,
 
+            "sizes"=>$req->sizes,
+            "colors"=>$req->colors,
+            "details_if_device_reg_been_deferred_elsewhere"=>$req->details_if_device_reg_been_deferred_elsewhere,
+            "has_device_reg_been_deferred_elsewhere"=>$req->has_device_reg_been_deferred_elsewhere,
+            "details_if_device_reg_been_deferred_elsewhere"=>$req->details_if_device_reg_been_deferred_elsewhere,
+            "medical_systemmodel_series"=>$req->medical_systemmodel_series,
+            "has_device_reg_been_made_elsewhere"=>$req->has_device_reg_been_made_elsewhere,
+            "summary_of_manufacturing_process"=>$req->summary_of_manufacturing_process,
+            "device_special_storage_condition"=>$req->device_special_storage_condition,
+            "device_description_gmdn"=>$req->device_description_gmdn,
+            "basis_medical_device_classification"=>$req->basis_medical_device_classification,
+            "source_of_starting_material_antigen_character_on_rdt"=>$req->source_of_starting_material_antigen_character_on_rdt
+
         );
 
 

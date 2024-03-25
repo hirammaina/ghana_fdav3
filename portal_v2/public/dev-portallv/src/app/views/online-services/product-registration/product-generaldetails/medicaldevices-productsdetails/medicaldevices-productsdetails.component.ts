@@ -84,7 +84,9 @@ export class MedicaldevicesProductsdetailsComponent  extends SharedProductregist
   isonHasReagents_accessories:boolean = false;
 
   //Job on 18.03.24
-  classification_id:number;
+  //classification_id:number;
+  registrationHasBeenDeferredAnotherCountry:boolean=false;
+ 
 
  
   ngOnInit() {
@@ -287,9 +289,19 @@ onclassificationDevTypeDataSelect($event) {
   let device_type_id =  this.productGeneraldetailsfrm.get('device_type_id').value;
   let classification_id =  this.productGeneraldetailsfrm.get('classification_id').value;
   this.onLoadreasonForClassificationData(device_type_id,classification_id);
-  console.log(classification_id)
   this.classification_id=classification_id;
-  console.log(this.classificationData)
 }
+
+onIfRegistrationofDeviceDeferredInOtherCountry($event) {
+  if($event.value == 1){
+    this.registrationHasBeenDeferredAnotherCountry = true;
+}
+else{
+  this.registrationHasBeenDeferredAnotherCountry =  false;
+}
+}
+
+
+
 
 }

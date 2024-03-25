@@ -1,6 +1,7 @@
-<div style="min-height: 35px;text-align:left; margin-top: 10px;padding-top: 5px; font-weight: bold;">
+<!-- <div style="min-height: 35px;text-align:left; margin-top: 10px;padding-top: 5px; font-weight: bold;">
   <h5 class="strong">Medical Devices Manufacturers Details(Fill all the information on the Tabs)</h5>
-</div>
+</div> -->
+
 <div class="accordion" id="productInfo">
  <!-- <div class="card">
         <div class="card-header" id="headingTwo">
@@ -47,6 +48,51 @@
         </div>
       </div>
     -->
+
+
+    <div class="card">
+      <div class="card-header" id="headingThree">
+        <button class="btn btn-link " type="button" data-target="#product_manufacturers"
+          aria-expanded="false" aria-controls="product_manufacturers">
+         Authorization of release of finished product
+        </button>
+      </div>
+      <div id="product_manufacturers" aria-labelledby="headingThree" data-parent="#productInfo">
+        <div class="card-body no-padding">
+          <div class="no-padding">
+            <dx-data-grid class="table row-border hover"  [allowColumnResizing]="true"  [columnHidingEnabled]="true" (onToolbarPreparing)="onAuthorizationReleasePreparing($event)"
+              [dataSource]="productManufacturersData" keyExpr="id">
+              <dxo-filter-row [visible]="false"></dxo-filter-row>
+              <dxo-search-panel [visible]="true">
+              </dxo-search-panel>
+              <dxo-paging [enabled]="true">
+              </dxo-paging>
+              <dxo-pager [showInfo]="true" infoText="Page #{0}. Total: {1} ({2} items)">
+              </dxo-pager>
+              <dxo-export [enabled]="true" fileName="manufacturingFile" [allowExportSelectedData]="true"></dxo-export>
+  
+              
+              <dxo-group-panel [visible]="true"></dxo-group-panel>
+  
+              <dxi-column dataField="section_name"></dxi-column>
+              <dxi-column dataField="authorized_person"></dxi-column>
+              <dxi-column dataField="address"></dxi-column>
+
+              <dxi-column dataField="qualification"></dxi-column>
+              <dxi-column [width]="100" caption="Action" name="command-editing" [allowFiltering]="false"
+                [allowSorting]="false" cellTemplate="cellTemplate">
+                <div *dxTemplate="let data of 'cellTemplate'">
+                  <a (click)="funcDeleteManufacturingDetails(data)"  *ngIf="!isReadOnly"  class="action-btn"><i class="fa fa-trash"></i>Delete</a>
+                </div>
+              </dxi-column>
+            </dx-data-grid>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
   <div class="card">
     <div class="card-header" id="headingThree">
       <button class="btn btn-link " type="button" data-target="#product_manufacturers"
@@ -91,6 +137,7 @@
       </div>
     </div>
   </div>
+  
 <!--
   <div class="card">
     <div class="card-header" id="headingFive">
@@ -640,6 +687,66 @@
     </dx-scroll-view>
   </div>
 </dx-popup>
+
+
+
+
+
+
+
+
+<dx-popup class="popup" [width]="funcpopWidth(70)" [height]="auto"  [showTitle]="true" title="Product Manufacturing Sites" [dragEnabled]="false" [closeOnOutsideClick]="false" [(visible)]="isproductmanSiteDetailsModalShow">
+
+  <div *dxTemplate="let data of 'content'" class="row">
+    <dx-scroll-view>
+      <div class="col-lg-12">
+          <form enctype="multipart/form-data" role="form" [formGroup]="productmanufacturingSiteFrm" (ngSubmit)="onsaveProdManufacturingSite()">
+              <div class="row">
+                  <div class="col-lg-12">
+                     
+                          <label class="control-label">Section</label>
+                          <dx-text-box [readOnly]="true" formControlName="section_name">
+                          </dx-text-box>
+                    
+                     
+                  </div>
+                  <div class="col-lg-12">
+                     
+                          <label class="control-label">Name of Authorized  Person</label>
+                          <dx-text-box [readOnly]="true" formControlName="authorized_person">
+                          </dx-text-box>
+                     
+                    
+                  </div>
+                  <div class="col-lg-12">
+                      <label class="control-label">Address</label>
+
+                      <dx-text-area [height]="60" [readOnly]="true" formControlName="address" placeholder="Address">
+                      </dx-text-area>
+                  </div>
+                  <div class="col-lg-12">
+                    <label  class="control-label">Qualification</label>
+
+                    <dx-text-box [readOnly]="true" formControlName="qualification">
+                    </dx-text-box>
+                  </div>
+                <div class="col-lg-12 btn-margin-5">
+                    <input type="hidden" formControlName="release_of_finished_product_id" />
+                    <br />
+                    <button type="submit" (submit)="onsaveProdManufacturingSite()"  class="btn btn-primary"><i class="fa fa-user"></i> Save Authorization Release</button>
+                </div>
+              </div>
+          </form>
+      </div>
+    </dx-scroll-view>
+  </div>
+</dx-popup>
+
+
+
+
+
+
   
   <!-- API Manufacturer Modal-->
   <dx-popup class="popup" [width]="funcpopWidth(65)" [height]="auto" [showTitle]="true" title="Product API Manufacturer" [dragEnabled]="false" [closeOnOutsideClick]="false" [(visible)]="isapimanSiteDetailsModalShow">

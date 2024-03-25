@@ -43,6 +43,7 @@ export class MedicaldeviceDataproductsComponent extends SharedProductregistratio
   @Input() productapimanufacturingSiteFrm: FormGroup;
  
   @Input() productmanufacturingSiteFrm: FormGroup;
+  @Input() authorizationReleaseFrm: FormGroup;
   @Input() productGeneraldetailsfrm: FormGroup;
   
   @Input() manufacturingSiteFrm: FormGroup;
@@ -56,6 +57,7 @@ export class MedicaldeviceDataproductsComponent extends SharedProductregistratio
   @Input() isReadOnly: boolean;
   tbisReadOnly:boolean=false;
   isproductmanSiteDetailsModalShow:boolean;
+  isAuthorizationReleaseDetailsModalShow:boolean;
   @Input() product_origin_id: number;
   manufacturer_type_id:number;
   isproductManufactureringSiteModalShow:boolean;
@@ -140,6 +142,18 @@ export class MedicaldeviceDataproductsComponent extends SharedProductregistratio
       gmp_application_code: new FormControl('', Validators.compose([])),
       
     });
+
+
+    // this.authorizationReleaseFrm = new FormGroup({
+    //   section_name: new FormControl('', Validators.compose([Validators.required])),
+    //   authorized_person: new FormControl('', Validators.compose([])),
+    //   address: new FormControl('', Validators.compose([Validators.required])),
+    //   qualification: new FormControl('', Validators.compose([Validators.required])),
+     
+      
+    // });
+
+
     this.prodgmpAddinspectionFrm = new FormGroup({
       manufacturer_name: new FormControl('', Validators.compose([Validators.required])),
       physical_address: new FormControl('', Validators.compose([Validators.required])),
@@ -165,11 +179,22 @@ export class MedicaldeviceDataproductsComponent extends SharedProductregistratio
   }
   funcpopWidth(percentage_width) {
     return window.innerWidth * percentage_width/100;
-  } onProdManufacturingPreparing(e) {
+  } 
+  
+  onProdManufacturingPreparing(e) {
     this.tbisReadOnly = false;
     this.functDataGridToolbar(e, this.funcAddProductManufacturerDetails, 'Product Manufacturers');
 
-  }  onLoadmanufacturingRoleData(section_id) {
+  }  
+
+  onAuthorizationReleasePreparing(e) {
+    this.tbisReadOnly = false;
+    this.functDataGridToolbar(e, this.funcAddProductManufacturerDetails, 'Authorization Release');
+
+  }  
+  
+  
+  onLoadmanufacturingRoleData(section_id) {
 
     var data = {
       table_name: 'par_manufacturing_roles'
@@ -219,6 +244,19 @@ export class MedicaldeviceDataproductsComponent extends SharedProductregistratio
 
 
 }
+
+
+funcAddAuthorizationReleaseDetails(){
+  //the details 
+  this.isAuthorizationReleaseDetailsModalShow = true;
+  this.onGetProductManufacturerDetails();
+  this.productmanufacturingSiteFrm.reset();
+
+
+}
+
+
+
 onSearchProductManufacturerSite() {
   //the details 
   let manufacturer_id  = this.productmanufacturingSiteFrm.get('manufacturer_id').value;

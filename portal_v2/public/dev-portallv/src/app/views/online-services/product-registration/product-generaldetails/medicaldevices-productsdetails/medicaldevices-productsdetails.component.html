@@ -51,7 +51,7 @@
        
 
 
-       <div class="col-lg-4 input-group"  *ngIf="classification_id == 84 || classification_id == 85 || classification_id == 86 " >
+       <div class="col-lg-4 input-group"  *ngIf="classification_id == 84 || classification_id == 85 || classification_id == 86" >
         <label class="control-label">Size(s)</label>
         <dx-text-box formControlName="sizes" placeholder="Size(s)"  [readOnly]= "isReadOnly" [showClearButton]="true">
         </dx-text-box>
@@ -64,13 +64,92 @@
 
 
 
+       <div class="col-lg-12">
+        <label class="control-label">Has the registration of the device been rejected, refused, deferred or cancelled in any country </label>
+        <dx-select-box [dataSource]="confirmDataParam" (onValueChanged)="onIfRegistrationofDeviceDeferredInOtherCountry($event)" 
+         valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+           formControlName="has_device_reg_been_deferred_elsewhere">
+        </dx-select-box>
+      </div>
 
-       <div class="col-lg-4">
+
+      <div class="col-lg-12">
+        <label class="control-label">Details if registration of the device been rejected, refused, deferred or cancelled in any country</label>
+        <dx-text-area formControlName="details_if_device_reg_been_deferred_elsewhere"  placeholder="Details if registration of the device been rejected, refused, deferred or cancelled in any country">
+        </dx-text-area>
+      </div>
+
+
+      <div class="col-lg-4">
+        <label class="control-label">Model/Series/System(if applicable)</label>
+        <dx-text-box formControlName="medical_systemmodel_series" placeholder="Size(s)"  [readOnly]= "isReadOnly" [showClearButton]="true">
+        </dx-text-box>
+      </div>
+
+
+      <div class="col-lg-4">
+        <label class="control-label">Family (if applicable)</label>
+        <dx-text-box formControlName="medical_family" placeholder="Family"  [readOnly]= "isReadOnly" [showClearButton]="true">
+        </dx-text-box>
+      </div>
+
+
+      <div class="col-lg-12">
+        <label class="control-label">Has an application for the registration of the device been made in any other country? </label>
+        <dx-select-box [dataSource]="confirmDataParam" 
+         valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+           formControlName="has_device_reg_been_made_elsewhere">
+        </dx-select-box>
+      </div>
+
+
+       <div class="col-lg-4"  *ngIf="classification_id != 84 && classification_id !=85 && classification_id != 86">
         <label class="control-label">Product Strength</label>
 
         <dx-text-box formControlName="product_strength" placeholder="Product Strength"  [readOnly]= "isReadOnly" [showClearButton]="true">
         </dx-text-box>
       </div>
+
+
+      
+
+      <div class="col-lg-12">
+        <label class="control-label">Give a brief summary of the manufacturing process</label>
+        <dx-text-area formControlName="summary_of_manufacturing_process"  placeholder="Give a brief summary of the manufacturing process">
+        </dx-text-area>
+      </div>
+
+
+      <div class="col-lg-12">
+        <label class="control-label">Any special storage condition applicable to the device</label>
+        <dx-text-area formControlName="device_special_storage_condition"  placeholder="Any special storage condition applicable to the device">
+        </dx-text-area>
+      </div>
+
+
+      <div class="col-lg-12">
+        <label class="control-label"> Description of the device. (Applicable GMDN description. Otherwise, provide a short
+          description of the device)</label>
+        <dx-text-area formControlName="device_description_gmdn"  placeholder="Description of the device">
+        </dx-text-area>
+      </div>
+
+
+      <div class="col-lg-12">
+        <label class="control-label"> Basis of classification of device</label>
+        <dx-text-area formControlName="basis_medical_device_classification"  placeholder="Basis of classification of device">
+        </dx-text-area>
+      </div>
+
+
+      <div class="col-lg-12">
+        <label class="control-label">  Provide details of the source of starting material and characterization of the antigen used in the
+          manufacture of the diagnostic test kit if the device is a rapid diagnostic test (RDT)</label>
+        <dx-text-area formControlName="source_of_starting_material_antigen_character_on_rdt"  placeholder="Source of Starting Material & characterization of antigen if RDT">
+        </dx-text-area>
+      </div>
+      
+      
       <div class="col-lg-4">
         <label class="control-label">Product Manufacturing Country</label>
 
@@ -78,6 +157,7 @@
           placeholder="Product Manufacturing Country" (onValueChanged)="onManufacturingCountryChange($event)" formControlName="manufacturing_country_id">
         </dx-select-box>
     </div>
+
     <div class="col-lg-4">
         <label class="control-label">Product Origin</label>
 
@@ -85,6 +165,8 @@
           placeholder="Product Origin" formControlName="product_origin_id">
         </dx-select-box>
       </div>
+
+
     <div class="col-lg-8">
       <label class="control-label">Intended Use</label>
       <dx-text-box formControlName="intended_use" placeholder="Enter Intended Use"  [readOnly]= "isReadOnly" [showClearButton]="true">
@@ -94,7 +176,7 @@
       <label class="control-label">Intended User</label>
 
       <dx-select-box [dataSource]="intendedEndUserData" valueExpr="id" displayExpr="name"  [readOnly]= "isReadOnly"  [searchEnabled]="true"
-        placeholder=" Intended User" formControlName="intended_enduser_id">
+        placeholder="Intended User" formControlName="intended_enduser_id">
       </dx-select-box>
     </div>
     <div class="col-lg-4">
@@ -116,7 +198,7 @@
       <label class="control-label">GMDN Category</label>
       
       <dx-select-box [dataSource]="gmdnCategoryData" valueExpr="id" displayExpr="name" [searchEnabled]="true"  [readOnly]= "isReadOnly" 
-      placeholder=" GMDN Category" formControlName="gmdn_category">
+      placeholder="GMDN Category" formControlName="gmdn_category">
     </dx-select-box>
     </div>
     
@@ -140,6 +222,7 @@
           
       </dx-tag-box>
     </div>
+
     <div class="col-lg-12">
       <label class="control-label">Product packaging details & Pack size(s):</label>
       <dx-text-area formControlName="pack_sizes"  placeholder="Pack Sizes">
@@ -181,7 +264,6 @@
         <dx-select-box [dataSource]="zonesData" [hidden]=true valueExpr="id" displayExpr="name" [searchEnabled]="true"
         placeholder="Select Cerificate Issue Place" [readOnly] = true formControlName="zone_id">
       </dx-select-box>
-      
       <input type="hidden" name="sub_module_id" formControlName="sub_module_id" />
       <input type="hidden" name="product_id" value={{product_id}} formControlName="product_id" />
     </div>
@@ -222,6 +304,8 @@
   </dx-data-grid>
  </div>
  </dx-popup>
+
+ 
  <dx-popup class="popup"  [width]="funcpopWidth(30)" [height]="450" [showTitle]="true" title="Generic Name Details" [dragEnabled]="false" [closeOnOutsideClick]="false" [(visible)]="addproductGenericNamesModal">
   
   <div *dxTemplate="let data of 'content'" >

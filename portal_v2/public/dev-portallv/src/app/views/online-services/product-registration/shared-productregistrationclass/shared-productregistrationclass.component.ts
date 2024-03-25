@@ -108,6 +108,7 @@ export class SharedProductregistrationclassComponent implements OnInit {
   manufacturingSiteFrm: FormGroup;
   manufacturerFrm:FormGroup;
   productmanufacturingSiteFrm: FormGroup;
+  authorizationReleaseFrm: FormGroup;
   prodgmpAddinspectionFrm:FormGroup;
   productapimanufacturingSiteFrm: FormGroup;
   productNutrientsdetailsfrm: FormGroup;
@@ -258,6 +259,10 @@ export class SharedProductregistrationclassComponent implements OnInit {
   assessmentTypesData:any;
   isInitiateAddProductGroupAppWin:boolean;
   newREgisteredCompanyFrm:FormGroup;
+
+  //Job on 22.03.24
+  classification_id:number;
+  
   constructor(public modalServ: ModalDialogService, public viewRef: ViewContainerRef, public modalDialogue: ModalDialogService, public spinner: SpinnerVisibilityService, public configService: ConfigurationsService, public appService: ProductApplicationService, public router: Router, public formBuilder: FormBuilder, public config: ConfigurationsService, public modalService: NgxSmartModalService, public toastr: ToastrService, public authService: AuthService, public utilityService: Utilities,public httpClient: HttpClient, public dmsService:DocumentManagementService) {
 
    // if(!this.check_sharedclassloaded){
@@ -301,6 +306,12 @@ export class SharedProductregistrationclassComponent implements OnInit {
             sub_module_id: new FormControl(this.sub_module_id, Validators.compose([Validators.required])),
             module_id: new FormControl(this.module_id, Validators.compose([])),
             group_application_code: new FormControl(this.module_id, Validators.compose([]))
+          });
+          this.authorizationReleaseFrm = new FormGroup({
+            section_name: new FormControl('', Validators.compose([Validators.required])),
+            authorized_person: new FormControl('', Validators.compose([])),
+            address: new FormControl('', Validators.compose([Validators.required])),
+            qualification: new FormControl('', Validators.compose([Validators.required])), 
           });
           this.applicationApplicantdetailsfrm = new FormGroup({
             local_agent_id: new FormControl('', Validators.compose([Validators.required])),
@@ -357,7 +368,10 @@ export class SharedProductregistrationclassComponent implements OnInit {
               let field_name = form_field['field_name'];
               console.log(field_name)
               if(form_field['is_mandatory'] ==1){
+                if(this.classification_id!=81 )//Job on 22.03.24
+                {
                 me.productGeneraldetailsfrm.addControl(field_name,new FormControl('', Validators.required));
+                }
 
               }else{
                 me.productGeneraldetailsfrm.addControl(field_name,new FormControl('', []));
