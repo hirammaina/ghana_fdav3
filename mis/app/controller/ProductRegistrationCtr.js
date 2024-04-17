@@ -202,6 +202,9 @@ Ext.define("Admin.controller.ProductRegistrationCtr", {
       drugsIngredientsGrid: {
         refresh: "refreshProductsOtherDetailsGrid",
       },
+      drugsOriginNonRegistrationReasonsGrid: {
+        refresh: "refreshProductsOtherDetailsGrid",
+      },
       drugsProductPackagingGrid: {
         refresh: "refreshProductsOtherDetailsGrid",
       },
@@ -1746,6 +1749,29 @@ Ext.define("Admin.controller.ProductRegistrationCtr", {
 
     if (child.down("hiddenfield[name=section_id]")) {
       child.down("hiddenfield[name=section_id]").setValue(section_id);
+    }
+
+    var classification_id = activeTab.down("#productsDetailsFrm");
+
+    if (classification_id) {
+      classification_id = classification_id.down(
+        "field[name=classification_id]"
+      );
+      if (classification_id) {
+        classification_id = classification_id.getValue();
+      }
+      console.log(classification_id);
+      if (classification_id == 1) {
+        var fields_to_hide = [
+          "common_name_id",
+          "chemical_constituent_id",
+          "quantity_dosage_unit",
+          "plant_part_id",
+        ];
+        fields_to_hide.forEach((field) => {
+          child.down("field[name=" + field + "]").setVisible(true);
+        });
+      }
     }
 
     funcShowCustomizableWindow(winTitle, winWidth, child, "customizablewindow");
@@ -3338,9 +3364,17 @@ Ext.define("Admin.controller.ProductRegistrationCtr", {
         product_id = panel.down("hiddenfield[name=product_id]").getValue();
     }
 
-    store.getProxy().extraParams = {
+    // store.getProxy().extraParams = {
+    //   product_id: product_id,
+    // };
+
+    //Job 4/4/2024
+    var existingParams = store.getProxy().getExtraParams(); //ie table_name in online vs mis
+    var newParams = {
       product_id: product_id,
     };
+    var mergedParams = Ext.apply({}, existingParams, newParams);
+    store.getProxy().setExtraParams(mergedParams);
   },
 
   refreshproductevaluationcommentsgrid: function (me) {
@@ -3601,8 +3635,12 @@ Ext.define("Admin.controller.ProductRegistrationCtr", {
       .down("hiddenfield[name=sub_module_id]")
       .setValue(sub_module_id);
     workflowContainer.down("hiddenfield[name=section_id]").setValue(section_id);
+    // // workflowContainer
+    // //   .down("hiddenfield[name=prodclass_category_id]")
+    // //   .setValue(workflow_details.prodclass_category_id);
     dashboardWrapper.add(workflowContainer);
     //reload Stores
+
     var app_doc_types_store = activeTab
       .down("combo[name=applicable_documents]")
       .getStore();
@@ -3753,13 +3791,32 @@ Ext.define("Admin.controller.ProductRegistrationCtr", {
             results = resp.results,
             ltrResults = resp.ltrDetails,
             zone_id = results.zone_id,
-            model = Ext.create("Ext.data.Model", results);
+            model = Ext.create("Ext.data.Model", results),
+            classification_id = results.classification_id;
           ltr_model = Ext.create("Ext.data.Model", ltrResults);
 
           if (success == true || success === true) {
             applicantFrm.loadRecord(model);
             localagentFrm.loadRecord(ltr_model);
             products_detailsfrm.loadRecord(model);
+
+            console.log(classification_id);
+            if (classification_id == 1) {
+              console.log("hey");
+              var fields_to_hide = [];
+              var fields_to_show = ["source_of_raw_material_id"];
+              fields_to_hide.forEach((field) => {
+                products_detailsfrm
+                  .down("field[name=" + field + "]")
+                  .setVisible(false);
+              });
+              fields_to_show.forEach((field) => {
+                console.log(field);
+                products_detailsfrm
+                  .down("field[name=" + field + "]")
+                  .setVisible(true);
+              });
+            }
             // zone_cbo.setReadOnly(true);
 
             zone_cbo.setValue(zone_id);
@@ -4052,7 +4109,9 @@ Ext.define("Admin.controller.ProductRegistrationCtr", {
       activeTab.down("button[name=queries_responses]").setVisible(true);
     }
 
-    if (sub_module_id == 7 && sub_module_id == 8) {
+    //if (sub_module_id == 7 && sub_module_id == 8) {
+    if (sub_module_id == 7 || sub_module_id == 8) {
+      //Job edited above to or on 4/4/2024
       var checklistTypesGrid = pnl.down("combo[name=applicable_checklist]"),
         checklistTypesStr = checklistTypesGrid.getStore();
       checklistTypesStr.removeAll();
@@ -4081,7 +4140,7 @@ Ext.define("Admin.controller.ProductRegistrationCtr", {
       //pnl.getViewModel().set('prechecking_querytitle', 'QUERY RESPONSES');
     } else {
       // activeTab.down('button[name=save_screening_btn]').setDisabled(false);
-      //  pnl.getViewModel().set('prechecking_querytitle', 'PRE-CHECKING');
+      pnl.getViewModel().set("prechecking_querytitle", "PRE-CHECKING"); //Job,4/4/2024 to address blank title on tab
     }
 
     if (application_id) {

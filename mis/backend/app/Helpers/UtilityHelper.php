@@ -1696,7 +1696,6 @@ class UtilityHelper
         $portal_db = DB::connection('portal_db');
 
         $active_ingredient_id = '';
-
         //packaging
         $where_statement = array('product_id' => $product_id);
         $previous_prodpackaging = $portal_db->table('wb_product_packaging as t2')
@@ -1787,6 +1786,32 @@ class UtilityHelper
         DB::table('tra_uploadedproduct_images')
             ->where(array('portal_product_id' => $portal_product_id))
             ->update($data);
+
+
+        //registration in other states
+        $where_statement = array('product_id' => $product_id);
+        $previous_other_states_details = $portal_db->table('wb_otherstates_productregistrations as t2')
+            ->select(DB::raw("$product_id as product_id, recognisedassessments_ctrregion_id,country_id,proprietary_name,authorization_decision_reason,seal_type_id,is_enabled,registration_ref,date_of_registration,current_registrationstatus_id,approving_authority, $user_id as created_by, now() as created_on,id as portal_id"))
+            ->where('product_id', $portal_product_id)
+            ->get();
+        if (count($previous_other_states_details) > 0) {
+            $previous_other_states_details = convertStdClassObjToArray($previous_other_states_details);
+            DB::table('tra_otherstates_productregistrations')->where($where_statement)->delete();
+            DB::table('tra_otherstates_productregistrations')
+                ->insert($previous_other_states_details);
+        }
+        //reasons  not registered in country of origin
+        $previous_non_reg_reasons_in_origin = $portal_db->table('wb_product_reasons_not_registred_in_origin as t2')
+            ->select(DB::raw("$product_id as product_id,reason_details, $user_id as created_by, now() as created_on,id as portal_id"))
+            ->where('product_id', $portal_product_id)
+            ->get();
+        if (count($previous_non_reg_reasons_in_origin) > 0) {
+            $previous_non_reg_reasons_in_origin = convertStdClassObjToArray($previous_non_reg_reasons_in_origin);
+            DB::table('tra_product_reasons_not_registred_in_origin')->where($where_statement)->delete();
+            DB::table('tra_product_reasons_not_registred_in_origin')
+                ->insert($previous_non_reg_reasons_in_origin);
+        }
+        
     }
 
     static function generateApplicationViewID()

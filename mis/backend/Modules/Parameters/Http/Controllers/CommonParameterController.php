@@ -611,7 +611,6 @@ class CommonParameterController extends BaseController
         $filters = (array)json_decode($filters);
         $filters = array_filter($filters);
 
-
         try {
             if ($table_name == 'par_business_types') {
                 $qry = DB::connection($db_con)
@@ -876,8 +875,13 @@ class CommonParameterController extends BaseController
                 $qry = DB::connection($db_con)
                     ->table($table_name . ' as t1')
                     ->Join('par_countries as t4', 't1.country_id', 't4.id')
-                    ->Join('par_recognisedassessments_ctrregions as t5', 't1.recognisedassessments_ctrregion_id', 't5.id')
+                   ->leftJoin('par_recognisedassessments_ctrregions as t5', 't1.recognisedassessments_ctrregion_id', 't5.id')//
                     ->select('t1.*', 't4.name as country', 't5.name as recognisedassessments_ctrregion');
+                    if($table_name=="tra_otherstates_productregistrations")
+                    {
+                        $qry->leftjoin("par_marketing_authorizations_decisions as t6","t1.current_registrationstatus_id","t6.id")
+                        ->addSelect("t6.name as current_registrationstatus");
+                    }
             } else if ($table_name == 'tra_productreg_clinicalresearchsdetails') {
                 $qry = DB::connection($db_con)
                     ->table($table_name . ' as t1')

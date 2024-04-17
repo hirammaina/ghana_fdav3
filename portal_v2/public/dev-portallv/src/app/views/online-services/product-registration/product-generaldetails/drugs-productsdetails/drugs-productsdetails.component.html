@@ -34,13 +34,14 @@
     
         </div>
         <div class="col-lg-4">
-          <label class="control-label">Brand Name</label>
+          <label class="control-label">Trade Name/Proprietary of the product </label>
           <dx-text-box (onFocusOut) ="onValidateBrandNameDetails($event)" formControlName="brand_name" [readOnly]= "isReadOnly" placeholder="Enter Brand Name" [showClearButton]="true">
           </dx-text-box>
         </div>
         <div class="col-lg-4 "  *ngIf="prodclass_category_id == 1 || prodclass_category_id == 11">
           <label for="ti" class="control-label">Classification</label>
           <dx-select-box [dataSource]="classificationData" [readOnly]= "  isReadOnly" valueExpr="id" displayExpr="name" [searchEnabled]="true"
+          (onValueChanged)="onclassificationSelect($event)"
            placeholder="Select Classification" formControlName="classification_id">
           </dx-select-box>
         </div>
@@ -52,8 +53,10 @@
             formControlName="product_category_id">
           </dx-select-box>
         </div>
+
+
         <div class="col-lg-4 input-group" *ngIf="field_hidden">
-          <div class="col-lg-10">
+          <div class="col-lg-8">
            <label for="ti" class="control-label">Generic Name(Optional)</label>
 
            <dx-select-box [dataSource]="commonNamesData"   [readOnly]= "isReadOnly"  valueExpr="id" displayExpr="name" [searchEnabled]="true"
@@ -61,7 +64,7 @@
            </dx-select-box>
           </div>
 
-           <div class="col-lg-2">
+           <div class="col-lg-4">
              <dx-button
                  text="Add "
                  type="success"
@@ -72,7 +75,7 @@
            </div>
          </div>
          
-         <div class="col-lg-4 ">
+         <!-- <div class="col-lg-4 ">
             <label for="ti" class="control-label">Therapeutic Group</label>
             <dx-text-box formControlName="therapeutic_group" [readOnly]= "isReadOnly" [showClearButton]="true">
           </dx-text-box>
@@ -82,13 +85,95 @@
           <dx-text-box formControlName="therapeutic_code" [readOnly]= "isReadOnly" [showClearButton]="true">
           </dx-text-box>
         </div> 
-     
+      -->
         <div class="col-lg-4">
           <label class="control-label">Product Strength</label>
 
           <dx-text-box formControlName="product_strength" placeholder="Product Strength"  [readOnly]= "isReadOnly" [showClearButton]="true">
           </dx-text-box>
         </div>
+
+
+
+
+         
+       <div class="col-lg-4" *ngIf="classification_id==1">
+          <label class="control-label">Product Color</label>
+
+          <dx-text-box formControlName="colors" placeholder="Product Color"  [readOnly]= "isReadOnly" [showClearButton]="true">
+          </dx-text-box>
+        </div>
+
+        <!--for herbal medicines  JM-->
+        <div class="col-lg-4"  *ngIf="classification_id==1">
+          <label for="ti" class="control-label">Origin/Source of Raw materials</label>
+          <dx-tag-box
+          [items]="sourceRawMaterialsData"
+          formControlName="source_of_raw_material_id"
+          placeholder="Select Origin/Source of Raw materials"
+          valueExpr="id"
+          [showSelectionControls]="true"
+          applyValueMode="useButtons"
+          displayExpr="name">
+          
+      </dx-tag-box>
+      </div>
+
+<!--for vaccines-->
+      <div class="col-lg-4" >
+        <label class="control-label">Total weight/weight (solids, semi-solids) or weight/volume (liquids)</label>
+        <dx-text-box formControlName="total_weight_or_weight_volume" placeholder="Total weight/weight | weight/volume"   [showClearButton]="true">
+        </dx-text-box>
+      </div>
+
+      <div class="col-lg-4" >
+        <label class="control-label">Specific gravity (SG) (liquids only)</label>
+        <dx-text-box formControlName="liquid_gravity" placeholder="Specific Gravity"   [showClearButton]="true">
+        </dx-text-box>
+      </div>
+
+
+      <div class="col-lg-4" *ngIf="classification_id!=1">
+        <label class="control-label">Does the product contain ingredients with a risk of transmitting agents of animal spongiform encephalopathy? </label>
+        <dx-select-box [dataSource]="confirmDataParam" 
+         valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+       
+           formControlName="if_product_contains_risky_ingredients_for_animals">
+        </dx-select-box>
+      </div>
+
+      <div class="col-lg-4" *ngIf="classification_id!=1">
+        <label class="control-label">Does the product contain a genetically-modified organism (GMO) or any product derived from a GMO? </label>
+        <dx-select-box [dataSource]="confirmDataParam" 
+         valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+       
+           formControlName="if_product_has_gmo">
+        </dx-select-box>
+      </div>
+
+      <div class="col-lg-4" *ngIf="classification_id!=1">
+        <label class="control-label">Does the application submission contain information on the source(s) of raw materials(Biological and non-biological)? </label>
+        <dx-select-box [dataSource]="confirmDataParam" 
+         valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+       
+           formControlName="if_submission_has_sources_of_raw_materials">
+        </dx-select-box>
+      </div>
+
+      <div class="col-lg-4" *ngIf="classification_id!=1">
+        <label class="control-label">Does the finished formulation contain any ingredient of  human origin ?If yes: Provide detailed information on the culturing and techniques, as well as all certificates to demonstrate the virus/pathogen-free status of the ingredient </label>
+        <dx-select-box [dataSource]="confirmDataParam" 
+         valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+       
+           formControlName="if_finished_product_has_ingredient_of_human_origin">
+        </dx-select-box>
+      </div>
+
+
+     
+
+
+
          <div class="row" *ngIf="prodclass_category_id == 8 || prodclass_category_id == 12">
 
 
@@ -145,27 +230,37 @@
                 </div>
                 
           </div> 
-                  <div class="col-lg-4">
+            <div class="col-lg-4">
                     <label class="control-label">Distribution Category</label>
       
                     <dx-select-box [dataSource]="distributionCategoryData" [readOnly]= "isReadOnly" valueExpr="id" displayExpr="name" [searchEnabled]="true"
                       placeholder="Strength Distribution Category" formControlName="distribution_category_id">
                     </dx-select-box>
-                  </div>
-                  <div class="col-lg-4">
+            </div>
+            <div class="col-lg-4" *ngIf="classification_id!=1">
                     <label class="control-label">Storage Conditions</label>
                     <dx-text-box formControlName="storage_condition" [readOnly]= "isReadOnly" [showClearButton]="true">
                     </dx-text-box>
                     
-                  </div>
-                  <div class="col-lg-4">
-                    <label class="control-label">Dosage Forms</label>
+            </div>
+
+            <div class="col-lg-4" *ngIf="classification_id!=1">
+                    <label class="control-label">Proposed Storage Conditions(after reconstitution or dilution)</label>
+                    <dx-text-box formControlName="storage_condition_after_reconstitution_dilution" [readOnly]= "isReadOnly" [showClearButton]="true">
+                    </dx-text-box>
+                    
+             </div>
+            
+
+            <div class="col-lg-4">
+              <!-- Dosage Forms -->
+                    <label class="control-label">Pharmacological Form</label>
       
                     <dx-select-box [dataSource]="dosageFormsData" [readOnly]= "isReadOnly" valueExpr="id" displayExpr="name" [searchEnabled]="true"
                       placeholder="Strength  Dosage Form" formControlName="dosage_form_id">
                     </dx-select-box>
-                  </div>
-                  <div class="col-lg-4">
+            </div>
+            <div class="col-lg-4">
                     <label class="control-label">Route Of Administration</label>
                     
                     <dx-tag-box
@@ -178,16 +273,70 @@
                       displayExpr="name">
                       
                   </dx-tag-box>
-                  </div>
-                  <div class="col-lg-4" >
+            </div>
+
+            <!--for biologicals and vaccines-->
+            <div class="col-lg-4"  >
+              <label for="ti" class="control-label">Type of Formulation</label>
+        
+              <dx-select-box [dataSource]="formulationData" valueExpr="id" displayExpr="name" [searchEnabled]="true"
+                placeholder="Select Formulation" formControlName="formulation_id">
+              </dx-select-box>
+            </div>
+            <div class="col-lg-12 input-group"  >
+              <div class="col-lg-6 "  >
+              <label for="ti" class="control-label">Formulation details can be disclosed to</label>
+        
+             
+
+              <dx-tag-box
+              [items]="formulationDetailsDisclosureData"
+              formControlName="formulation_disclosure_id"
+              placeholder="Formulation Details Disclosure"
+              valueExpr="id"
+              [showSelectionControls]="true"
+              applyValueMode="useButtons"
+              displayExpr="name">
+              
+          </dx-tag-box>
+          </div>
+          <div class="col-lg-6">
+            <label class="control-label">Other Formulation Disclosure Details</label>
+              <dx-text-box formControlName="formulation_disclosure_details" placeholder="Other Formulation Disclosure Details"  [showClearButton]="true">
+              </dx-text-box>
+          </div>
+
+
+            </div>
+
+
+
+            <div class="col-lg-4" >
                     <label class="control-label">Proposed Shelf Life(Month's)</label>
       
                     <dx-number-box formControlName="shelf_life" placeholder="shelf_life" [showClearButton]="true">
                     </dx-number-box>
                     
-                  </div>
+            </div>
 
-                  <div class="col-lg-12"  *ngIf="section_id == 7 || section_id == 18">
+            <div class="col-lg-4" >
+              <label class="control-label">Proposed in-use shelf life(Month's)</label>
+
+              <dx-number-box formControlName="shelf_lifeafter_opening" placeholder="Proposed in-use shelf life" [showClearButton]="true">
+              </dx-number-box>
+              
+      </div>
+
+
+          <div class="col-lg-4" *ngIf="classification_id!=1">
+                    <label class="control-label">Proposed Shelf Life (after reconstitution or dilution-Month's)</label>
+      
+                    <dx-number-box formControlName="shelf_life_after_reconsititution_dilution" placeholder="Proposed Shelf Life (after reconstitution or dilution-Month's)" [showClearButton]="true">
+                    </dx-number-box>
+                    
+          </div>
+
+          <div class="col-lg-12"  *ngIf="section_id == 7 || section_id == 18">
                     <label class="control-label">Target species(vet)</label>
                     
                     <dx-tag-box
@@ -220,34 +369,141 @@
                         </dx-text-area>
                     </div>
                     <div class="col-lg-4">
+                      <label class="control-label">Product Origin</label>
+        
+                      <dx-select-box [dataSource]="productTypeData" valueExpr="id" displayExpr="name" [searchEnabled]="true"   [readOnly]="readOnlyOrigin" 
+                        placeholder="Product Origin" formControlName="product_origin_id" (onSelectionChanged)="onProductOriginChange($event)">
+                      </dx-select-box>
+                    </div>
+
+                    <div class="col-lg-4"  *ngIf="classification_id!=1">
                       <label class="control-label">Product Manufacturing Country</label>
         
                       <dx-select-box [dataSource]="countriesData"  valueExpr="id" displayExpr="name" [searchEnabled]="true"
                         placeholder="Product Manufacturing Country" (onSelectionChanged)="onManufacturingCountryChange($event)" formControlName="manufacturing_country_id">
                       </dx-select-box>
                   </div>
-                 
-                  <div class="col-lg-4">
-                      <label class="control-label">Product Origin</label>
-        
-                      <dx-select-box [dataSource]="productTypeData" valueExpr="id" displayExpr="name" [searchEnabled]="true"   [readOnly]="readOnlyOrigin" 
-                        placeholder="Product Origin" formControlName="product_origin_id">
-                      </dx-select-box>
-                    </div>
+
+                  <div class="col-lg-4" *ngIf="classification_id!=1">
+                    <label class="control-label">Is product registered in Country of Origin? </label>
+                    <dx-select-box [dataSource]="confirmDataParam" 
+                     valueExpr="id" displayExpr="name" [searchEnabled]="true" 
                    
-                  <div class="col-lg-12">
-                    <label class="control-label">Product Physical Description(Description of Finished Product Specification)</label>
+                       formControlName="is_product_registered_in_country_of_origin">
+                    </dx-select-box>
+                  </div>
+                 
+                
+                    <div class="col-lg-4" >
+                      <label class="control-label">Pharmacological classification</label>
+  
+                       <dx-select-box [dataSource]="PharmacologicalClassificationData"  [readOnly]= "isReadOnly"  valueExpr="id" displayExpr="name" [searchEnabled]="true"
+                       placeholder="Pharmacological classification" formControlName="pharmacological_classification_id">
+                      </dx-select-box>
+                     
+                      
+                    </div>
+
+<!-- 
+                    <div class="col-lg-4" >
+                      <label class="control-label">Pharmacological Form</label>
+  
+                       <dx-select-box [dataSource]="dosageFormsData"  [readOnly]= "isReadOnly"  valueExpr="id" displayExpr="name" [searchEnabled]="true"
+                       placeholder="Pharmacological Form" formControlName="pharmacological_form_id">
+                      </dx-select-box>
+                     
+                      
+                    </div> -->
+
+
+
+                    <div class="col-lg-4" *ngIf="classification_id!=1">
+                      <label class="control-label">Mode of Usage</label>
+  
+                       <dx-select-box [dataSource]="ModeUsageData"  [readOnly]= "isReadOnly"  valueExpr="id" displayExpr="name" [searchEnabled]="true"
+                       placeholder="Mode of usage" formControlName="mode_of_usage_id">
+                      </dx-select-box>
+                     
+                      
+                    </div>
+
+                    <div class="col-lg-12">
+                      <label class="control-label">Commercial presentation of the product</label>
+        
+                      <dx-text-area [height]="60" formControlName="commercial_presentation" [readOnly]= "isReadOnly" placeholder="Commercial presentation"
+                        >
+                      </dx-text-area>
+                    </div>
+
+
+
+
+                    <!-- <div class="col-lg-12">
+                      <label class="control-label">Nature and content of container</label>
+        
+                      <dx-text-area [height]="60" formControlName="nature_content_container" [readOnly]= "isReadOnly" placeholder="Nature and content of container"
+                        >
+                      </dx-text-area>
+                    </div> -->
+
+
+                   
+                  <div class="col-lg-12" *ngIf="classification_id!=1">
+                    <!-- <label class="control-label">Product Physical Description(Description of Finished Product Specification)</label> -->
+                    <label class="control-label">Physical Description</label>
       
                     <dx-text-area [height]="60" formControlName="physical_description" [readOnly]= "isReadOnly" placeholder="Physical description"
                       >
                     </dx-text-area>
                   </div>
-                  <div class="col-lg-12">
+                  <div class="col-lg-12" *ngIf="classification_id!=1">
                     <label class="control-label">Indication</label>
       
                     <dx-text-area [height]="60" formControlName="indication"  placeholder="Enter Indication">
                     </dx-text-area>
                   </div>
+                  <div class="col-lg-12" >
+                    <label class="control-label">Give a brief summary of the manufacturing procedure</label>
+                      <dx-text-area formControlName="summary_of_manufacturing_process" placeholder="Manufacturing procedure" >
+                      </dx-text-area>
+                  </div>
+
+
+                  <div class="col-lg-4" >
+                    <label class="control-label">Is this biological product registered in other countries? </label>
+                    <dx-select-box [dataSource]="confirmDataParam" 
+                     valueExpr="id" displayExpr="name" [searchEnabled]="true" 
+                   
+                       formControlName="if_registered_in_other_countries">
+                    </dx-select-box>
+                  </div>
+
+                  <div class="col-lg-4">
+                    <label class="control-label">WHO prequalification (PQ) status </label>
+      
+                    
+
+                    <dx-select-box [dataSource]="whoPreQualificationStatusesData" [readOnly]= "isReadOnly" valueExpr="id" displayExpr="name" [searchEnabled]="true"
+                      placeholder="Application is to be addressed to" formControlName="who_prequalification_status">
+                    </dx-select-box>
+                  </div>
+
+                  <div class="col-lg-4">
+                    <label class="control-label">WHO prequalification (PQ) Date </label>
+      
+                    <dx-date-box formControlName="who_prequalification_date" placeholder="WHO prequalification (PQ) Date" [showClearButton]="true">
+                    </dx-date-box>
+                  </div>
+
+
+
+
+                  
+                  
+
+
+
+                  
                   
                   <div class="col-lg-8 input-group">
                     <div class="col-lg-8">
@@ -265,7 +521,38 @@
                       </dx-button>
                     </div>
                   </div>
-                  <div class="col-lg-4 "  *ngIf="prodclass_category_id == 1 || prodclass_category_id == 11">
+
+                 
+
+                <!-- for biologiclas -->
+                  <div class="col-lg-4">
+                    <label class="control-label">Full name of Superintendent Pharmacist</label>
+      
+                    <dx-text-box formControlName="full_name_superintendent_pharmacist" placeholder="Full name of Superintendent Pharmacist" [showClearButton]="true">
+                    </dx-text-box>
+                  </div>
+                  
+                  <div class="col-lg-4">
+                    <label class="control-label">Registration number of Superintendent Pharmacist</label>
+      
+                    <dx-text-box formControlName="reg_number_superintended_pharmacist" placeholder="Registration number of Superintendent Pharmacist" [showClearButton]="true">
+                    </dx-text-box>
+                  </div>
+
+                  
+                <div class="col-lg-4">
+            
+                    <label class="control-label">Correspondence about this application is to be addressed to</label>
+      
+                    <dx-select-box [dataSource]="applicationCorrespondenceAddresseData" [readOnly]= "isReadOnly" valueExpr="id" displayExpr="name" [searchEnabled]="true"
+                      placeholder="Application is to be addressed to" formControlName="application_correspondence_addressee_id">
+                    </dx-select-box>
+            </div>
+
+             <!-- end biologicals -->
+
+
+                  <!-- <div class="col-lg-4 "  *ngIf="prodclass_category_id == 1 || prodclass_category_id == 11">
                     <label for="ti" class="control-label">Global Trade Item number</label>
                     <dx-text-box formControlName="gtin_number" [readOnly]= "isReadOnly" [showClearButton]="true">
                     </dx-text-box>
@@ -274,7 +561,7 @@
                     <label for="ti" class="control-label">Global Location Number</label>
                     <dx-text-box formControlName="glocation_number" [readOnly]= "isReadOnly" [showClearButton]="true">
                     </dx-text-box>
-                  </div>
+                  </div> -->
                   <div class="col-lg-4">
                     <input type="hidden" name="section_id" formControlName="section_id" />
                    
@@ -295,6 +582,8 @@
                   </div>
                 </div>
               </form>
+
+
               <dx-popup class="popup"  [width]="funcpopWidth(30)" [height]="450" [showTitle]="true" title="Generic Name Details" [dragEnabled]="false" [closeOnOutsideClick]="false" [(visible)]="addproductGenericNamesModal">
   
                 <div *dxTemplate="let data of 'content'" >

@@ -82,7 +82,7 @@
 
                 <div class="wizard-divtop">
                     <button type="button" class="btn btn-primary  pull-left" style="margin:5px;" previousStep><i
-                      class="fa fa-angle-double-left"></i>Previous
+              f        class="fa fa-angle-double-left"></i>Previous
                         </button>
           
                     <button type="button" class="btn btn-primary  pull-right" style="margin:5px;" (click)="funcValidateDocumentsUpload(2)">Next(Query Response Submission)<i
@@ -188,6 +188,8 @@
                 [productTypeData] ="productTypeData" 
                 [confirmDataParam] ="confirmDataParam" 
                 [confirmDataParamAll] ="confirmDataParamAll"
+                [PharmacologicalClassificationData]="PharmacologicalClassificationData"
+                [sourceRawMaterialsData]="sourceRawMaterialsData"
                 [payingCurrencyData] ="payingCurrencyData" 
                 [fastTrackOptionsData] ="fastTrackOptionsData"
 
@@ -197,6 +199,12 @@
                 [zonesData] ="zonesData" [section_id] ="section_id"  [tra_product_id] ="tra_product_id" [reg_product_id] ="reg_product_id"  [atc_code_id] ="atc_code_id" 
                 
                 [prodclass_category_id] ="prodclass_category_id" 
+                [formulationData]="formulationData"
+                [formulationDetailsDisclosureData]="formulationDetailsDisclosureData"
+                [ModeUsageData]="ModeUsageData"
+                [whoPreQualificationStatusesData]="whoPreQualificationStatusesData"
+             
+                [applicationCorrespondenceAddresseData]="applicationCorrespondenceAddresseData"
                  [isReadOnly] ="isReadOnly" [sub_module_id] ="sub_module_id" [application_code] ="application_code">
                 </app-drugs-productsdetails>  
             </div>
@@ -228,6 +236,7 @@
                 [payingCurrencyData] ="payingCurrencyData" 
                 [fastTrackOptionsData] ="fastTrackOptionsData" 
                 (productTypeEvent)="product_origin_id=$event"
+                
                 [zonesData] ="zonesData" [section_id] ="section_id"  [atc_code_id] ="atc_code_id"  [tra_product_id] ="tra_product_id" [reg_product_id] ="reg_product_id"   [isReadOnly] ="isReadOnly" [sub_module_id] ="sub_module_id" [application_code] ="application_code">
 
               </app-cosmetics-productsdetails>
@@ -332,6 +341,12 @@
                 [productIngredientsModal] = "productIngredientsModal"
                 [apiManufacturersData] ="apiManufacturersData" 
                 [productgmpInspectionData] ="productgmpInspectionData" 
+                [confirmDataParam] ="confirmDataParam" 
+                [productMarketingAuthorizationTypes]="productMarketingAuthorizationTypes"
+                [commonNamesData] ="commonNamesData"  
+                [targetSpeciesData]="targetSpeciesData"
+                [productApiReferencesData]="productApiReferencesData"
+              
                 [product_id] ="product_id" [section_id] ="section_id"  [section_id] ="section_id" [isReadOnly] ="isReadOnly" [status_id] ="status_id"   [product_origin_id] ="product_origin_id"  [sub_module_id] ="sub_module_id" [application_code] ="application_code">
               </app-drugs-dataproducts>
               </div>
@@ -624,6 +639,12 @@
               [isReadOnlyTraderasLtr] ="isReadOnlyTraderasLtr" 
               (productTypeEvent)="product_origin_id=$event"
               [targetSpeciesData]="targetSpeciesData"
+              [sourceRawMaterialsData]="sourceRawMaterialsData"
+              [formulationData]="formulationData"
+              [formulationDetailsDisclosureData]="formulationDetailsDisclosureData"
+              [ModeUsageData]="ModeUsageData"
+              [whoPreQualificationStatusesData]="whoPreQualificationStatusesData"
+              [applicationCorrespondenceAddresseData]="applicationCorrespondenceAddresseData"
               [zonesData] ="zonesData" [section_id] ="section_id"  [tra_product_id] ="tra_product_id" [reg_product_id] ="reg_product_id" [atc_code_id] ="atc_code_id"  [isReadOnly] ="isReadOnly" [sub_module_id] ="sub_module_id" [application_code] ="application_code">
             </app-drugs-productsdetails>
             </div>
@@ -742,8 +763,15 @@
             [productIngredientsModal] = "productIngredientsModal"
             [apiManufacturersData] ="apiManufacturersData" 
             [productgmpInspectionData] ="productgmpInspectionData" 
+            [reasonsNotRegisteredCountryOriginData]="reasonsNotRegisteredCountryOriginData" 
+            [confirmDataParam] ="confirmDataParam"  
+            [commonNamesData] ="commonNamesData"  
+            [productMarketingAuthorizationTypes]="productMarketingAuthorizationTypes"
+            [targetSpeciesData]="targetSpeciesData"
+            [productApiReferencesData]="productApiReferencesData"
             [product_id] ="product_id" [section_id] ="section_id"    [isReadOnly] ="isReadOnly" [status_id] ="status_id"  [product_origin_id] ="product_origin_id"   [sub_module_id] ="sub_module_id" [application_code] ="application_code">
-            </app-drugs-dataproducts>
+                
+          </app-drugs-dataproducts>
           </div>
           <div class="col-lg-12 wizard-content " *ngIf="prodclass_category_id == 2 || prodclass_category_id == 10 || prodclass_category_id == 15  || prodclass_category_id == 16   || prodclass_category_id == 17">
             <app-cosmetics-dataproducts 

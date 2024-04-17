@@ -676,12 +676,21 @@ class WorkflowController extends Controller
         $sub_module_id = $request->input('sub_module_id');
         $section_id = $request->input('section_id');
         $is_dataammendment_request = $request->input('is_dataammendment_request');
+        $prodclass_category_id = $request->input('prodclass_category_id');
+        $importexport_permittype_id = $request->input('importexport_permittype_id');
+        $premise_type_id = $request->input('premise_type_id');
         try {
             //get workflow id
             $where = array(
                 't1.module_id' => $module_id,
                 't1.sub_module_id' => $sub_module_id
             );
+            if(validateIsNumeric($prodclass_category_id)){
+                $where['t1.prodclass_category_id'] = $prodclass_category_id;
+            }
+            if(validateIsNumeric($premise_type_id)){
+                $where['t1.premise_type_id'] = $premise_type_id;
+            }
             if (validateIsNumeric($is_dataammendment_request)) {
 
                 $where['t1.is_dataammendment_request'] = $is_dataammendment_request;
@@ -697,7 +706,7 @@ class WorkflowController extends Controller
                         ->on('t3.stage_status', '=', DB::raw(1));
                 })
                 ->join('wf_workflow_interfaces as t4', 't3.interface_id', '=', 't4.id')
-                ->select('t4.viewtype', 't1.id as processId', 't1.name as processName', 't3.name as initialStageName', 't3.id as initialStageId');
+                ->select('t4.viewtype', 't1.id as processId', 't1.name as processName', 't3.name as initialStageName', 't3.id as initialStageId','t1.prodclass_category_id','t1.premise_type_id');
 
             $qry->where($where);
             $results = $qry->first();

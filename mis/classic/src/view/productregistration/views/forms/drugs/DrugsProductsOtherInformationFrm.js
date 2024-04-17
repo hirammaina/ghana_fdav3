@@ -148,6 +148,26 @@ Ext.define(
         title: "Registration In Other Countries ",
       },
       {
+        xtype: "drugsOriginNonRegistrationReasonsGrid",
+        title: "Reasons Not Registered in Country of Origin",
+        listeners: {
+          beforerender: {
+            fn: "setConfigGridsStore",
+            config: {
+              pageSize: 1000,
+              storeId: "drugproductoriginNonRegReasonsstr",
+              proxy: {
+                url: "productregistration/onLoadproductOriginNonRegReasons",
+                extraParams: {
+                  table_name: "tra_product_reasons_not_registred_in_origin",
+                },
+              },
+            },
+            isLoad: true,
+          },
+        },
+      },
+      {
         xtype: "conductedproductclinicaltrialGrid",
         title: "clinical trial information",
       },

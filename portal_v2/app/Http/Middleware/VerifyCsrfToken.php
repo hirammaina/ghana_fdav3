@@ -106,6 +106,7 @@ class VerifyCsrfToken extends Middleware
         "utilities/onSavesampleDetails",
         "utilities/onSaveinitCAPAresponses",
         "importexportapp/saveImportExportApplication",
-        "importexportapp/savePermitProductdetails"
+        "importexportapp/savePermitProductdetails",
+        "productregistration/onDeleteProductsDetails"
     ];
 }

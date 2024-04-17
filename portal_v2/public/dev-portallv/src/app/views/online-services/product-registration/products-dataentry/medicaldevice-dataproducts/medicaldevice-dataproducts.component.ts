@@ -189,7 +189,7 @@ export class MedicaldeviceDataproductsComponent extends SharedProductregistratio
 
   onAuthorizationReleasePreparing(e) {
     this.tbisReadOnly = false;
-    this.functDataGridToolbar(e, this.funcAddProductManufacturerDetails, 'Authorization Release');
+    this.functDataGridToolbar(e, this.funcAddAuthorizationReleaseDetails, 'Authorization Release');
 
   }  
   

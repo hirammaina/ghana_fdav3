@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -131,6 +131,8 @@ use Modules\Configurations\Http\Controllers\ConfigurationsController;
       //
 
    Route::get('getCustomerList', [ConfigurationsController::class, 'getCustomerList']);
+
+   Route::get('prepareInterfaceBasedonConfig',[ConfigurationsController::class, 'prepareInterfaceBasedonConfig']);
    });
 
 

@@ -328,8 +328,21 @@ class ProductRegistrationController extends Controller
             "device_special_storage_condition"=>$req->device_special_storage_condition,
             "device_description_gmdn"=>$req->device_description_gmdn,
             "basis_medical_device_classification"=>$req->basis_medical_device_classification,
-            "source_of_starting_material_antigen_character_on_rdt"=>$req->source_of_starting_material_antigen_character_on_rdt
-
+            "source_of_starting_material_antigen_character_on_rdt"=>$req->source_of_starting_material_antigen_character_on_rdt,
+            
+            "storage_condition_after_reconstitution_dilution"=>$req->storage_condition_after_reconstitution_dilution,
+            "shelf_life_after_reconsititution_dilution"=>$req->shelf_life_after_reconsititution_dilution,
+            "pharmacological_classification_id"=>$req->pharmacological_classification_id,
+            "commercial_presentation"=>$req->commercial_presentation,
+            "is_product_registered_in_country_of_origin"=>$req->is_product_registered_in_country_of_origin,
+            "formulation_disclosure_id"=>json_encode($req->formulation_disclosure_id),
+            "formulation_disclosure_details"=>($req->formulation_disclosure_details),
+            "if_finished_product_has_ingredient_of_human_origin"=>$req->if_finished_product_has_ingredient_of_human_origin,
+            "if_submission_has_sources_of_raw_materials"=>$req->if_submission_has_sources_of_raw_materials,
+            "if_product_has_gmo"=>$req->if_product_has_gmo,
+            "if_product_contains_risky_ingredients_for_animals"=>$req->if_product_contains_risky_ingredients_for_animals,
+            "total_weight_or_weight_volume"=>$req->total_weight_or_weight_volume,
+            "source_of_raw_material_id"=>$req->source_of_raw_material_id
         );
 
 
@@ -449,6 +462,8 @@ class ProductRegistrationController extends Controller
 
 
                 $resp = insertRecord('wb_product_information', $product_infor, $email_address);
+              //  return response()->json($resp);
+               
 
 
 
@@ -639,6 +654,7 @@ class ProductRegistrationController extends Controller
 
             $res = array(
                 'success' => false, 'message1' => $product_res,
+                'resp'=>$resp,
                 'message' => $exception->getMessage()
             );
         } catch (\Throwable $throwable) {
@@ -1873,6 +1889,10 @@ class ProductRegistrationController extends Controller
                 $records->target_species_id = $target_species_id;
             }
 
+            //formulation disclosure
+            $records->formulation_disclosure_id=json_decode($records->formulation_disclosure_id);//Jm on 04/04/2024
+
+
             $res = array('success' => true, 'data' => $records);
         } catch (\Exception $e) {
             $res = array(
@@ -2415,10 +2435,13 @@ class ProductRegistrationController extends Controller
                 $product_manufacturer_id = $rec->id;
                 $manufacturer_id = $rec->manufacturer_id;
                 $man_site_id = $rec->man_site_id;
+              
 
                 $manufacturer_roleData = getParameterItems('par_manufacturing_roles', '', 'mis_db');
-                $manufacturing_role = $this->getManufacturerRoles($product_manufacturer_id, $manufacturer_roleData);
-
+                //$manufacturing_role = $this->getManufacturerRoles($product_manufacturer_id, $manufacturer_roleData);
+                $manufacturing_role = returnParamFromArray($manufacturer_roleData, $rec->manufacturer_role_id);
+              
+                
                 $man_data = DB::connection('mis_db')
                     ->table('tra_manufacturers_information as t1')
                     ->select('t5.*', 't1.id as manufacturer_id', 't5.name as manufacturing_site', 't1.name as manufacturer_name', 't2.name as country', 't3.name as region', 't4.name as district')
@@ -2432,6 +2455,7 @@ class ProductRegistrationController extends Controller
                     $man_data->where(array('t5.id' => $man_site_id));
                 }
                 $man_data =   $man_data->first();
+              
 
                 if ($man_data) {
                     $data[] = array(
@@ -2456,9 +2480,10 @@ class ProductRegistrationController extends Controller
                         'physical_address' => $man_data->physical_address,
                         'postal_address' => $man_data->postal_address,
                         'manufacturing_role' => $manufacturing_role,
-                        'email_address' => $man_data->email
+                        //'email_address' => $man_data->email
                     );
                 }
+            
             }
             $res = array(
                 'success' => true,
@@ -3982,4 +4007,274 @@ class ProductRegistrationController extends Controller
         }
         return response()->json($res);
     }
+
+
+
+    public function getProductsReasonsNotRegistreredInOrigin(Request $req)
+    {
+        $product_id = $req->product_id;
+        if (!is_numeric($product_id)) {
+            return $res = array(
+                'success' => true,
+                'data' => []
+            );
+        }
+        try {
+
+           
+            //get the records 
+            $records = DB::table('wb_product_reasons_not_registred_in_origin as t1')
+                ->select('t1.*')
+                ->where(array('t1.product_id' => $product_id))
+                ->get();
+           
+            $res = array('success' => true, 'data' => $records);
+        } catch (\Exception $e) {
+            $res = array(
+                'success' => false,
+                'message' => $e->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return response()->json($res);
+    }
+
+    public function getProductMarketingAuthorizations(Request $req)
+    {
+        $product_id = $req->product_id;
+        if (!is_numeric($product_id)) {
+            return $res = array(
+                'success' => true,
+                'data' => []
+            );
+        }
+        try {
+           $mis_db= DB::connection('mis_db')->getDatabaseName();
+            //get the records 
+            $records = DB::table('wb_otherstates_productregistrations as t1')
+                        ->join("$mis_db.par_countries as t2","t1.country_id","t2.id")
+                        ->join("$mis_db.par_marketing_authorizations_decisions as t3","t3.id","t1.current_registrationstatus_id")
+                ->select('t1.*','t3.name as authorization_type','t2.name as country')
+                ->where(array('t1.product_id' => $product_id))
+                ->get();
+           
+            $res = array('success' => true, 'data' => $records);
+
+
+
+
+        } catch (\Exception $e) {
+            $res = array(
+                'success' => false,
+                'message' => $e->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return response()->json($res);
+    }
+
+    public function getProductStepsToPreventForeignMatter(Request $req)
+    {
+        $product_id = $req->product_id;
+        if (!is_numeric($product_id)) {
+            return $res = array(
+                'success' => true,
+                'data' => []
+            );
+        }
+        try {
+
+           
+            //get the records 
+            $records = DB::table('wb_products_foreign_matter_steps as t1')
+                ->select('t1.*')
+                ->where(array('t1.product_id' => $product_id))
+                ->get();
+           
+            $res = array('success' => true, 'data' => $records);
+        } catch (\Exception $e) {
+            $res = array(
+                'success' => false,
+                'message' => $e->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return response()->json($res);
+    }
+
+    public function getProductReferences(Request $req)
+    {
+        $product_id = $req->product_id;
+        $mis_db = DB::connection('mis_db')->getDatabaseName();
+        if (!is_numeric($product_id)) {
+            return $res = array(
+                'success' => true,
+                'data' => []
+            );
+        }
+        try {
+            //get the records 
+            $records = DB::table('wb_product_references as t1')
+            ->leftjoin("$mis_db.par_common_names as t2","t1.common_name_id","t2.id")
+                ->select('t1.*','t2.name as generic_name')
+                ->where(array('t1.product_id' => $product_id))
+                ->get();
+           
+            $res = array('success' => true, 'data' => $records);
+        } catch (\Exception $e) {
+            $res = array(
+                'success' => false,
+                'message' => $e->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return response()->json($res);
+    }
+    public function getProductDistinctUses(Request $req)
+    {
+        $product_id = $req->product_id;
+        if (!is_numeric($product_id)) {
+            return $res = array(
+                'success' => true,
+                'data' => []
+            );
+        }
+        try {
+            //get the records 
+            $records = DB::table('wb_product_distinct_prescribed_uses as t1')
+                ->select('t1.*')
+                ->where(array('t1.product_id' => $product_id))
+                ->get();
+           
+            $res = array('success' => true, 'data' => $records);
+        } catch (\Exception $e) {
+            $res = array(
+                'success' => false,
+                'message' => $e->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return response()->json($res);
+    }
+    public function getProductReleaseSpecificationData(Request $req)
+    {
+        $product_id = $req->product_id;
+        if (!is_numeric($product_id)) {
+            return $res = array(
+                'success' => true,
+                'data' => []
+            );
+        }
+        try {
+            //get the records 
+            $records = DB::table('wb_product_ingredients as t1')
+                ->leftJoin("inclusion_reason as t2","t2.id","t1.inclusion_reason_id")
+                ->select('t1.*','t2.name as inclusion_reason')
+                ->where(array('t1.product_id' => $product_id))
+                ->get();
+           
+            $res = array('success' => true, 'data' => $records);
+        } catch (\Exception $e) {
+            $res = array(
+                'success' => false,
+                'message' => $e->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return response()->json($res);
+    }
+
+    public function getProductBiologicalConstituentsData(Request $req)
+
+    {
+        $product_id = $req->product_id;
+        if (!is_numeric($product_id)) {
+            return $res = array(
+                'success' => true,
+                'data' => []
+            );
+        }
+        try {
+            //get the records 
+            $records = DB::table('wb_product_ingredients as t1')
+                ->select('t1.*')
+                ->where(array('t1.product_id' => $product_id))
+                ->whereNotNull("specification_type_id")
+                ->get();
+           
+            $res = array('success' => true, 'data' => $records);
+        } catch (\Exception $e) {
+            $res = array(
+                'success' => false,
+                'message' => $e->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return response()->json($res);
+    }
+
+
+    public function getProductReleaseOfSupplyData(Request $req)
+
+    {
+        $product_id = $req->product_id;
+        if (!is_numeric($product_id)) {
+            return $res = array(
+                'success' => true,
+                'data' => []
+            );
+        }
+        $mis_db = DB::connection('mis_db')->getDatabaseName();
+        try {
+            //get the records 
+            $records = DB::table('wb_product_release_for_supply as t1')
+                ->select('t1.*','t2.name as title')
+                ->leftJoin("$mis_db.par_titles as t2","t1.title_id","t2.id")
+                ->where(array('t1.product_id' => $product_id))
+                ->get();
+           
+            $res = array('success' => true, 'data' => $records);
+        } catch (\Exception $e) {
+            $res = array(
+                'success' => false,
+                'message' => $e->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return response()->json($res);
+    }
+
+
 }

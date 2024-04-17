@@ -38,6 +38,7 @@ export class DrugsProductsdetailsComponent extends SharedProductregistrationclas
   @Input() productTypeData: any;
   @Input() confirmDataParam: any;
   @Input() confirmDataParamAll: any;
+  @Input() PharmacologicalClassificationData: any;
   @Input() zonesData: any;
   @Input() section_id: number;
   @Input() atc_code_id: number;
@@ -91,6 +92,17 @@ export class DrugsProductsdetailsComponent extends SharedProductregistrationclas
   isHasMedicalFamily:boolean = false;
   isonHasReagents_accessories:boolean = false;
   addproductGenericNamesFrm:FormGroup;
+
+  @Input() sourceRawMaterialsData:any;
+  classification_id:any;
+  @Input() formulationData:any;
+  @Input() formulationDetailsDisclosureData:any;
+  @Input() ModeUsageData:any;
+  @Input() applicationCorrespondenceAddresseData: any;
+  @Input() whoPreQualificationStatusesData:any;
+  
+
+  
   ngOnInit() {
     let user_details = this.authService.getUserDetails();
     this.country_id = user_details.country_id;
@@ -146,6 +158,7 @@ export class DrugsProductsdetailsComponent extends SharedProductregistrationclas
           this.sectionsData = data;
         });
   }
+  
   onAddNewCommonNameDetails(){
     this.addproductGenericNamesFrm.reset();
     this.addproductGenericNamesModal = true;
@@ -193,6 +206,11 @@ export class DrugsProductsdetailsComponent extends SharedProductregistrationclas
       }
     }
   }
+  onclassificationSelect($event)
+  {
+    this.classification_id=$event.value;
+
+  }
   onLoadCountriesLists(assessment_procedure_id) {
 
     var data = {
@@ -220,6 +238,7 @@ export class DrugsProductsdetailsComponent extends SharedProductregistrationclas
 
       this.productGeneraldetailsfrm.patchValue({ local_agent_name: 'Select Local Agent', local_agent_id: '', trader_aslocal_agent: 2 })
     }
+    this.cdr.detectChanges();//to disable check after validation by angular, warning on console
    
   }
   onHasMaximumResidue_limit($event) {
@@ -325,10 +344,10 @@ onLoadATCCodesDataAll() {
   var data = {
     table_name: 'par_atc_codes'
   };
-  this.confirmDataParam = {
-    params: data,
-    headers: { 'Accept': 'application/json' }
-  };
+  // this.confirmDataParam = {//Jm on 04/03/2024, expression changed during change detection
+  //   params: data,
+  //   headers: { 'Accept': 'application/json' }
+  // };
 
   this.config.onLoadConfigurationData(data)
     .subscribe(
@@ -366,10 +385,10 @@ onLoadATCCodesData(common_name_id) {
     table_name: 'par_atc_codes',
     common_name_id: common_name_id
   };
-  this.confirmDataParam = {
-    params: data,
-    headers: { 'Accept': 'application/json' }
-  };
+  // this.confirmDataParam = {
+  //   params: data,
+  //   headers: { 'Accept': 'application/json' }
+  // };
 
   this.config.onLoadConfigurationData(data)
     .subscribe(
@@ -441,5 +460,14 @@ onValidateBrandNameDetails(e){
   let classification_id =  this.productGeneraldetailsfrm.get('classification_id').value;
   this.onLoadreasonForClassificationData(device_type_id,classification_id);
 }
+
+// onProductRegisteredCountryOrigin($event) {
+//   if($event.value == 1){
+//     this.ifProductNotRegisteredInCountryofOrigin=true
+//   }else{
+//     this.ifProductNotRegisteredInCountryofOrigin=false;
+//   }
+//   }
+
 
 }

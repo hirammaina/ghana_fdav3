@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -79,4 +79,15 @@ Route::group(['middleware2' => 'auth:api', 'prefix' => 'productregistration'], f
     Route::get('getOnProductSummaryVariationChanges', 'ProductRegistrationController@getOnProductSummaryVariationChanges');
 
     Route::get('onSearchFoodProductProductApplication', 'ProductRegistrationController@onSearchFoodProductProductApplication');
+    Route::get('getProductsReasonsNotRegistreredInOrigin', 'ProductRegistrationController@getProductsReasonsNotRegistreredInOrigin');
+    Route::get('getProductMarketingAuthorizations', 'ProductRegistrationController@getProductMarketingAuthorizations');
+    Route::get('getProductStepsToPreventForeignMatter', 'ProductRegistrationController@getProductStepsToPreventForeignMatter');
+    Route::get('getProductReferences', 'ProductRegistrationController@getProductReferences');
+    Route::get('getProductDistinctUses', 'ProductRegistrationController@getProductDistinctUses');
+    Route::get('getProductReleaseSpecificationData', 'ProductRegistrationController@getProductReleaseSpecificationData');
+    Route::get('getProductBiologicalConstituentsData', 'ProductRegistrationController@getProductBiologicalConstituentsData');
+    Route::get('getProductReleaseOfSupplyData', 'ProductRegistrationController@getProductReleaseOfSupplyData');
+    
+
+
 });

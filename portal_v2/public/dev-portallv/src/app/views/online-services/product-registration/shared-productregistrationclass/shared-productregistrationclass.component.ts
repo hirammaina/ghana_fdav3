@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewContainerRef, ViewChild,Renderer2, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewContainerRef, ViewChild,Renderer2, ElementRef,ChangeDetectorRef } from '@angular/core';
 import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { ModalDialogService } from 'ngx-modal-dialog';
 import { SpinnerVisibilityService } from 'ng-http-loader';
@@ -62,7 +62,7 @@ export class SharedProductregistrationclassComponent implements OnInit {
   distributionCategoryData: any;
   storageConditionData: any;
   isReadOnlyTraderasLtr:boolean= false;
-  readOnlyOrigin:boolean;
+  readOnlyOrigin:boolean=false;
   productCategoryData: any;
   has_otherregistration_selection: boolean;
   routeOfAdministrationData: any;
@@ -138,6 +138,7 @@ export class SharedProductregistrationclassComponent implements OnInit {
   devicesTypeData: any;
   confirmDataParam: any;
   confirmDataParamAll:any;
+  PharmacologicalClassificationData:any;
   containerData: any;
   containerMaterialData: any;
   terms_conditions: any;
@@ -163,6 +164,7 @@ export class SharedProductregistrationclassComponent implements OnInit {
   manufacturingRoleData: any;
 
   drugsingredientsData: any;
+  reasonsNotRegisteredCountryOriginData:any;
   drugsPackagingData: any;
 
   process_title: string;
@@ -262,8 +264,20 @@ export class SharedProductregistrationclassComponent implements OnInit {
 
   //Job on 22.03.24
   classification_id:number;
-  
-  constructor(public modalServ: ModalDialogService, public viewRef: ViewContainerRef, public modalDialogue: ModalDialogService, public spinner: SpinnerVisibilityService, public configService: ConfigurationsService, public appService: ProductApplicationService, public router: Router, public formBuilder: FormBuilder, public config: ConfigurationsService, public modalService: NgxSmartModalService, public toastr: ToastrService, public authService: AuthService, public utilityService: Utilities,public httpClient: HttpClient, public dmsService:DocumentManagementService) {
+  productMarketingAuthorizationTypes:any;
+  sourceRawMaterialsData:any;
+  referenceProductDetailsFrm: FormGroup;
+  productDistinctPrescribedUsesFrm: FormGroup;
+  formulationDetailsDisclosureData: any;
+  productReleaseSpecificationsFrm: FormGroup;
+  productBiologicalsFormulationFrm:FormGroup;
+  productApiReferencesData:any;
+  ModeUsageData:any;
+ 
+  applicationCorrespondenceAddresseData:any;
+  whoPreQualificationStatusesData:any;
+ 
+  constructor(public modalServ: ModalDialogService, public viewRef: ViewContainerRef, public modalDialogue: ModalDialogService, public spinner: SpinnerVisibilityService, public configService: ConfigurationsService, public appService: ProductApplicationService, public router: Router, public formBuilder: FormBuilder, public config: ConfigurationsService, public modalService: NgxSmartModalService, public toastr: ToastrService, public authService: AuthService, public utilityService: Utilities,public httpClient: HttpClient, public dmsService:DocumentManagementService,public cdr: ChangeDetectorRef) {
 
    // if(!this.check_sharedclassloaded){
 
@@ -448,6 +462,51 @@ export class SharedProductregistrationclassComponent implements OnInit {
               
           });
 
+          this.referenceProductDetailsFrm = new FormGroup({
+            brand_name: new FormControl('', Validators.compose([Validators.required])),
+            common_name_id: new FormControl('', Validators.compose([])),
+            dosage_form_id:new FormControl('', Validators.compose([])),
+            routes_of_admin_id: new FormControl('', Validators.compose([])),
+            product_strength: new FormControl('', Validators.compose([])),
+            si_unit_id: new FormControl('', Validators.compose([])),
+            product_desc: new FormControl('', Validators.compose([])),
+            product_category_id: new FormControl('', Validators.compose([])),
+            registered_product_id: new FormControl('', Validators.compose([])),
+            product_subcategory_id: new FormControl('', Validators.compose([])),
+            manufacturer_id: new FormControl('', Validators.compose([])),
+            registration_date: new FormControl('', Validators.compose([])),
+            registration_no: new FormControl('', Validators.compose([])),
+            id: new FormControl('', Validators.compose([])),
+            specification: new FormControl('', Validators.compose([])),
+            distinct_prescribed_uses: new FormControl('', Validators.compose([])),
+        });
+        this.productDistinctPrescribedUsesFrm = new FormGroup({
+          use: new FormControl('', Validators.compose([Validators.required])),
+          target_species_id: new FormControl('', Validators.compose([])),
+          situation: new FormControl('', Validators.compose([])),
+          id:new FormControl('', Validators.compose([])),
+        });
+        this.productReleaseSpecificationsFrm = new FormGroup({
+          id:new FormControl('', Validators.compose([])),
+          si_unit_id:new FormControl('', Validators.compose([Validators.required])),
+          ingredient_id: new FormControl('', Validators.compose([Validators.required])),
+          //product_id: new FormControl('', Validators.compose([Validators.required])),
+          minimum_release_titre: new FormControl('', Validators.compose([Validators.required])),
+          maximum_release_titre: new FormControl('', Validators.compose([Validators.required])),
+          end_shelf_life_titre: new FormControl('', Validators.compose([Validators.required])),
+          inclusion_reason_id: new FormControl('', Validators.compose([Validators.required])),
+        });
+
+        this.productBiologicalsFormulationFrm = new FormGroup({
+          id:new FormControl('', Validators.compose([])),
+          si_unit_id:new FormControl('', Validators.compose([Validators.required])),
+          ingredient_id: new FormControl('', Validators.compose([Validators.required])),
+          concentration_quantity: new FormControl('', Validators.compose([Validators.required])),
+          specification_type_id: new FormControl('', Validators.compose([Validators.required])),
+          specification: new FormControl('', Validators.compose([Validators.required])),
+          inclusion_reason_id: new FormControl('', Validators.compose([Validators.required])),
+        });
+
          
           if(this.sub_module_id == 17){
           this.productGeneraldetailsfrm.addControl('withdrawal_type_id',new FormControl('', Validators.required));
@@ -468,6 +527,8 @@ export class SharedProductregistrationclassComponent implements OnInit {
           if(this.prodclass_category_id == 5 || this.prodclass_category_id == 9 || 
             this.prodclass_category_id == 13 
             || this.prodclass_category_id == 14){
+
+              console.log("hree1");
             this.productIngredientsdetailsfrm = new FormGroup({
               ingredient_type_id: new FormControl(this.section_id, Validators.compose([Validators.required])),
               proportion: new FormControl(this.sub_module_id, Validators.compose([])),
@@ -481,9 +542,22 @@ export class SharedProductregistrationclassComponent implements OnInit {
               
               ingredient_id: new FormControl('', Validators.compose([Validators.required])),
               id: new FormControl('', Validators.compose([])),
+
+
+              chemical_constituent_id:new FormControl('', Validators.compose([])),
+              quantity_dosage_unit:new FormControl('', Validators.compose([])),
+              plant_part_id:new  FormControl('', Validators.compose([])),
+              common_name_id:new FormControl('', Validators.compose([])),
+              can_cause_dependance_is_controlled:new FormControl('', Validators.compose([])),
+              reference_id:new FormControl('', Validators.compose([])),
+       
+
+                
+              
             });
           }else if(this.prodclass_category_id == 2 ||
             this.prodclass_category_id == 10){
+              console.log("hree111");
             this.productIngredientsdetailsfrm = new FormGroup({
               proportion: new FormControl(this.sub_module_id, Validators.compose([Validators.required])),
               ingredientssi_unit_id: new FormControl('', Validators.compose([])),
@@ -497,10 +571,20 @@ export class SharedProductregistrationclassComponent implements OnInit {
               ingredient_id: new FormControl('', Validators.compose([Validators.required])),
               id: new FormControl('', Validators.compose([])),
 
+
+              chemical_constituent_id:new FormControl('', Validators.compose([])),
+              quantity_dosage_unit:new FormControl('', Validators.compose([])),
+              plant_part_id:new  FormControl('', Validators.compose([])),
+              common_name_id:new FormControl('', Validators.compose([])),
+              can_cause_dependance_is_controlled:new FormControl('', Validators.compose([])),
+              reference_id:new FormControl('', Validators.compose([])),
+       
+
           });
 
           }
           else{
+            console.log("hree11122");
             this.productIngredientsdetailsfrm = new FormGroup({
               specification_type_id: new FormControl(this.section_id, Validators.compose([])),
               strength: new FormControl(this.sub_module_id, Validators.compose([])),
@@ -516,6 +600,15 @@ export class SharedProductregistrationclassComponent implements OnInit {
               atc_code_description: new FormControl('', Validators.compose([])),
               ingredient_id: new FormControl('', Validators.compose([Validators.required])),
               id: new FormControl('', Validators.compose([])),
+
+              chemical_constituent_id:new FormControl('', Validators.compose([])),
+              quantity_dosage_unit:new FormControl('', Validators.compose([])),
+              plant_part_id:new  FormControl('', Validators.compose([])),
+              common_name_id:new FormControl('', Validators.compose([])),
+              can_cause_dependance_is_controlled:new FormControl('', Validators.compose([])),
+              reference_id:new FormControl('', Validators.compose([])),
+              
+          
             });
           
           }
@@ -533,6 +626,8 @@ export class SharedProductregistrationclassComponent implements OnInit {
               closure_material_id: new FormControl('', Validators.compose([])),
               
               id: new FormControl('', Validators.compose([])),
+              method_of_label_attachment: new FormControl('', Validators.compose([])),
+
 
           });
           }else{
@@ -550,6 +645,7 @@ export class SharedProductregistrationclassComponent implements OnInit {
               packaging_units_id: new FormControl('', Validators.compose([])),
               seal_type_id: new FormControl('', Validators.compose([])),
               closure_material_id: new FormControl('', Validators.compose([])),
+              method_of_label_attachment: new FormControl('', Validators.compose([])),
 
               container_type_id: new FormControl('', Validators.compose([Validators.required])),
             });
@@ -908,6 +1004,7 @@ funcgetPreckingQueriesData(){
     const controls = this.productGeneraldetailsfrm.controls;
     for (const name in controls) {
         if (controls[name].invalid) {
+          console.log(name)
           this.toastr.error('Fill In All Mandatory fields with (*), missing value on '+ name.replace('_id',''), 'Alert');
             return;
         }
@@ -1325,6 +1422,7 @@ onLoadProductApplciations(filter_params={group_application_code: this.group_appl
     this.onLoadSections();
     this.onLoadZones();
     this.onLoadconfirmDataParm();
+    this.onLoadPharmacovogicalClassiffications();
     this.onLoadconfirmDataParmAll();
     this.onLoadRegistrantOptions();
     this.onLoadCommonNames(section_id);
@@ -1375,6 +1473,12 @@ onLoadProductApplciations(filter_params={group_application_code: this.group_appl
     this.onLoadintendedEndUserData(section_id);
     this.onLoadfastTrackOptionsData();
     this.onLoadpayingCurrencyData();
+    this.onLoadProductSourceofRawMaterialsData();
+    this.onLoadformulationDisclosureData();
+    this.onLoadApiReferencesData();
+    this.OnLoadConfigData("par_usage_modes",section_id);
+    this.OnLoadConfigData("par_who_prequalification_statuses",section_id);
+    this.OnLoadConfigData("par_application_correspondence_addressees",section_id);
   }
   onLoadingredientTypeData(section_id) {
     var data = {
@@ -1576,6 +1680,20 @@ onLoadProductApplciations(filter_params={group_application_code: this.group_appl
         });
   }
 
+  onLoadPharmacovogicalClassiffications() {
+    var data = {
+      table_name: 'par_pharmacological_classifications',
+    };
+
+    this.config.onLoadConfigurationData(data)
+      .subscribe(
+        data => {
+          this.PharmacologicalClassificationData = data;
+        });
+  }
+
+
+  
   onLoaddistributionCategory(section_id) {
     var data = {
       table_name: 'par_distribution_categories',
@@ -2305,7 +2423,7 @@ onLoadProductApplciations(filter_params={group_application_code: this.group_appl
   finishFunction() {
 
   }
-  onTraderasLocalAgentChange($event) {
+onTraderasLocalAgentChange($event) {
     
     if($event.value == 1){
         this.isReadOnlyTraderasLtr = true;
@@ -2315,6 +2433,7 @@ onLoadProductApplciations(filter_params={group_application_code: this.group_appl
 
       this.productGeneraldetailsfrm.patchValue({ local_agent_name: 'Select Local Agent', local_agent_id: '', trader_aslocal_agent: 2 })
     }
+    this.cdr.detectChanges();
    
 
   }
@@ -2323,6 +2442,7 @@ onLoadProductApplciations(filter_params={group_application_code: this.group_appl
   onProductOriginChangeChange($event) {
       this.product_origin_id = $event.value;
       this.readOnlyOrigin = true;
+      this.cdr.detectChanges();
 
   }
   onSelectRegistrantOptions($event) {
@@ -3083,6 +3203,7 @@ onManufacturingCountryChange($event) {
       this.productGeneraldetailsfrm.get('product_origin_id').setValue(1);
     }
     this.readOnlyOrigin = true;
+    this.cdr.detectChanges();
     if(country_region_id == 1){
         this.has_otherregistration_selection = true;
     }else{
@@ -3090,4 +3211,135 @@ onManufacturingCountryChange($event) {
     }
   }
 }
+
+OnLoadProductNotRegisteredCountryOrigin(product_id) {
+
+  this.appService.getProductsOtherDetails({ product_id: product_id }, 'getProductsReasonsNotRegistreredInOrigin')
+    //.pipe(first())
+    .subscribe(
+      data => {
+        if (data.success) {
+          this.reasonsNotRegisteredCountryOriginData = data.data;
+        }
+        else {
+          this.toastr.success(data.message, 'Alert');
+        }
+
+      },
+      error => {
+        return false
+      });
+}
+
+onLoadProductMarketingAuthorizationDecisions() {
+  var data = {
+    table_name: 'par_marketing_authorizations_decisions',
+  };
+  this.config.onLoadConfigurationData(data)
+    .subscribe(
+      data => {
+        this.productMarketingAuthorizationTypes = data;
+      });
+}
+
+onLoadProductSourceofRawMaterialsData() {
+  var data = {
+    table_name: 'par_sources_of_raw_materials',
+  };
+  this.config.onLoadConfigurationData(data)
+    .subscribe(
+      data => {
+        this.sourceRawMaterialsData = data;
+      });
+}
+
+
+
+
+onProductOriginChange($event) {
+  if($event.selectedItem.id== 2){//origin is ghana 
+    this.productGeneraldetailsfrm.get('manufacturing_country_id').setValue(137);
+  }else{
+    this.productGeneraldetailsfrm.get('manufacturing_country_id').setValue("");
+  }
+ 
+
+}
+
+onLoadformulationDisclosureData() {
+  console.log("dddd")
+  var data = {
+    table_name: 'par_formulation_details_disclosure'
+  };
+  this.config.onLoadConfigurationData(data)
+    .subscribe(
+      data => {
+        this.formulationDetailsDisclosureData = data;
+      });
+}
+
+onLoadApiReferencesData() {
+  console.log("loaded")
+  var data = {
+    table_name: 'par_api_references',
+    section_id: this.section_id
+  };
+  this.config.onLoadConfigurationData(data)
+    .subscribe(
+      data => {
+        this.productApiReferencesData = new DataSource({
+            paginate: true,
+            pageSize: 200,
+            store: {
+              type: "array",
+                data: data,
+                key: "id"
+            }
+        });
+      });
+
+}  
+
+
+OnLoadConfigData(table_name:string,section_id:number)
+  {
+    var data={
+      table_name,
+      section_id
+    };
+
+    this.config.onLoadConfigurationData(data)
+    .subscribe(
+      data => {
+        switch(table_name)
+        {
+          case "par_usage_modes":
+            this.ModeUsageData = data;
+            break
+          case "par_application_correspondence_addressees":
+            this.applicationCorrespondenceAddresseData=data;
+            break;
+          case "par_who_prequalification_statuses":
+            this.whoPreQualificationStatusesData=data;
+            break;
+        }
+      });
+
+    
+  }
+
+
+
+// onProductRegisteredCountryOrigin($event:any) {
+//   console.log($event.value)
+//   if($event.value == 1){
+//     this.ifProductNotRegisteredInCountryofOrigin=true
+//   }else{
+//     this.ifProductNotRegisteredInCountryofOrigin=false;
+//   }
+//   }
+
+
+
+
 }

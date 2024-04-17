@@ -34,13 +34,14 @@ export class DrugsDataproductsComponent extends SharedProductregistrationclassCo
   @Input() product_id: number;
 
   @Input() drugsingredientsData: any;
+  @Input() reasonsNotRegisteredCountryOriginData: any;
    @Input() drugsPackagingData: any;
    @Input() productManufacturersData: any;
    @Input() apiManufacturersData: any;
    @Input() productgmpInspectionData: any;
    @Input() tradergmpInspectionData: any;
    @Input() manufacturersSiteData: any;
-  
+   @Input() confirmDataParam:any;
    
     
    @Input() productIngredientsdetailsfrm: FormGroup;
@@ -82,6 +83,10 @@ export class DrugsDataproductsComponent extends SharedProductregistrationclassCo
   
   addRegionDetailsWin: boolean;
   addRegionDetailsFrm:FormGroup;
+  productNotRegisteredInCountryofOriginReasonsModal:boolean;
+  productNotRegisteredInCountryofOriginReasonsFrm:FormGroup;
+  ifProductNotRegisteredInCountryofOriginReasonFrm: FormGroup;
+  ifProductNotRegisteredInCountryofOrigin:boolean=false;
   auto:any;
   addDistrictsDetailsWin: boolean = false;
   addDistrictsDetailsFrm:FormGroup;
@@ -109,8 +114,75 @@ export class DrugsDataproductsComponent extends SharedProductregistrationclassCo
   manufacturer_id:number;
   addproductInclusionModal:boolean= false;
   isSampleDetailsWinshow:boolean=false;
+  @Input() parMarketingAuthorizationsDecisions:any;
+  productMarketingAuthorizationFrm: FormGroup;
+  productForeignMatterStepsFrm:FormGroup;
+  product_authorization_type_date_title:string="Date";
+  product_authorization_reason_title:string="Reason";
+  productMarketingAuthorizationType:string;
+
+  @Input() productMarketingAuthorizationTypes:any;
+  productMarketingAuthorizationModal:boolean=false;
+
+  productMarketingAuthorizationsData:any;
+  productStepsToShieldForeignMatterData:any;
+  productForeignMatterStepsModal:boolean=false;
+
+  productapp_details: any;
+  classification_id: number;
+  @Input() commonNamesData:any;
+  chemicalConstituentsData:any;
+  partOfPlantsData:any;
+  referenceProductDetailsModalShow:boolean=false;
+  addproductCommonNameModal:boolean=false;
+  addProductParamsdetailsfrm:FormGroup;
+  commonNameData:any;
+  productReferencesData:any;
+  routeOfAdminData:any;
+  dosagFormData:any;
+  productDistinctPrescribedUsesModal:boolean=false;
+  productDistinctUsesData:any;
+  @Input() targetSpeciesData:any;
+  productReleaseSpecificationsModal:boolean=false;
+  productReleaseSpecificationsData:any;
+  productBiologicalFormulationsModal:boolean=false;
+  productBiologicalConstituentDetails:any;
+  extentStagesofManufactureData:any;
+  
+  addExtentStagesofManufactureModal:boolean=false;
+  productReleaseOfSupplyData:any;
+
+  productReleaseOfSupplyResponsiblePersondetailsfrm:FormGroup;
+  productReleaseOfSupplyResponsiblePersonModal:boolean;
+  titlesData:any;
+  productApiReferencesModal:boolean;
+  addProductReferenceParamsdetailsfrm:FormGroup;
+  productIdentitiesModal:boolean;
+  productIdentitiesData:any;
+  @Input() productApiReferencesData:any;
  
- ngOnInit() { this.onLoadconfirmDataParmAll();
+  
+  
+ ngOnInit() { 
+  
+
+  this.onLoadconfirmDataParmAll();
+  this.productapp_details = this.appService.getProductApplicationDetail();
+  if(this.productapp_details)
+  {
+    const productNotRegisteredInCountryofOrigin=this.productapp_details.is_product_registered_in_country_of_origin;
+    console.log(productNotRegisteredInCountryofOrigin)
+    console.log(this.productapp_details['is_product_registered_in_country_of_origin']);
+    this.classification_id=this.productapp_details['classification_id'];
+    console.log(this.classification_id)
+    if(productNotRegisteredInCountryofOrigin==1)
+    {
+      this.ifProductNotRegisteredInCountryofOrigin=true;
+      
+    }
+  }
+ 
+
     this.addIngredientsdetailsfrm = new FormGroup({
       name: new FormControl('', Validators.compose([Validators.required])),
       description: new FormControl('', Validators.compose([Validators.required])),
@@ -139,8 +211,17 @@ export class DrugsDataproductsComponent extends SharedProductregistrationclassCo
       name: new FormControl('', Validators.compose([Validators.required])),
       physical_address: new FormControl('', Validators.compose([])),
       manufacturer_id: new FormControl('', Validators.compose([Validators.required])),
-
       active_ingredient_id: new FormControl('', Validators.compose([Validators.required])),
+      reference_id:new FormControl('', Validators.compose([])),
+      source_history_culture_extraction:new FormControl('', Validators.compose([])),
+      strain:new FormControl('', Validators.compose([])),
+      genus:new FormControl('', Validators.compose([])),
+      serotype_biotype:new FormControl('', Validators.compose([])),
+      unique_identifier_descriptor:new FormControl('', Validators.compose([])),
+      master_seed_code:new FormControl('', Validators.compose([])),
+      master_seed_code_passage_level:new FormControl('', Validators.compose([])),
+      working_seed_code:new FormControl('', Validators.compose([])),
+      working_seed_code_passage_level:new FormControl('', Validators.compose([])),
 
     });
     this.productmanufacturingSiteFrm = new FormGroup({
@@ -158,6 +239,8 @@ export class DrugsDataproductsComponent extends SharedProductregistrationclassCo
       manufacturing_site_id: new FormControl('', Validators.compose([])),
       reg_site_id: new FormControl('', Validators.compose([])),
       gmp_application_code: new FormControl('', Validators.compose([])),
+      extent_stage_manufacture_id: new FormControl('', Validators.compose([])),
+
       
     });
     this.prodgmpAddinspectionFrm = new FormGroup({
@@ -167,12 +250,18 @@ export class DrugsDataproductsComponent extends SharedProductregistrationclassCo
       reg_site_id: new FormControl('', Validators.compose([Validators.required])),
       manufacturing_site_id: new FormControl('', Validators.compose([Validators.required]))
 
-    }); this.addRegionDetailsFrm = new FormGroup({
+    }); 
+    
+    
+    this.addRegionDetailsFrm = new FormGroup({
       name: new FormControl('', Validators.compose([Validators.required])),
       country_id: new FormControl('', Validators.compose([Validators.required])),
       tablename: new FormControl('', Validators.compose([Validators.required]))
 
     });
+
+    
+   
     this.addDistrictsDetailsFrm = new FormGroup({
       name: new FormControl('', Validators.compose([Validators.required])),
       region_id: new FormControl('', Validators.compose([Validators.required])),
@@ -195,17 +284,87 @@ export class DrugsDataproductsComponent extends SharedProductregistrationclassCo
       manufacturer_id: new FormControl('', Validators.compose([])),
 
     });
+    this.productReleaseOfSupplyResponsiblePersondetailsfrm = new FormGroup({
+      name: new FormControl('', Validators.compose([Validators.required])),
+      position: new FormControl('', Validators.compose([Validators.required])),
+      title_id: new FormControl('', Validators.compose([Validators.required])),
+
+      street_address: new FormControl('', Validators.compose([])),
+
+      email: new FormControl('', Validators.compose([Validators.required])),
+      company_name: new FormControl('', Validators.compose([Validators.required])),
+      telephone_no: new FormControl('', Validators.compose([Validators.required])),
+      fax_no: new FormControl('', Validators.compose([])),
+    });
     this.autoLoadProductsOtherDetails(this.product_id);
     this.autoLoadedParameters(this.section_id);
     this.onLoadCountries();
-  } autoLoadProductsOtherDetails(product_id) {
+    this.onLoadProductMarketingAuthorizationDecisions();
+    
+
+
+    this.ifProductNotRegisteredInCountryofOriginReasonFrm = new FormGroup({
+      is_product_registered_in_country_of_origin: new FormControl('', Validators.compose([Validators.required])),
+     
+
+    });
+    this.productNotRegisteredInCountryofOriginReasonsFrm = new FormGroup({
+      reason_details: new FormControl('', Validators.compose([Validators.required])),
+      id:new FormControl('', Validators.compose([])),
+      //application_code: new FormControl(this.application_code, Validators.compose([Validators.required])),
+      
+
+    });
+    this.productMarketingAuthorizationFrm= new FormGroup({
+      current_registrationstatus_id: new FormControl('', Validators.compose([Validators.required])),//authorization_type_id
+      country_id: new FormControl('', Validators.compose([Validators.required])),
+      date_of_registration:new FormControl('', Validators.compose([Validators.required])),
+      proprietary_name:new FormControl('', Validators.compose([])),
+      registration_ref:new FormControl('', Validators.compose([])),//authorization_number
+      authorization_decision_reason:new FormControl('', Validators.compose([])),
+      approving_authority:new FormControl('', Validators.compose([])),
+      id:new FormControl('', Validators.compose([])),
+    });
+
+    this.productForeignMatterStepsFrm= new FormGroup({
+      step_details: new FormControl('', Validators.compose([Validators.required])),
+
+    });
+    this.addProductParamsdetailsfrm = new FormGroup({
+      name: new FormControl('', Validators.compose([Validators.required])),
+      description: new FormControl('', Validators.compose([Validators.required])),
+      section_id: new FormControl('', Validators.compose([Validators.required])),
+      tablename: new FormControl('', Validators.compose([Validators.required]))
+
+    });
+
+    this.addProductReferenceParamsdetailsfrm = new FormGroup({
+      name: new FormControl('', Validators.compose([Validators.required])),
+      description: new FormControl('', Validators.compose([Validators.required])),
+      section_id: new FormControl('', Validators.compose([])),
+      tablename: new FormControl('', Validators.compose([]))
+
+    });
+  } 
+  
+  
+  autoLoadProductsOtherDetails(product_id) {
     this.OnLoadProductsIngredients(product_id);
     this.OnLoadProductsPackagingMaterials(product_id);
     this.OnLoadproductManufacturersData(product_id);
     this.OnLoadapiManufacturersData(product_id)
     this.OnLoadProductsGMPInspectionDetails(product_id)
-
-  }onIngredientsSelectionChange($event) {
+    this.OnLoadProductNotRegisteredCountryOrigin(product_id);
+    this.OnLoadProductMarketingAuthorizations(product_id);
+    this.OnLoadProductStepsToPreventForeignMatter(product_id);
+    this.OnLoadProductReferences(product_id)
+    this.OnLoadProductDistinctPrescribedUses(product_id);
+    this.OnLoadProductReleaseSpecificationData(product_id)
+    this.OnLoadProductReleaseforSupplyData(product_id);
+  }
+  
+  
+  onIngredientsSelectionChange($event) {
     if($event.selectedItem){
       let ingredient_name =$event.selectedItem;
   
@@ -296,7 +455,15 @@ export class DrugsDataproductsComponent extends SharedProductregistrationclassCo
           this.onLoadingredientsData(this.section_id);
          
           this.addproductIngredientsModal = false;
-          this.productIngredientsdetailsfrm.get('ingredient_id').setValue(this.product_resp.record_id)
+          if(this.productReleaseSpecificationsModal==true)
+            {
+              this.productReleaseSpecificationsFrm.get('ingredient_id').setValue(this.product_resp.record_id)
+            }else if(this.productBiologicalFormulationsModal==true){
+              this.productBiologicalsFormulationFrm.get('ingredient_id').setValue(this.product_resp.record_id)
+            }else{
+              this.productIngredientsdetailsfrm.get('ingredient_id').setValue(this.product_resp.record_id)
+
+            }
           this.toastr.success(this.product_resp.message, 'Response');
 
         } else {
@@ -437,6 +604,14 @@ export class DrugsDataproductsComponent extends SharedProductregistrationclassCo
 
     this.onLoadCountries();
     this.onLoadingredientTypeData(section_id);
+    this.onLoadPartOfPlantsData();
+    this.onLoadChemicalConstituentsData();
+    this.onLoadcommonNameData();
+    this.onLoadSiUnits(section_id);
+    this.onLoadExtentStagesofManufactureData();
+    this.onLoadTitlesData()
+    this.onLoadproductIdentitiesData();
+   this.onLoadApiReferencesData();
  
   }
   onRegionsCboSelect($event) {
@@ -581,7 +756,8 @@ export class DrugsDataproductsComponent extends SharedProductregistrationclassCo
     this.productmanufacturingSiteFrm.reset();
 
 
-}onGetProductManufacturerDetails() {
+}
+onGetProductManufacturerDetails() {
 
   let me = this;
   this.manufacturer_type_id = 1;
@@ -654,7 +830,9 @@ export class DrugsDataproductsComponent extends SharedProductregistrationclassCo
 
 this.tradergmpInspectionData.store.load();
 
-} onSaveProductPackaging() {
+} 
+
+onSaveProductPackaging() {
   this.spinner.show();
   this.appService.onSaveProductOtherDetails('wb_product_packaging', this.productPackagingdetailsfrm.value, this.product_id)
     .subscribe(
@@ -685,21 +863,27 @@ this.tradergmpInspectionData.store.load();
       error => {
         return false
       });
-}  funcEditIngredientsDetails(data) {
+} 
+
+funcEditIngredientsDetails(data) {
   this.productIngredientsdetailsfrm.patchValue(data.data);
   this.productIngredientsModal = true;
 }
 funcEditPackagingDetails(data) {
   this.productPackagingdetailsfrm.patchValue(data.data);
   this.modalService.getModal('productPackagingModal').open();
-}funcDeleteIngredientsDetails(data) {
+}
+
+funcDeleteIngredientsDetails(data) {
   //func_delete records 
   let record_id = data.data.id;
   let appproduct_id = data.data.product_id;
   let table_name = 'wb_product_ingredients';
   this.funcDeleteDetailhelper(record_id, appproduct_id, table_name, 'product_ingredients', 'Product Ingredients');
 
-}funcDeleteSampleDetails(data) {
+}
+
+funcDeleteSampleDetails(data) {
   //func_delete records 
   let record_id = data.data.id;
   let appproduct_id = data.data.product_id;
@@ -768,9 +952,29 @@ funcDeleteDetailhelper(record_id, appproduct_id, table_name, reload_type, title)
                   }
                   else if (reload_type == 'gmp_inspection') {
                     this.OnLoadProductsGMPInspectionDetails(appproduct_id);
-                  }else if (reload_type == 'product_samples') {
+                  } else if (reload_type == 'product_not_registered_in_origin_reasons') {
+                    this.OnLoadProductNotRegisteredCountryOrigin(appproduct_id);
+                  }else if (reload_type == 'product_marketing_authorizations') {
+                    this.OnLoadProductMarketingAuthorizations(appproduct_id);
+                  
+                }else if (reload_type == 'product_foreign_matter_steps') {
+                  this.OnLoadProductStepsToPreventForeignMatter(appproduct_id);
+                }
+                  else if (reload_type == 'product_samples') {
                     this.onLoadSampleSubmissionData(appproduct_id);
                   }
+                  else if (reload_type == 'product_references') {
+                    this.OnLoadProductReferences(appproduct_id);
+                  }
+                  else if (reload_type == 'product_distinct_prescribed_uses') {
+                    this.OnLoadProductDistinctPrescribedUses(appproduct_id);
+                  }
+                  else if (reload_type == 'product_release_specifications') {
+                    this.OnLoadProductReleaseSpecificationData(appproduct_id);
+                  }else if(reload_type=="product_release_for_supply_responsible_person")
+                    {
+                      this.OnLoadProductReleaseforSupplyData(appproduct_id)
+                    }
                   
                   this.spinner.hide();
                   this.toastr.success(resp.message, 'Response');
@@ -796,7 +1000,9 @@ funcDeleteDetailhelper(record_id, appproduct_id, table_name, reload_type, title)
       }
     ]
   });
-} OnLoadProductsIngredients(product_id) {
+} 
+
+OnLoadProductsIngredients(product_id) {
 
   this.appService.getProductsOtherDetails({ product_id: product_id }, 'getProductsIngredients')
     //.pipe(first())
@@ -965,7 +1171,11 @@ onSaveProductIngredients() {
       error => {
         this.toastr.error('Error Occurred', 'Alert');
       });
-} funcSelectManufacturer(data) {
+}
+
+
+
+funcSelectManufacturer(data) {
   if (this.manufacturer_type_id == 1) {
     this.manufacturer_id = data.data.manufacturer_id;
     this.productmanufacturingSiteFrm.patchValue(data.data);
@@ -1286,4 +1496,949 @@ onSearchInspectedManufacturingSites(){
   this.onLoadgmpProductLineData(manufacturing_site_id);
 
 }
+
+funcAddReasonsNotRegisteredInCountryofOrigin($event)
+{
+  this.productNotRegisteredInCountryofOriginReasonsModal = true;
+  this.productNotRegisteredInCountryofOriginReasonsFrm.reset();
+
+}
+
+
+// onProductRegisteredCountryOrigin($event) {
+//   if($event.value == 1){
+//     this.ifProductNotRegisteredInCountryofOrigin=true
+//   }else{
+//     this.ifProductNotRegisteredInCountryofOrigin=false;
+//   }
+//   }
+
+
+  onSaveProductReasonsNotRegisteredInCountryofOrigin() {
+    let appproduct_id = this.product_id;
+    this.spinner.show();
+    this.appService.onSaveProductOtherDetails('wb_product_reasons_not_registred_in_origin', this.productNotRegisteredInCountryofOriginReasonsFrm.value, this.product_id)
+      .subscribe(
+        response => {
+          this.product_resp = response.json();
+          //the details 
+          if (this.product_resp.success) {
+            this.OnLoadProductNotRegisteredCountryOrigin(appproduct_id);
+           
+            this.productNotRegisteredInCountryofOriginReasonsModal = false;
+            this.toastr.success(this.product_resp.message, 'Response');
+          } else {
+            this.toastr.error(this.product_resp.message, 'Alert');
+          }
+          this.spinner.hide();
+        },
+        error => {
+          this.toastr.error('Error Occurred', 'Alert');
+        });
+  }
+
+
+  OnLoadProductNotRegisteredCountryOrigin(product_id) {
+
+    this.appService.getProductsOtherDetails({ product_id: product_id }, 'getProductsReasonsNotRegistreredInOrigin')
+      //.pipe(first())
+      .subscribe(
+        data => {
+          if (data.success) {
+            this.reasonsNotRegisteredCountryOriginData = data.data;
+          }
+          else {
+            this.toastr.success(data.message, 'Alert');
+          }
+  
+        },
+        error => {
+          return false
+        });
+  }
+
+
+  funcEditReasonReasonsNotRegisteredDetails(data) {
+    this.productNotRegisteredInCountryofOriginReasonsFrm.patchValue(data.data);
+    this.productNotRegisteredInCountryofOriginReasonsModal = true;
+  }
+
+  funcDeleteProductNotRegisteredReasonsDetails(data) {
+    //func_delete records 
+    let record_id = data.data.id;
+    let appproduct_id = data.data.product_id;
+    let table_name = 'wb_product_reasons_not_registred_in_origin';
+    this.funcDeleteDetailhelper(record_id, appproduct_id, table_name, 'product_not_registered_in_origin_reasons', 'Product Reasons to Registered');
+  
+  }
+  
+  onSelectProductMarketingAuthorizationType($event:any)
+  {
+
+
+    const authorizationNumberControl = this.productGeneraldetailsfrm.get('registration_ref');
+    const proprietaryNameControl = this.productGeneraldetailsfrm.get('proprietary_name');
+    this.productMarketingAuthorizationType=$event.value;
+    switch($event.value)
+    {
+      case 1:
+        this.product_authorization_type_date_title="Date of authorisation";
+        if(authorizationNumberControl){
+        authorizationNumberControl.setValidators(Validators.required);
+        authorizationNumberControl.updateValueAndValidity();
+        }
+
+        if(proprietaryNameControl)
+        {
+        proprietaryNameControl.setValidators(Validators.required);
+        proprietaryNameControl.updateValueAndValidity();
+        }
+        break;
+      case 2:
+        this.product_authorization_type_date_title="Date of withdrawal";
+        this.product_authorization_reason_title="Reason for withdrawal";
+        if(authorizationNumberControl){
+        authorizationNumberControl.clearValidators();
+        authorizationNumberControl.updateValueAndValidity();
+        }
+        if(proprietaryNameControl)
+        {
+        proprietaryNameControl.setValidators(Validators.required);
+        proprietaryNameControl.updateValueAndValidity();
+        }
+        break;
+      case 3:
+        this.product_authorization_type_date_title="Date of refusal";
+        this.product_authorization_reason_title="Reason for Refusal";
+        if(authorizationNumberControl){
+        authorizationNumberControl.clearValidators();
+        authorizationNumberControl.updateValueAndValidity();
+        }
+        if(proprietaryNameControl)
+        {
+        proprietaryNameControl.clearValidators();
+        proprietaryNameControl.updateValueAndValidity();
+        }
+        break;
+      case 4:
+        this.product_authorization_type_date_title="Date of suspension/revocation";
+        this.product_authorization_reason_title="Reason for suspension/revocation";
+        if(authorizationNumberControl){
+          authorizationNumberControl.clearValidators();
+          authorizationNumberControl.updateValueAndValidity();
+        }
+       
+        if(proprietaryNameControl)
+        {
+
+          proprietaryNameControl.setValidators(Validators.required);
+          proprietaryNameControl.updateValueAndValidity();
+        }
+       
+        break;
+      default:
+        this.product_authorization_type_date_title="Date";
+        this.product_authorization_reason_title="Reason";
+        if(authorizationNumberControl){
+          authorizationNumberControl.clearValidators();
+          authorizationNumberControl.updateValueAndValidity();
+        }
+        if(proprietaryNameControl)
+        {
+        proprietaryNameControl.setValidators(Validators.required);
+        proprietaryNameControl.updateValueAndValidity();
+        }
+
+    }
+    
+  }
+
+  funcAddMarketingAuthorization($event){
+  this.productMarketingAuthorizationModal = true;
+  this.productMarketingAuthorizationFrm.reset();
+  }
+
+
+  onSaveProductMarketingAuthorization() {
+    let appproduct_id = this.product_id;
+    this.spinner.show();
+    this.appService.onSaveProductOtherDetails('wb_otherstates_productregistrations', this.productMarketingAuthorizationFrm.value, this.product_id)
+      .subscribe(
+        response => {
+          this.product_resp = response.json();
+          //the details 
+          if (this.product_resp.success) {
+            this.OnLoadProductMarketingAuthorizations(appproduct_id);
+           
+            this.productMarketingAuthorizationModal = false;
+            this.toastr.success(this.product_resp.message, 'Response');
+          } else {
+            this.toastr.error(this.product_resp.message, 'Alert');
+          }
+          this.spinner.hide();
+        },
+        error => {
+          this.toastr.error('Error Occurred', 'Alert');
+        });
+  }
+
+
+  OnLoadProductMarketingAuthorizations(product_id) {
+
+    this.appService.getProductsOtherDetails({ product_id: product_id }, 'getProductMarketingAuthorizations')
+      .subscribe(
+        data => {
+          if (data.success) {
+            this.productMarketingAuthorizationsData = data.data;
+          }
+          else {
+            this.toastr.success(data.message, 'Alert');
+          }
+  
+        },
+        error => {
+          return false
+        });
+  }
+
+   funcEditProductMarketingAuthorizationDetails(data:any) {
+    this.productMarketingAuthorizationFrm.patchValue(data.data);
+    this.productMarketingAuthorizationModal = true;
+  }
+
+
+  funcDeleteProductMarketingAuthorizationDetails(data) {
+    //func_delete records s
+    let record_id = data.data.id;
+    let appproduct_id = data.data.product_id;
+    let table_name = 'wb_otherstates_productregistrations';
+    this.funcDeleteDetailhelper(record_id, appproduct_id, table_name, 'product_marketing_authorizations', 'Product Marketing Authorizations');
+  
+  }
+
+
+  OnLoadProductStepsToPreventForeignMatter(product_id:any) {
+
+    this.appService.getProductsOtherDetails({ product_id: product_id }, 'getProductStepsToPreventForeignMatter')
+      .subscribe(
+        data => {
+          if (data.success) {
+            this.productStepsToShieldForeignMatterData = data.data;
+          }
+          else {
+            this.toastr.success(data.message, 'Alert');
+          }
+  
+        },
+        error => {
+          return false
+        });
+  }
+
+
+  funcEditProductForeignMatterStepsDetails(data:any) {
+    this.productForeignMatterStepsFrm.patchValue(data.data);
+    this.productForeignMatterStepsModal = true;
+  }
+
+
+  funcDeleteProductForeignMatterStepsDetails(data) {
+    //func_delete records 
+    let record_id = data.data.id;
+    let appproduct_id = data.data.product_id;
+    let table_name = 'wb_products_foreign_matter_steps';
+    this.funcDeleteDetailhelper(record_id, appproduct_id, table_name, 'product_foreign_matter_steps', 'Product Foreign Matter Prevention');
+  
+  }
+
+  onSaveProductForeignStepsPreventionDetails() {
+    let appproduct_id = this.product_id;
+    this.spinner.show();
+    this.appService.onSaveProductOtherDetails('wb_products_foreign_matter_steps', this.productForeignMatterStepsFrm.value, this.product_id)
+      .subscribe(
+        response => {
+          this.product_resp = response.json();
+          //the details 
+          if (this.product_resp.success) {
+            this.OnLoadProductStepsToPreventForeignMatter(appproduct_id);
+           
+            this.productForeignMatterStepsModal = false;
+            this.toastr.success(this.product_resp.message, 'Response');
+          } else {
+            this.toastr.error(this.product_resp.message, 'Alert');
+          }
+          this.spinner.hide();
+        },
+        error => {
+          this.toastr.error('Error Occurred', 'Alert');
+        });
+  }
+
+  onLoadPartOfPlantsData() {
+    var data = {
+      table_name: 'par_plant_parts',
+    };
+    this.config.onLoadConfigurationData(data)
+      .subscribe(
+        data => {
+          this.partOfPlantsData = data;
+        });
+  }
+
+  onLoadChemicalConstituentsData() {
+    var data = {
+      table_name: 'par_drugs_chemical_constituents',
+    };
+    this.config.onLoadConfigurationData(data)
+      .subscribe(
+        data => {
+          this.chemicalConstituentsData = data;
+        });
+  }
+
+
+  funcAddReferenceProduct($event:any){
+    this.referenceProductDetailsModalShow = true;
+    this.referenceProductDetailsFrm.reset();
+    }
+
+
+    onSearchProduct() {
+     
+     
+      this.isRegisteredProductsWinshow = true;
+      this.onSearchRegisteredProductApplication();
+    
+    }
+
+    funSelectRegisteredProdcustsApp(data){
+      let productdata = data.data;
+       
+    this.referenceProductDetailsFrm.patchValue({brand_name:productdata.brand_name, common_name_id:productdata.common_name_id,product_id:data.tra_product_id,product_category_id:productdata.product_category_id,product_subcategory_id:productdata.product_subcategory_id,registration_no:productdata.certificate_no,registrant_name:productdata.applicant_name, dosage_form_id:productdata.dosage_form_id,routes_of_admin_id:productdata.routes_of_admin_id,product_strength:productdata.product_strength, product_desc: productdata.physical_description, registered_product_id:productdata.registered_product_id});
+    this.isRegisteredProductsWinshow = false;
+    }
+
+    onAddNewGenericDetails(){
+
+  
+      this.addproductCommonNameModal = true;
+    }
+
+    onSaveNewGenericDetails(){
+      this.addProductParamsdetailsfrm.get('tablename').setValue('par_common_names')
+      this.addProductParamsdetailsfrm.get('section_id').setValue(this.section_id);
+      this.utilityService.onsaveApplicationUniformDetails('', this.addProductParamsdetailsfrm.value, 'onsaveProductConfigData')
+      .subscribe(
+        response => {
+          this.product_resp = response.json();
+          //the details 
+          if (this.product_resp.success) {
+            this.onLoadcommonNameData();
+           
+            this.addproductCommonNameModal = false;
+            this.referenceProductDetailsFrm.get('common_name_id').setValue(this.product_resp.record_id);
+    
+            this.toastr.success(this.product_resp.message, 'Response');
+    
+          } else {
+            this.toastr.error(this.product_resp.message, 'Alert');
+          }
+          this.spinner.hide();
+        },
+        error => {
+          this.toastr.error('Error Occurred', 'Alert');
+        });
+    
+    }
+    onLoadcommonNameData() {
+      var data = {
+        table_name: 'par_common_names',
+        section_id: this.section_id
+      };
+      this.config.onLoadConfigurationData(data)
+        .subscribe(
+          data => {
+            this.commonNameData = new DataSource({
+                paginate: true,
+                pageSize: 200,
+                store: {
+                  type: "array",
+                    data: data,
+                    key: "id"
+                }
+            });
+          });
+    
+    }  
+
+    // prodApplicationActionColClick(data){
+    //   let productdata = data.data;
+       
+    //   this.iMPProductDetailsFrm.patchValue({brand_name:productdata.brand_name, common_name_id:productdata.common_name_id,product_id:data.tra_product_id,product_category_id:productdata.product_category_id,product_subcategory_id:productdata.product_subcategory_id,registration_no:productdata.certificate_no,registrant_name:productdata.applicant_name, dosage_form_id:productdata.dosage_form_id,routes_of_admin_id:productdata.routes_of_admin_id,product_strength:productdata.product_strength, product_desc: productdata.physical_description, registered_product_id:productdata.registered_product_id});
+    //   this.isRegisteredProductsWinshow = false;
+  
+    // }
+
+
+    onsaveProductReferences() {
+      this.spinner.show();
+      let table_name = 'wb_product_references';
+  
+      this.appService.onSaveProductOtherDetails(table_name, this.referenceProductDetailsFrm.value, this.product_id)
+        .subscribe(
+          response => {
+            this.product_resp = response.json();
+            //the details 
+            if (this.product_resp.success) {
+              this.referenceProductDetailsModalShow = false;
+              this.OnLoadProductReferences(this.product_id);
+              this.toastr.success(this.product_resp.message, 'Response');
+              this.spinner.hide();
+            } else {
+              this.toastr.error(this.product_resp.message, 'Alert');
+            }
+            this.spinner.hide();
+          },
+          error => {
+            this.toastr.error('Error Occurred', 'Alert');
+          });     
+    }
+
+
+    OnLoadProductReferences(product_id) {
+
+      this.appService.getProductsOtherDetails({ product_id: product_id }, 'getProductReferences')
+        //.pipe(first())
+        .subscribe(
+          data => {
+            this.productReferencesData = data.data;
+          },
+          error => {
+            return false
+          });
+    }
+
+    funcEditReferenceProductDetails(data:any) {
+      this.referenceProductDetailsFrm.patchValue(data.data);
+      this.referenceProductDetailsModalShow = true;
+    }
+  
+    funcDeleteReferenceProductDetails(data:any) {
+      //func_delete records 
+      let record_id = data.data.id;
+      let appproduct_id = data.data.product_id;
+      let table_name = 'wb_product_references';
+      this.funcDeleteDetailhelper(record_id, appproduct_id, table_name, 'product_references', 'Product References');
+    
+    }
+
+    onLoadRoutesofAdminData() {
+      var data = {
+        table_name: 'routes_of_administration',
+      };
+      this.config.onLoadConfigurationData(data)
+        .subscribe(
+          data => {
+            this.routeOfAdminData = new DataSource({
+                paginate: true,
+                pageSize: 200,
+                store: {
+                  type: "array",
+                    data: data,
+                    key: "id"
+                }
+            });
+          });
+    
+    } 
+
+
+    onLoadDosageFormData() {
+      var data = {
+        table_name: 'par_dosage_forms',
+      };
+      this.config.onLoadConfigurationData(data)
+        .subscribe(
+          data => {
+            this.dosageFormsData = new DataSource({
+                paginate: true,
+                pageSize: 200,
+                store: {
+                  type: "array",
+                    data: data,
+                    key: "id"
+                }
+            });
+          });
+    
+    } 
+
+
+
+onSaveProductDistinctPrescribedUses() {
+      let appproduct_id = this.product_id;
+      this.spinner.show();
+     
+     let  formDataCopy={...this.productDistinctPrescribedUsesFrm.value};
+     formDataCopy.target_species_id=JSON.stringify(formDataCopy.target_species_id);
+
+      this.appService.onSaveProductOtherDetails('wb_product_distinct_prescribed_uses', formDataCopy, this.product_id)
+        .subscribe(
+          response => {
+            this.product_resp = response.json();
+            //the details 
+            if (this.product_resp.success) {
+              this.OnLoadProductDistinctPrescribedUses(appproduct_id);
+             
+              this.productDistinctPrescribedUsesModal = false;
+              this.toastr.success(this.product_resp.message, 'Response');
+            } else {
+              this.toastr.error(this.product_resp.message, 'Alert');
+            }
+            this.spinner.hide();
+          },
+          error => {
+            this.toastr.error('Error Occurred', 'Alert');
+          });
+    }
+
+    OnLoadProductDistinctPrescribedUses(product_id) {
+
+      this.appService.getProductsOtherDetails({ product_id: product_id }, 'getProductDistinctUses')
+        //.pipe(first())
+        .subscribe(
+          data => {
+            if (data.success) {
+              this.productDistinctUsesData = data.data;
+            }
+            else {
+              this.toastr.success(data.message, 'Alert');
+            }
+    
+          },
+          error => {
+            return false
+          });
+    }
+    
+
+    funcEditProductDistinctUses(data:any) {
+      let copy_of_data={...data.data};
+      copy_of_data.target_species_id=JSON.parse(copy_of_data.target_species_id)
+      this.productDistinctPrescribedUsesFrm.patchValue(copy_of_data);
+      this.productDistinctPrescribedUsesModal = true;
+    }
+  
+    funcDeleteProductDistinctUses(data:any) {
+      //func_delete records 
+      let record_id = data.data.id;
+      let appproduct_id = data.data.product_id;
+      let table_name = 'wb_product_distinct_prescribed_uses';
+      this.funcDeleteDetailhelper(record_id, appproduct_id, table_name, 'product_distinct_prescribed_uses', 'Product Distinct Prescribed Uses');
+    
+    }
+    funcAddPrescribedDistinctUse() {
+    
+      this.productDistinctPrescribedUsesModal = true;
+      this.productDistinctPrescribedUsesFrm.reset();
+    }
+    funcAddReleaseSpecifications()
+    {
+      this.productReleaseSpecificationsModal = true;
+      this.productReleaseSpecificationsFrm.reset();
+
+    }
+
+    OnLoadProductReleaseSpecificationData(product_id) {
+
+      this.appService.getProductsOtherDetails({ product_id: product_id }, 'getProductReleaseSpecificationData')
+        //.pipe(first())
+        .subscribe(
+          data => {
+            if (data.success) {
+              this.productReleaseSpecificationsData = data.data;
+            }
+            else {
+              this.toastr.success(data.message, 'Alert');
+            }
+    
+          },
+          error => {
+            return false
+          });
+    }
+
+
+    funcEditProductReleaseSpecificationData(data:any) {
+      this.productReleaseSpecificationsFrm.patchValue(data.data);
+      this.productReleaseSpecificationsModal = true;
+    }
+  
+    funcDeleteProductReleaseSpecificationData(data:any) {
+      //func_delete records 
+      let record_id = data.data.id;
+      let appproduct_id = data.data.product_id;
+      let table_name = 'wb_product_release_specifications';
+      this.funcDeleteDetailhelper(record_id, appproduct_id, table_name, 'product_release_specifications', 'Product Release Specifications');
+    
+    }
+
+    onSaveProductReleaseSpecifications()
+    {
+      let appproduct_id = this.product_id;
+      this.spinner.show();
+    
+
+      this.appService.onSaveProductOtherDetails('wb_product_ingredients', this.productReleaseSpecificationsFrm.value, this.product_id)
+        .subscribe(
+          response => {
+            this.product_resp = response.json();
+            //the details 
+            if (this.product_resp.success) {
+              this.OnLoadProductReleaseSpecificationData(appproduct_id);
+             
+              this.productReleaseSpecificationsModal = false;
+              this.toastr.success(this.product_resp.message, 'Response');
+            } else {
+              this.toastr.error(this.product_resp.message, 'Alert');
+            }
+            this.spinner.hide();
+          },
+          error => {
+            this.toastr.error('Error Occurred', 'Alert');
+          });
+    }
+  
+    funcAddBiologicalConstituentDetails()
+    {
+      this.productBiologicalFormulationsModal = true;
+      this.productBiologicalsFormulationFrm.reset();
+    }
+    
+
+    funcEditBiologicalConstituentDetails(data:any) {
+      this.productBiologicalsFormulationFrm.patchValue(data.data);
+      this.productBiologicalFormulationsModal = true;
+    }
+  
+    funcDeleteBiologicalConstituentDetails(data:any) {
+      //func_delete records 
+      let record_id = data.data.id;
+      let appproduct_id = data.data.product_id;
+      let table_name = 'wb_product_ingredients';
+      this.funcDeleteDetailhelper(record_id, appproduct_id, table_name, 'product_biologicals', 'Product Biologicals Constiuents Formulations');
+    
+    }
+
+    OnLoadProductBiologicalsConstituentsData(product_id) {
+
+      this.appService.getProductsOtherDetails({ product_id: product_id }, 'getProductBiologicalConstituentsData')
+        //.pipe(first())
+        .subscribe(
+          data => {
+            if (data.success) {
+              this.productBiologicalConstituentDetails = data.data;
+            }
+            else {
+              this.toastr.success(data.message, 'Alert');
+            }
+    
+          },
+          error => {
+            return false
+          });
+    }
+
+
+    onSaveProductBiologicalConstituentDetails()
+    {
+      let appproduct_id = this.product_id;
+      this.spinner.show();
+    
+
+      this.appService.onSaveProductOtherDetails('wb_product_ingredients', this.productBiologicalsFormulationFrm.value, this.product_id)
+        .subscribe(
+          response => {
+            this.product_resp = response.json();
+            //the details 
+            if (this.product_resp.success) {
+              this.OnLoadProductBiologicalsConstituentsData(appproduct_id);
+             
+              this.productBiologicalFormulationsModal = false;
+              this.toastr.success(this.product_resp.message, 'Response');
+            } else {
+              this.toastr.error(this.product_resp.message, 'Alert');
+            }
+            this.spinner.hide();
+          },
+          error => {
+            this.toastr.error('Error Occurred', 'Alert');
+          });
+    }
+
+    
+
+    onLoadExtentStagesofManufactureData() {
+      var data = {
+        table_name: 'par_extent_stages_of_manufacture',
+        section_id: this.section_id
+      };
+      this.config.onLoadConfigurationData(data)
+        .subscribe(
+          data => {
+            this.extentStagesofManufactureData = new DataSource({
+                paginate: true,
+                pageSize: 200,
+                store: {
+                  type: "array",
+                    data: data,
+                    key: "id"
+                }
+            });
+          });
+    
+    }  
+
+
+    onAddNewExtentStagesofManufactureDetails(){
+
+  
+      this.addExtentStagesofManufactureModal = true;
+    }
+
+
+   
+
+    onSaveNewExtentStagesofManufactureDetails(){
+      this.addProductParamsdetailsfrm.get('tablename').setValue('par_extent_stages_of_manufacture')
+      this.addProductParamsdetailsfrm.get('section_id').setValue(this.section_id);
+      this.utilityService.onsaveApplicationUniformDetails('', this.addProductParamsdetailsfrm.value, 'onsaveProductConfigData')
+      .subscribe(
+        response => {
+          this.product_resp = response.json();
+          //the details 
+          if (this.product_resp.success) {
+            this.onLoadExtentStagesofManufactureData();
+           
+            this.addExtentStagesofManufactureModal = false;
+            this.productmanufacturingSiteFrm.get('extent_stage_manufacture_id').setValue(this.product_resp.record_id);
+    
+            this.toastr.success(this.product_resp.message, 'Response');
+    
+          } else {
+            this.toastr.error(this.product_resp.message, 'Alert');
+          }
+          this.spinner.hide();
+        },
+        error => {
+          this.toastr.error('Error Occurred', 'Alert');
+        });
+    
+    }
+
+
+    OnLoadProductReleaseforSupplyData(product_id:any) {
+
+      this.appService.getProductsOtherDetails({ product_id: product_id }, 'getProductReleaseOfSupplyData')
+        .subscribe(
+          data => {
+            if (data.success) {
+              this.productReleaseOfSupplyData = data.data;
+            }
+            else {
+              this.toastr.success(data.message, 'Alert');
+            }
+    
+          },
+          error => {
+            return false
+          });
+    }
+
+    funcEditProductReleaseOfSupplyDetails(data:any) {
+      this.productBiologicalsFormulationFrm.patchValue(data.data);
+      this.productBiologicalFormulationsModal = true;
+    }
+  
+    funcDeleteProductReleaseOfSupplyDetails(data:any) {
+      //func_delete records 
+      let record_id = data.data.id;
+      let appproduct_id = data.data.product_id;
+      let table_name = 'wb_product_release_for_supply';
+      this.funcDeleteDetailhelper(record_id, appproduct_id, table_name, 'product_release_for_supply_responsible_person', 'Release for Supply Responsible Person');
+    
+    }
+
+    funcAddReleaseOfSupplyResponsiblePerson() {
+    
+      this.productReleaseOfSupplyResponsiblePersonModal = true;
+      this.productReleaseOfSupplyResponsiblePersondetailsfrm.reset();
+  
+    }
+
+    onLoadTitlesData() {
+      var data = {
+        table_name: 'par_titles',
+      };
+      this.config.onLoadConfigurationData(data)
+        .subscribe(
+          data => {
+            this.titlesData = data;
+          });
+    }
+
+
+   
+
+  onSaveReleaseOfSupplyResponsiblePersondetails() {
+      this.spinner.show();
+      this.appService.onSaveProductOtherDetails('wb_product_release_for_supply', this.productReleaseOfSupplyResponsiblePersondetailsfrm.value, this.product_id)
+        .subscribe(
+          response => {
+            this.product_resp = response.json();
+            //the details 
+            if (this.product_resp.success) {
+              this.OnLoadProductReleaseforSupplyData(this.product_id);
+              this.productReleaseOfSupplyResponsiblePersonModal = false;
+             
+              this.toastr.success(this.product_resp.message, 'Response');
+            } else {
+              this.toastr.error(this.product_resp.message, 'Alert');
+            }
+            this.spinner.hide();
+          },
+          error => {
+            this.toastr.error('Error Occurred', 'Alert');
+          });
+  }
+  
+
+  
+  onSaveProductApiReferences(is_api:boolean=false){
+    this.addProductReferenceParamsdetailsfrm.get('tablename').setValue('par_api_references')
+    this.addProductReferenceParamsdetailsfrm.get('section_id').setValue(this.section_id);
+    this.utilityService.onsaveApplicationUniformDetails('', this.addProductReferenceParamsdetailsfrm.value, 'onsaveProductConfigData')
+    .subscribe(
+      response => {
+        this.product_resp = response.json();
+        //the details 
+        if (this.product_resp.success) {
+          this.onLoadApiReferencesData();
+         
+          this.productApiReferencesModal = false;
+          if(is_api)
+            {
+          const currentValue = this.productapimanufacturingSiteFrm.get('reference_id').value;
+              // Create a new object with the updated value for the "tag" field
+          const newValue = { ...currentValue, tag: this.product_resp.record_id };
+          this.productapimanufacturingSiteFrm.get('reference_id').patchValue(newValue);
+            }else{
+
+              const currentValue = this.productIngredientsdetailsfrm.get('reference_id').value;
+              // Create a new object with the updated value for the "tag" field
+          const newValue = { ...currentValue, tag: this.product_resp.record_id };
+          this.productIngredientsdetailsfrm.get('reference_id').patchValue(newValue);
+       
+            }
+          this.toastr.success(this.product_resp.message, 'Response');
+  
+        } else {
+          this.toastr.error(this.product_resp.message, 'Alert');
+        }
+        this.spinner.hide();
+      },
+      error => {
+        this.toastr.error('Error Occurred', 'Alert');
+      });
+  
+  }
+
+
+  onAddNewReferenceDetails(){
+
+    this.addProductReferenceParamsdetailsfrm.reset();
+    this.productApiReferencesModal = true;
+    
+  }
+  onAddNewproductIdentitiesDetails(){
+
+    this.addProductParamsdetailsfrm.reset();
+    this.productIdentitiesModal = true;
+    
+  }
+
+  onLoadproductIdentitiesData() {
+    var data = {
+      table_name: 'par_api_references',
+      section_id: this.section_id
+    };
+    this.config.onLoadConfigurationData(data)
+      .subscribe(
+        data => {
+          this.productIdentitiesData = new DataSource({
+              paginate: true,
+              pageSize: 200,
+              store: {
+                type: "array",
+                  data: data,
+                  key: "id"
+              }
+          });
+        });
+  
+  }  
+
+  onSaveNewproductIdentitiesDetails(){
+    this.addProductParamsdetailsfrm.get('tablename').setValue('par_product_api_identities')
+    this.addProductParamsdetailsfrm.get('section_id').setValue(this.section_id);
+    this.utilityService.onsaveApplicationUniformDetails('', this.addProductParamsdetailsfrm.value, 'onsaveProductConfigData')
+    .subscribe(
+      response => {
+        this.product_resp = response.json();
+        //the details 
+        if (this.product_resp.success) {
+          this.onLoadproductIdentitiesData();
+         
+          this.productIdentitiesModal = false;
+          this.productapimanufacturingSiteFrm.get('identity_id').setValue(this.product_resp.record_id);
+          this.toastr.success(this.product_resp.message, 'Response');
+  
+        } else {
+          this.toastr.error(this.product_resp.message, 'Alert');
+        }
+        this.spinner.hide();
+      },
+      error => {
+        this.toastr.error('Error Occurred', 'Alert');
+      });
+  
+  }
+
+
+  onLoadApiReferencesData() {
+    console.log("loaded")
+    var data = {
+      table_name: 'par_api_references',
+      section_id: this.section_id
+    };
+    this.config.onLoadConfigurationData(data)
+      .subscribe(
+        data => {
+          this.productApiReferencesData = new DataSource({
+              paginate: true,
+              pageSize: 200,
+              store: {
+                type: "array",
+                  data: data,
+                  key: "id"
+              }
+          });
+        });
+  console.log(this.productApiReferencesData )
+  }  
+  
+ 
+  
+
+  
 }

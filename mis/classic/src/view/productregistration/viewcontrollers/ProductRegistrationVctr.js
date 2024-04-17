@@ -308,6 +308,176 @@ Ext.define(
       var application_type = btn.app_type;
       this.fireEvent("onNewProductRegApplication", application_type, btn);
     },
+
+    showNewProductRegistrationCancelled: function (btn) {
+      var application_type = btn.app_type,
+        me = this;
+      Ext.getBody().mask("Loading");
+      var win = Ext.create("Ext.window.Window", {
+        title: "Select Product Type",
+        animateTarget: btn,
+        controller: "productregistrationvctr",
+
+        layout: "fit",
+        width: "40%",
+        listeners: {
+          close: function (me) {
+            Ext.getBody().unmask();
+          },
+        },
+        items: {
+          xtype: "form",
+          layout: "form",
+          viewModel: "productregistrationvm",
+          items: [
+            {
+              xtype: "combo",
+              anyMatch: true,
+              fieldLabel: "Application Type",
+              margin: "20 20 20 20",
+              margin: "0 20 20 0",
+              name: "section_id",
+              valueField: "id",
+              displayField: "name",
+              forceSelection: true,
+              fieldStyle: {
+                color: "green",
+                "font-weight": "bold",
+              },
+              queryMode: "local",
+              value: btn.section_id,
+              readOnly: true,
+              listeners: {
+                beforerender: {
+                  fn: "setConfigCombosStore",
+                  config: {
+                    proxy: {
+                      url: "configurations/getRegistrationApplicationParameters",
+                      extraParams: {
+                        table_name: "par_sections",
+                      },
+                    },
+                  },
+                  isLoad: true,
+                },
+                change: function (combo, newVal, oldValue, eopts) {
+                  var section_id = newVal,
+                    form = combo.up("form"),
+                    prodclassCombo = form.down(
+                      "combo[name=prodclass_category_id]"
+                    ),
+                    prodclassStr = prodclassCombo.getStore();
+                  prodclassStr.removeAll();
+                  var filters = JSON.stringify({
+                    section_id: section_id,
+                    sub_module_id: application_type,
+                  });
+
+                  if (application_type == 75) {
+                    var filters = JSON.stringify({
+                      section_id: section_id,
+                      sub_module_id: application_type,
+                    });
+                  }
+
+                  prodclassStr.load({ params: { filters: filters } });
+                  if (newVal == 4) {
+                    combo
+                      .up("form")
+                      .getViewModel()
+                      .set("application_category_name", "Device Class");
+                  } else {
+                    combo
+                      .up("form")
+                      .getViewModel()
+                      .set("application_category_name", "Product Category");
+                  }
+                },
+              },
+            },
+            {
+              xtype: "combo",
+              anyMatch: true,
+              bind: {
+                fieldLabel: "{application_category_name}",
+              },
+              // fieldLabel: 'Product Category',
+              margin: "20 20 20 20",
+              margin: "0 20 20 0",
+              name: "prodclass_category_id",
+              valueField: "id",
+              displayField: "name",
+              forceSelection: true,
+              fieldStyle: {
+                color: "green",
+                "font-weight": "bold",
+              },
+              queryMode: "local",
+              listeners: {
+                beforerender: {
+                  fn: "setConfigCombosStore",
+                  config: {
+                    proxy: {
+                      url: "configurations/getRegistrationApplicationParameters",
+                      extraParams: {
+                        table_name: "par_prodclass_categories",
+                      },
+                    },
+                  },
+                  isLoad: false,
+                },
+                afterrender: function (combo) {
+                  var form = combo.up("form"),
+                    section_id = form.down("combo[name=section_id]").getValue(),
+                    prodclassStr = combo.getStore();
+                  if (section_id) {
+                    var filters = JSON.stringify({
+                      section_id: section_id,
+                      sub_module_id: application_type,
+                    });
+
+                    if (application_type == 75) {
+                      var filters = JSON.stringify({
+                        section_id: section_id,
+                        sub_module_id: application_type,
+                      });
+                    }
+
+                    prodclassStr.load({ params: { filters: filters } });
+                    if (section_id == 4) {
+                      form
+                        .getViewModel()
+                        .set("application_category_name", "Device Class");
+                    } else {
+                      form
+                        .getViewModel()
+                        .set("application_category_name", "Product Category");
+                    }
+                  }
+                },
+                select: function (combo, record, eopts) {
+                  var prodclass_category_id = record.get("id"),
+                    form = combo.up("form"),
+                    section_id = form.down("combo[name=section_id]").getValue();
+
+                  combo.up("form").mask("Please wait its loading..");
+                  me.fireEvent(
+                    "onNewProductRegApplication",
+                    application_type,
+                    btn,
+                    section_id,
+                    prodclass_category_id
+                  );
+                  win.close();
+                },
+              },
+            },
+          ],
+        },
+      });
+      win.show();
+    },
+
     showRenAltProductRegistration: function (btn) {
       var application_type = btn.app_type;
       this.fireEvent("onRenAltProductRegistration", application_type, btn);

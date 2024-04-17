@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpParser\Node\Stmt\Break_;
 
 class ProductRegistrationController extends Controller
 {
@@ -387,6 +388,7 @@ class ProductRegistrationController extends Controller
     }
     function returnProductDataSets($request)
     {
+       
         $prod_data = array(
             "dosage_form_id" => $request->input('dosage_form_id'),
             "classification_id" => $request->input('classification_id'),
@@ -406,7 +408,7 @@ class ProductRegistrationController extends Controller
             "product_subcategory_id" => $request->input('product_subcategory_id'),
             "intended_enduser_id" => $request->input('intended_enduser_id'),
             "intended_use_id" => $request->input('intended_use_id'),
-            //   "route_of_administration_id" => $request->input('route_of_administration_id'),
+            "route_of_administration_id" =>($request->input('route_of_administration_id')),
             "method_ofuse_id" => $request->input('method_ofuse_id'),
             "instructions_of_use" => $request->input('instructions_of_use'),
             'prodclass_category_id' => $request->prodclass_category_id,
@@ -463,7 +465,15 @@ class ProductRegistrationController extends Controller
             'require_child_resistant' => $request->require_child_resistant,
             'solid_product_density' => $request->solid_product_density,
             'liquid_gravity' => $request->liquid_gravity,
-            'product_usecategory_id' => $request->product_usecategory_id
+            'product_usecategory_id' => $request->product_usecategory_id,
+
+            'pharmacological_classification_id'=>$request->pharmacological_classification_id,
+            'commercial_presentation'=>$request->commercial_presentation,
+            'nature_content_container'=>$request->nature_content_container,
+            'storage_condition_after_reconstitution_dilution'=>$request->storage_condition_after_reconstitution_dilution,
+            'shelf_life_after_reconsititution_dilution'=>$request->shelf_life_after_reconsititution_dilution,
+            'manufacturing_country_id'=>$request->manufacturing_country_id,
+            'is_product_registered_in_country_of_origin'=>$request->is_product_registered_in_country_of_origin
         );
 
         return $prod_data;
@@ -485,12 +495,13 @@ class ProductRegistrationController extends Controller
             $user_id = $this->user_id;
             $product_id = $request->input('product_id');
             $classification_id = $request->input('classification_id');
-            $route_of_administrations = json_decode($request->input('route_of_administration_id'));
+            //$route_of_administrations = json_decode($request->input('route_of_administration_id'));
             $target_species = json_decode($request->input('target_species_id'));
             $assessment_procedure_id = $request->input('assessment_procedure_id');
             $assessment_procedure_id = 3;
             $res = 'save';
 
+          
 
             if (!validateIsNumeric($process_id)) {
 
@@ -498,7 +509,7 @@ class ProductRegistrationController extends Controller
             }
 
             $prod_data = $this->returnProductDataSets($request);
-
+           
             if (validateIsNumeric($active_application_id)) {
                 //update
                 $applications_table = 'tra_product_applications';
@@ -564,7 +575,7 @@ class ProductRegistrationController extends Controller
 
 
                 $application_code = generateApplicationCode($sub_module_id, $applications_table);
-                $application_details = DB::table('tra_product_information as t1')->leftJoin('tra_product_applications as t2', 't1.id', 't2.product_id')->where('t1.id', $record_id)->first();
+                //$application_details = DB::table('tra_product_information as t1')->leftJoin('tra_product_applications as t2', 't1.id', 't2.product_id')->where('t1.id', $record_id)->first();
                 $application_status = getApplicationInitialStatus($module_id, $sub_module_id);
                 $codes_array = $this->getProductApplicationReferenceCodes($request);
 
@@ -1481,8 +1492,9 @@ class ProductRegistrationController extends Controller
 
             $results = $qry1->first();
             $product_id = $results->product_id;
+            $route_of_administrations=$results->route_of_administration_id;
             $results = $this->returnMultProducSelections($product_id, $results);
-
+            $results->route_of_administration_id=json_decode($route_of_administrations,true);
             //add the route_of_administration_id and target_species_id
             $qry2 = clone $main_qry;
             $qry2->join('tra_premises as t3', 't1.local_agent_id', '=', 't3.id')
@@ -4573,5 +4585,43 @@ class ProductRegistrationController extends Controller
             );
         }
         return \response()->json($res);
+    }
+
+
+    public function onLoadproductOriginNonRegReasons(Request $req)
+    {
+
+        try {
+            $product_id = $req->product_id;
+            $table_name = $req->table_name;
+            $data = array();
+            $connection="mis_db";
+            switch($table_name)
+            {
+                case "wb_product_reasons_not_registred_in_origin":
+                    $connection="portal_db";
+                    break;
+                default:
+                    $connection="mis_db";
+                break;
+
+            }
+            $data =  DB::connection($connection)->table("$table_name as t1")
+                ->select('t1.*')
+                ->where(array('t1.product_id' => $product_id))
+                ->get();
+            $res = array('success' => true, 'results' => $data);
+        } catch (\Exception $e) {
+            $res = array(
+                'success' => false,
+                'message' => $e->getMessage()
+            );
+        } catch (\Throwable $throwable) {
+            $res = array(
+                'success' => false,
+                'message' => $throwable->getMessage()
+            );
+        }
+        return response()->json($res);
     }
 }

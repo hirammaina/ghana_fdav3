@@ -38,6 +38,11 @@ Ext.define(
         xtype: "drugsProductsOtherInformationFrm",
         title: "Product Other Details",
       },
+
+      {
+        xtype: "hiddenfield",
+        name: "prodclass_category_id",
+      },
       {
         xtype: "hiddenfield",
         name: "section_id",

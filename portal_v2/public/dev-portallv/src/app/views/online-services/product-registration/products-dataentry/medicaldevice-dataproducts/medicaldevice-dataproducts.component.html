@@ -60,7 +60,7 @@
       <div id="product_manufacturers" aria-labelledby="headingThree" data-parent="#productInfo">
         <div class="card-body no-padding">
           <div class="no-padding">
-            <dx-data-grid class="table row-border hover"  [allowColumnResizing]="true"  [columnHidingEnabled]="true" (onToolbarPreparing)="onAuthorizationReleasePreparing($event)"
+            <dx-data-grid class="table row-border hover"  [allowColumnResizing]="true"  [columnHidingEnabled]="true" (onToolbarPreparing)="isAuthorizationReleaseDetailsModalShow($event)"
               [dataSource]="productManufacturersData" keyExpr="id">
               <dxo-filter-row [visible]="false"></dxo-filter-row>
               <dxo-search-panel [visible]="true">

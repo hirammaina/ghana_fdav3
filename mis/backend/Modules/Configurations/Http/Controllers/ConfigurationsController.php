@@ -784,10 +784,21 @@ class ConfigurationsController extends Controller
                     }
                 }
             } else {
+
+              
+                $filters = (array)json_decode($filters);
+                if($req->table_name == 'par_prodclass_categories')
+                {
+                    if(key_exists("sub_module_id",$filters))
+                    {
+                        unset($filters['sub_module_id']);
+                    }
+
+                }
                 $qry = DB::table($table_name)
                     ->select('t1.*');
                 if ($filters != '') {
-                    $filters = (array)json_decode($filters);
+                  
                     $results = $qry->where($filters);
                 }
             }
@@ -913,7 +924,7 @@ class ConfigurationsController extends Controller
                     ->leftJoin('par_businesstype_categories as t3', 't1.business_typecategory_id', '=', 't3.id')
                     ->select('t1.*', 't2.name as section_name', 't3.name as business_typecategory_name');
             } else {
-
+               
                 $qry = DB::table($table_name)
                     ->leftJoin('par_sections as t2', 't1.section_id', '=', 't2.id')
                     ->select('t1.*', 't2.name as section_name');
@@ -950,11 +961,11 @@ class ConfigurationsController extends Controller
                     }
 
                     $results = $qry->where($filters);
+                }else  if ($filters != '') {
+                    $filters = (array)json_decode($filters);
+                    $results = $qry->where($filters);
                 }
-            } else  if ($filters != '') {
-                $filters = (array)json_decode($filters);
-                $results = $qry->where($filters);
-            }
+            } 
             //check if section_id is set 
             if (validateIsNumeric($req->section_id)) {
 
@@ -2537,4 +2548,94 @@ class ConfigurationsController extends Controller
         }
         return response()->json($res);
     }
+    public function prepareInterfaceBasedonConfig(Request $req)
+        {
+            try{
+                $module_id = $req->module_id;
+                $sub_module_id = $req->sub_module_id;
+                $section_id = $req->section_id;
+                $premise_type_id = $req->premise_type_id;
+                $prodclass_category_id = $req->prodclass_category_id;
+                $importexport_permittype_id = $req->importexport_permittype_id;
+
+                $where = array(
+                    'module_id'=>$module_id,
+                    'sub_module_id'=>$sub_module_id
+                );
+                if(validateIsNumeric($section_id) && $module_id != 4){
+                    $where['section_id'] = $section_id;
+                }
+                if($module_id == 1 && validateIsnumeric($prodclass_category_id)){
+                    $where['prodclass_category_id'] = $prodclass_category_id;
+                }
+                if($module_id == 2 && validateIsnumeric($premise_type_id)){
+                    $where['premise_type_id'] = $premise_type_id;
+                }
+                if($module_id == 4 && validateIsnumeric($importexport_permittype_id)){
+                    $where['importexport_permittype_id'] = $importexport_permittype_id;
+                }
+                if($module_id == 12 && validateIsnumeric($importexport_permittype_id)){
+                    $where['importexport_permittype_id'] = $importexport_permittype_id;
+                }
+
+
+                $form_category_id = getSingleRecordColValue('par_form_categories', $where, 'id');
+
+                if(validateIsnumeric($form_category_id)){
+                    $qry = DB::table('par_formtype_fields as t22')
+                        ->Join('par_formfield_designs as t33', 't22.field_id', 't33.id')
+                    // ->leftJoin('par_formfield_relations as t2', 't33.id', 't2.parent_field_id')
+                        ->leftJoin('par_formfield_relations as t2', function ($join) use ($form_category_id) {
+                                $join->on("t33.id", "=", "t2.parent_field_id")
+                                    ->where("t2.form_category_id", "=", $form_category_id);
+                            })
+                        ->leftJoin('par_formfield_designs as t3', 't2.form_fielddesign_id', 't3.id')
+                        ->leftJoin('par_formfield_designs as t4', 't2.parent_field_id', 't4.id')
+                        ->leftJoin('par_form_field_types as t5', 't33.form_field_type_id', 't5.id')
+                        ->leftJoin('par_formfield_relations as t6', function ($join) use ($form_category_id) {
+                                $join->on("t33.id", "=", "t6.form_fielddesign_id")
+                                    ->where("t6.form_category_id", "=", $form_category_id);
+                            })
+                        ->where('t22.form_category_id', $form_category_id)
+                        ->select('t22.column_width','t33.id','t33.displayfield','t33.valuefield','t33.combo_table','t33.form_field_type_id','t33.field_name','t33.def_id','t33.formfield','t33.tpl_block', 't22.is_hidden','t33.label','t33.group', 't33.group_title', 't22.is_enabled','t22.is_mandatory','t22.is_readOnly','t2.has_relation','t2.bind_column', 't3.field_name as child_combo', 't4.field_name as parent_combo','t5.name as xtype','t2.id as is_parent','t6.other_logic', 't6.has_logic');
+                    $qry->orderBy('t22.order_no', 'ASC');
+                    //$qry->unique('t33.id');
+
+                    $results = $qry->get();
+                    foreach ($results as $field) {
+                        if($field->is_parent){
+                            $no_children = DB::table('par_formfield_relations as t1')
+                                            ->leftJoin('par_formfield_designs as t3', 't1.form_fielddesign_id', 't3.id')
+                                            ->select('t1.*','t3.field_name as child_combo')
+                                            ->where(['parent_field_id' => $field->id, 't1.form_category_id'=>$form_category_id])->get();
+
+                            if($no_children->count() > 1){
+                                $i = 0;
+                                $field->is_multiparent = 1;
+                                foreach ($no_children as $child) {
+                                    $bind_column = 'bind_column'.$i;
+                                    $child_combo = 'child_combo'.$i;
+                                    $field->$bind_column = $child->bind_column;
+                                    $field->$child_combo = $child->child_combo;
+                                    $i++;
+                                }
+                                $field->total_children = $i;
+
+                            }
+
+                        }
+                    }
+                    $res = array('success' => true, 'results'=>$results, 'message'=>'All is well');
+                }else{
+                    $res = array('success' => false, 'message'=>'No form setup for the category');
+                }
+
+            }catch (\Exception $exception) {
+                $res = sys_error_handler($exception->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1),explode('\\', __CLASS__), \Auth::user()->id);
+            }
+            catch (\Throwable $throwable) {
+                $res = sys_error_handler($throwable->getMessage(), 2, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1),explode('\\', __CLASS__), \Auth::user()->id);
+            }
+            return response()->json($res);
+        }
 }

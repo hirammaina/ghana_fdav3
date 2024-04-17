@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -136,5 +136,6 @@ Route::post('/saveQualityReport', [ProductRegistrationController::class,'saveQua
     Route::post('saveProductEditionBaseDetails', [ProductRegistrationController::class,'saveProductEditionBaseDetails']);
     
     Route::get('getdocumentssubmissionrecommendation', [ProductRegistrationController::class,'getdocumentssubmissionrecommendation']);
+    Route::get('onLoadproductOriginNonRegReasons', [ProductRegistrationController::class,'onLoadproductOriginNonRegReasons']);
     
 });

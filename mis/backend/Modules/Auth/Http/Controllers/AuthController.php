@@ -40,6 +40,7 @@ class AuthController extends Controller
         if (is_numeric($remember_me) || !is_null($remember_me)) {
             $check_rem = true;
         }
+       
         $encryptedEmail = aes_encrypt($email);
         //$encryptedEmail = '9xvX68W5HTrS76T+81n10ncfqsQ3PrlkO7JC0OLHQec=';
         // $user = User::where('email', $encryptedEmail)->first();
